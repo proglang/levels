@@ -1,0 +1,194 @@
+\documentclass[runningheads,fleqn]{llncs}
+
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\usepackage[Latin,Greek]{ucharclasses}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{newunicodechar}
+\usepackage{proof}
+\setlength{\inferLineSkip}{3pt}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
+\usepackage{tikz}
+\usetikzlibrary{cd}
+\usepackage{adjustbox}
+\usepackage{syntax}
+
+\title{More Universes (working title)}
+\subtitle{Extend Agda's Universe Hierachy to $ε₀$}
+\institute{Chair of Programming Languages, University of Freiburg \\
+  \email{weidner@cs.uni-freiburg.de}}
+\author{Marius Weidner}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+% \section{Ordinals}
+% 
+% We mutual recursively define ordinals in cantor normal form (CNF) and a little above the limit $ε₀$:
+% 
+% \begin{grammar}
+% <$o$> ::= 0
+% \alt $ω ↑$ <$o₁$> + <$o₂$> \quad if $ε₀ > o₁ ≥$ exp($o₂$)
+% \alt $ε₀+i$ \quad \quad \quad \quad \ \ \, $∀i ∈ ℕ$
+% \end{grammar}
+% \noindent and retrieving the exponent of an ordinal in cantor normal form (i.e. $o < ε₀$)
+% \[
+%   \text{exp}(o) =
+%   \begin{cases}
+%     0 & \text{if } o = 0 \\
+%     o₁ & \text{if } o = ω ↑ o₁ + o₂
+%   \end{cases}
+% \]
+% \noindent and ordering relation on oridnals $(o₁ , o₂) ∈ \_<\_$ where
+% \[
+%   o₁ < o₂ =
+%   \begin{cases}
+%     true & \text{if } o₁ = 0 \text{ and } o₂ = ω ↑ o₃ + o₄ \\
+%     true & \text{if } o₁ = ω ↑ o₃ + o₄ \text{ and } o₂ = ω ↑ o₅ + o₆ \text{ and } o₃ < o₅ \\
+%     true & \text{if } o₁ = ω ↑ o₃ + o₄ \text{ and } o₂ = ω ↑ o₅ + o₆ \text{ and } o₃ = o₅ \text{ and } o₄ < o₆ \\
+%     true & \text{if } o₁ = ε₀ + i₁ \text{ and } o₂ ≠ ε₀ + i₂ \\
+%     true & \text{if } o₁ = ε₀ + i₁ \text{ and } o₂ = ε₀ + i₂ \text{ and } i₁ <_ℕ i₂ \\
+%     false & \text{otherwise}
+%   \end{cases}
+% \]
+% and derive $≤$, $>$ and $≥$ accordingly
+% \begin{align*}
+%   o₁ ≤ o₂ &⇔ o₁ < o₂ \text{ or } o₁ = o₂ \\
+%   o₁ > o₂ &⇔  o₂ < o₁ \\
+%   o₁ ≥ o₂ &⇔ o₁ > o₂ \text{ or } o₁ = o₂ \\
+% \end{align*}
+% We also define the limit predicate and use $λ$ for limit oridnals
+% \[
+%   \text{lim}(o) =
+%   \begin{cases}
+%     true & \text{if } o = ω ↑ o₁ + 0  \\
+%     true & \text{if } o = ω ↑ o₁ + o₂ \and{ and } o₁ ≠ 0 \text{ and lim} (o₂)} \\
+%     true & \text{if } o = ε₀ + 0  \\
+%     false & \text{otherwise}
+%   \end{cases}
+% \]
+% \noindent and the least upper bound
+% \[
+%   o₁ ⊔ o₂ = ...
+% \]
+
+\section{Terms}
+
+\subsection{Syntax}
+
+\begin{grammar}
+t ::= 
+\alt x
+\alt $λ$(x : $t₁$) $→ t₂$
+\alt $t₁ \ t₂$
+\alt $∀(x : t₁) → t₂$
+\alt $t₁ ≡ t₂$
+\alt refl
+\alt $0$
+\alt $ω ↑ t₁ +_{\{t\}} t₂$
+\alt $λ^ℓ$(x : $t₁$) $→ t₂$
+\alt $t₁ _{\{t\}} t₂$
+\alt $∀^ℓ(ℓ : t₁) → t₂$
+\alt suc $t$
+\alt $t₁ ⊔ t₂$
+\alt Set[$t$]
+\alt Set[$ε₀+i$] for all $i ∈ ℕ$
+\alt Level
+\end{grammar}
+
+\subsection{Typing}
+
+% \infer[\text{T-OrdZero}]{
+%   Γ ⊢ 0 : Ord
+% }{}
+% \bigskip
+% \infer[\text{T-OrdCnf}]{
+%   Γ ⊢ ω ↑ o₁ + o₂ : Ord
+% }{
+%   Γ ⊢ o₁ : Ord &
+%   Γ ⊢ o₂ : Ord &
+%   exp(o₂) < o₁
+% }
+% \bigskip
+% \infer[\text{T-OrdEps}]{
+%   Γ ⊢ ε₀ + i : Ord
+% }{}
+% \bigskip
+% \infer[\text{T-OrdSuc}]{
+%   Γ ⊢ suc \ o : Lvl[λ]
+% }{
+%   Γ ⊢ o : Lvl[λ]
+% }
+% \bigskip
+% \infer[\text{T-OrdLub}]{
+%   Γ ⊢ o₁ ⊔ o₂ : Lvl[λ₁ ⊔ λ₂]
+% }{
+%   Γ ⊢ o₁ : Lvl[λ₁] &
+%   Γ ⊢ o₂ : Lvl[λ₂] 
+% }
+% \bigskip
+% % \infer[\text{T-SetOrd}]{
+% %   Γ ⊢ Ord : Set[0]
+% % }{}
+% % \bigskip
+% \infer[\text{T-LimOrd}]{
+%   Γ ⊢ o : Lvl[λ]
+% }{
+%   \text{lim}(λ) ∧ o < λ
+% }
+% \bigskip
+% \infer[\text{T-SetLim}]{
+%   Γ ⊢ Lvl[λ] : Set[λ]
+% }{
+%   \text{lim}(λ)
+% }
+% \bigskip
+% \infer[\text{T-SetSet}]{
+%   Γ ⊢ Set[o] : Set[suc \ o]
+% }{}
+% \bigskip
+% \bigskip
+% \bigskip
+% \bigskip
+% \infer[\text{T-Var}]{
+%   Γ ⊢ x : t
+% }{
+%   (x : t) ∈ Γ
+% }
+% \bigskip
+% \infer[\text{T-Abs}]{
+%   Γ ⊢ λ(x : t₁) → e : t₂
+% }{
+%   Γ ⊢ t₁ : Set[o₁] &
+%   Γ, x : t₁ ⊢ e : ∀(x : t₁) → t₂
+% }
+% \bigskip
+% \infer[\text{T-App}]{
+%   Γ ⊢ e₁ e₂ : t₂[x/e₂]
+% }{
+%   Γ ⊢ e₁ : ∀(x : t₁) → t₂
+%   Γ ⊢ e₂ : t₁ &
+% }
+% \bigskip
+% \infer[\text{T-All}]{
+%   Γ ⊢ ∀(x: t₁) → t₁ : Set[o₁ ⊔ suc \ o₂]
+% }{
+%   Γ ⊢ t₁ : Set[o₁] &
+%   Γ, x: t₁ ⊢ t₂ : Set[o₂]
+% }
+% \bigskip
+% \infer[\text{T-Conv}]{
+%   Γ ⊢ e : t₂
+% }{
+%   Γ ⊢ e : t₁ &
+%   t₁ ≡ t₂
+% }
+\printbibliography{}
+
+\end{document}
