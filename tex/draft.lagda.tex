@@ -13,10 +13,8 @@
 \usepackage{tikz}
 \usetikzlibrary{cd}
 \usepackage{adjustbox}
-\usepackage{syntax}
 
-\title{More Universes (working title)}
-\subtitle{Extend Agda's Universe Hierachy to $ε₀$}
+\title{Universal Control}
 \institute{Chair of Programming Languages, University of Freiburg \\
   \email{weidner@cs.uni-freiburg.de}}
 \author{Marius Weidner}
@@ -82,24 +80,29 @@
 
 \subsection{Syntax}
 
-\begin{grammar}
-t ::= 
-\alt x
-\alt $λ$(x : $t₁$) $→ t₂$
-\alt $t₁ \ t₂$
-\alt $∀(x : t₁) → t₂$
-\alt $t₁ ≡ t₂$
-\alt refl
-\alt $0$
-\alt $ω ↑ t₁ +_{\{t\}} t₂$
-\alt $λ^ℓ$(x : $t₁$) $→ t₂$
-\alt $t₁ _{\{t\}} t₂$
-\alt $∀^ℓ(ℓ : t₁) → t₂$
-\alt suc $t$
-\alt $t₁ ⊔ t₂$
-\alt Set[$t$]
-\alt Set[$ε₀+i$] for all $i ∈ ℕ$
-\alt Level
+
+t ::= x \\
+| $λ$(x : $t₁$) $→ t₂$ \\
+| $t₁ \ t₂$ \\
+| $∀(x : t₁) → t₂$ \\
+| $t₁ ≡ t₂$ \\
+| refl \\
+| Level \\
+| $0$ \\
+| $ω ↑ t₁ +_{\{t\}} t₂$ \\
+| suc $t$ \\
+| $t₁ ⊔ t₂$ \\
+| $t₁ <_ℓ t₂$ \\
+| $<_ℓ₁$ \\
+| $<_ℓ₂$ \\
+| $<_ℓ₃$ \\
+| Level[$t$] \\
+| $t₁$ $,_ℓ$ $t₂$ \\  
+| proj$_ℓ$ $t$ \\
+| proj$_{<_ℓ}$ $t$ \\
+| Set[$t$] \\
+| Set $ε₀+i$ for all $i ∈ ℕ$ \\
+
 \end{grammar}
 
 \subsection{Typing}
