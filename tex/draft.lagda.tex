@@ -76,37 +76,79 @@
 %   o₁ ⊔ o₂ = ...
 % \]
 
-\section{Terms}
-
 \subsection{Syntax}
 
+\begin{align*}
+  t, ℓ, A, B ::&= x \\
+  &|\ λ(x : A) → t \\
+  &|\ t₁ \ t₂ \\
+  &|\ ∀(x : A) → B \\
+  &|\ t₁ ≡_A t₂ \\
+  &|\ \text{refl} \ t \\
+  &|\ \text{Level} \\
+  &|\ 0 \\
+  &|\ ω ↑ ℓ₁ +_{\{t\}} ℓ₂ \\
+  &|\ ℓ₁ ⊔ ℓ₂ \\
+  &|\ ℓ₁ <_ℓ ℓ₂ \\
+  &|\ <_{ℓ₁} \\
+  &|\ <_{ℓ₂} \ t₁ \\
+  &|\ <_{ℓ₃} \ t₁ \ t₂ \\
+  &|\ \text{Level}[ℓ] \\
+  &|\ ℓ ,_ℓ t \\  
+  &|\ \text{proj}_ℓ \ t \\
+  &|\ \text{proj}_{<_ℓ} \ t \\
+  &|\ \text{Set}[ℓ] \\
+  &|\ \text{Set}ε_{0+i} \text{ for all } i ∈ ℕ \\
+\end{align*}
 
-t ::= x \\
-| $λ$(x : $t₁$) $→ t₂$ \\
-| $t₁ \ t₂$ \\
-| $∀(x : t₁) → t₂$ \\
-| $t₁ ≡ t₂$ \\
-| refl $t$ \\
-| Level \\
-| $0$ \\
-| $ω ↑ t₁ +_{\{t\}} t₂$ \\
-| suc $t$ \\
-| $t₁ ⊔ t₂$ \\
-| $t₁ <_ℓ t₂$ \\
-| $<_{ℓ₁}$ \\
-| $<_{ℓ₂}$ $t₁$ \\
-| $<_{ℓ₃}$ $t₁$ $t₂$ \\
-| Level[$t$] \\
-| $t₁$ $,_ℓ$ $t₂$ \\  
-| proj$_ℓ$ $t$ \\
-| proj$_{<_ℓ}$ $t$ \\
-| proj$_{\text{lim}}$ $t$ \\
-| Set[$t$] \\
-| Set $ε₀+i$ for all $i ∈ ℕ$ \\
+Less then or equal proof $t$ in $ω ↑ ℓ₁ +_{\{t\}} ℓ₂$ omitted when it follows from the context.
 
 \end{grammar}
 
+\subsection{Laws}
+
+Idempotence: $ℓ ⊔ ℓ ≡ ℓ$ \\ 
+Associativity: $(ℓ₁ ⊔ ℓ₂) ⊔ ℓ₃ ≡ ℓ₁ ⊔ (ℓ₂ ⊔ ℓ₃)$ \\
+Commutativity: $ℓ₁ ⊔ ℓ₂ ≡ ℓ₂ ⊔ ℓ₁$ \\
+Distributivity: $ω ↑ ℓ +_{\{t\}} (ℓ₁ ⊔ ℓ₂) ≡ ω ↑ ℓ +_{\{t₁\}} ℓ₁ ⊔ ω ↑ ℓ +_{\{t₂\}} ℓ₂$ \\
+Neutrality: $ℓ ⊔ 0 ≡ ℓ$ \\
+Subsumption: $ℓ ⊔ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + ℓ ≡ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + ℓ$
+
 \subsection{Typing}
+
+\infer[\text{T-Var}]{
+  Γ ⊢ x : T
+}{
+  (x : T) ∈ Γ
+}
+\bigskip
+\infer[\text{T-Abs}]{
+  Γ ⊢ λ(x : A) → t : B
+}{
+  Γ ⊢ A : Set[o₁] &
+  Γ, x : t₁ ⊢ e : ∀(x : t₁) → t₂
+}
+\bigskip
+\infer[\text{T-App}]{
+  Γ ⊢ e₁ e₂ : t₂[x/e₂]
+}{
+  Γ ⊢ e₁ : ∀(x : t₁) → t₂ &
+  Γ ⊢ e₂ : t₁ 
+}
+\bigskip
+\infer[\text{T-All}]{
+  Γ ⊢ ∀(x: t₁) → t₁ : Set[o₁ ⊔ suc \ o₂]
+}{
+  Γ ⊢ t₁ : Set[o₁] &
+  Γ, x: t₁ ⊢ t₂ : Set[o₂]
+}
+\bigskip
+\infer[\text{T-Conv}]{
+  Γ ⊢ e : t₂
+}{
+  Γ ⊢ e : t₁ &
+  t₁ ≡ t₂
+}
 
 % \infer[\text{T-OrdZero}]{
 %   Γ ⊢ 0 : Ord
