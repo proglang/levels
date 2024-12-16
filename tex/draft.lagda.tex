@@ -14,7 +14,7 @@
 \usetikzlibrary{cd}
 \usepackage{adjustbox}
 
-\title{Universal Control}
+\title{Taking Control Over The Multiverse}
 \institute{Chair of Programming Languages, University of Freiburg \\
   \email{weidner@cs.uni-freiburg.de}}
 \author{Marius Weidner}
@@ -26,56 +26,6 @@
 \begin{abstract}
 \end{abstract}
 
-% \section{Ordinals}
-% 
-% We mutual recursively define ordinals in cantor normal form (CNF) and a little above the limit $ε₀$:
-% 
-% \begin{grammar}
-% <$o$> ::= 0
-% \alt $ω ↑$ <$o₁$> + <$o₂$> \quad if $ε₀ > o₁ ≥$ exp($o₂$)
-% \alt $ε₀+i$ \quad \quad \quad \quad \ \ \, $∀i ∈ ℕ$
-% \end{grammar}
-% \noindent and retrieving the exponent of an ordinal in cantor normal form (i.e. $o < ε₀$)
-% \[
-%   \text{exp}(o) =
-%   \begin{cases}
-%     0 & \text{if } o = 0 \\
-%     o₁ & \text{if } o = ω ↑ o₁ + o₂
-%   \end{cases}
-% \]
-% \noindent and ordering relation on oridnals $(o₁ , o₂) ∈ \_<\_$ where
-% \[
-%   o₁ < o₂ =
-%   \begin{cases}
-%     true & \text{if } o₁ = 0 \text{ and } o₂ = ω ↑ o₃ + o₄ \\
-%     true & \text{if } o₁ = ω ↑ o₃ + o₄ \text{ and } o₂ = ω ↑ o₅ + o₆ \text{ and } o₃ < o₅ \\
-%     true & \text{if } o₁ = ω ↑ o₃ + o₄ \text{ and } o₂ = ω ↑ o₅ + o₆ \text{ and } o₃ = o₅ \text{ and } o₄ < o₆ \\
-%     true & \text{if } o₁ = ε₀ + i₁ \text{ and } o₂ ≠ ε₀ + i₂ \\
-%     true & \text{if } o₁ = ε₀ + i₁ \text{ and } o₂ = ε₀ + i₂ \text{ and } i₁ <_ℕ i₂ \\
-%     false & \text{otherwise}
-%   \end{cases}
-% \]
-% and derive $≤$, $>$ and $≥$ accordingly
-% \begin{align*}
-%   o₁ ≤ o₂ &⇔ o₁ < o₂ \text{ or } o₁ = o₂ \\
-%   o₁ > o₂ &⇔  o₂ < o₁ \\
-%   o₁ ≥ o₂ &⇔ o₁ > o₂ \text{ or } o₁ = o₂ \\
-% \end{align*}
-% We also define the limit predicate and use $λ$ for limit oridnals
-% \[
-%   \text{lim}(o) =
-%   \begin{cases}
-%     true & \text{if } o = ω ↑ o₁ + 0  \\
-%     true & \text{if } o = ω ↑ o₁ + o₂ \and{ and } o₁ ≠ 0 \text{ and lim} (o₂)} \\
-%     true & \text{if } o = ε₀ + 0  \\
-%     false & \text{otherwise}
-%   \end{cases}
-% \]
-% \noindent and the least upper bound
-% \[
-%   o₁ ⊔ o₂ = ...
-% \]
-
 \subsection{Syntax}
 
 \begin{align*}
@@ -84,72 +34,215 @@
   &|\ t₁ \ t₂ \\
   &|\ ∀(x : A) → B \\
   &|\ t₁ ≡_A t₂ \\
-  &|\ \text{refl} \ t \\
-  &|\ \text{Level} \\
+  &|\ \texttt{refl} \ t \\
+  &|\ A ⊎ B \\ 
+  &|\ \texttt{inj}₁ \ t \\ 
+  &|\ \texttt{inj}₂ \ t \\ 
+  &|\ \texttt{case } t \texttt{ of } \\
+  & \quad \texttt{inj}₁ \ t → t₁ \\
+  & \quad \texttt{inj}₂ \ t → t₂ \\ 
+  &|\ \texttt{Level} \\
   &|\ 0 \\
-  &|\ ω ↑ ℓ₁ +_{\{t\}} ℓ₂ \\
+  &|\ ω ↑ ℓ₁ +_t ℓ₂ & ∷ (ℓ₁ : \texttt{Level}) → (ℓ₂ : \texttŧ{Level}) → (t : ↑ ℓ₂ ≤ ℓ₁) \\
+  &|\ \texttt{case}_ℓ \ t \texttt{ of } & \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} \\
+  & \quad 0→ t₁ \\
+  & \quad ω ↑ ℓ₁ +_t ℓ₂→ t₂ \\
+  &|\ \texttt{suc } ℓ \\
+  &|\ ↑ ℓ \\
   &|\ ℓ₁ ⊔ ℓ₂ \\
-  &|\ ℓ₁ <_ℓ ℓ₂ \\
-  &|\ <_{ℓ₁} \\
-  &|\ <_{ℓ₂} \ t₁ \\
-  &|\ <_{ℓ₃} \ t₁ \ t₂ \\
-  &|\ \text{Level}[ℓ] \\
+  &|\ ℓ₁ <_ℓ ℓ₂ \ & \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} \\ 
+  &|\ <_{ℓ₁} & ∷ 0 <_ℓ ω ↑ ℓ₁ +_t ℓ₂\\
+  &|\ <_{ℓ₂} \ t & ∷ ℓ₁₁ <_ℓ ℓ₂₁ → (ω ↑ ℓ₁₁ +_t ℓ₁₂) <_ℓ (ω ↑ ℓ₂₁ +_t ℓ₂₂)\\
+  &|\ <_{ℓ₃} \ t \ t′ & ∷ ℓ₁₁ ≡ ℓ₂₁ → ℓ₂₁ <_ℓ ℓ₂₂ → (ω ↑ ℓ₁₁ +_t ℓ₁₂) <_ℓ (ω ↑ ℓ₂₁ +_t ℓ₂₂) \\
+  &|\ \texttt{case}_{<_ℓ} \ t \texttt{ of } & \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} \\
+  & \quad <_{ℓ₁}→ t₁ \\
+  & \quad <_{ℓ₂} \ t → t₂ \\
+  & \quad <_{ℓ₂} \ t \ t′ → t₃ \\
+  &|\ \texttt{Level}_ℓ \\
   &|\ ℓ ,_ℓ t \\  
-  &|\ \text{proj}_ℓ \ t \\
-  &|\ \text{proj}_{<_ℓ} \ t \\
-  &|\ \text{Set}[ℓ] \\
-  &|\ \text{Set}ε_{0+i} \text{ for all } i ∈ ℕ \\
+  &|\ \texttt{proj}_ℓ \ t \\
+  &|\ \texttt{proj}_{<_ℓ} \ t \\
+  &|\ \texttt{Set}_ℓ \\
+  &|\ \texttt{Set}_{ε_0+i} & \texttt{ for all } i ∈ ℕ \\
 \end{align*}
 
-Less then or equal proof $t$ in $ω ↑ ℓ₁ +_{\{t\}} ℓ₂$ omitted when it follows from the context.
+We write $\texttt{Set}$ for $\texttt{Set}_0$.
 
-\end{grammar}
+We also write $ℓ₁ ≤_ℓ ℓ₂$ as shorthand for $ℓ₁ <_ℓ ℓ₂ ⊎ ℓ₁ ≡ ℓ₂$.
+
+% We define $↑ ℓ$ for retrieving the exponent of an ordinal in CNF $\texttt{case}_ℓ \ t \texttt{ of } 0→ 0; ω ↑ ℓ₁ + ℓ₂→ ℓ₁$
+
+We might omit the proof $t$ that $↑ ℓ₂ ≤ ℓ₁$ in the constructor $ω ↑ ℓ₁ +_t ℓ₂$ if it follows from context.
+
+By an abuse of notation we may write $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → Set ℓ$ and $\texttt{f} \ ℓ \ \{ℓ<ℓ′}$ instead of $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } (\texttt{proj}_ℓ \ ℓ)$ and $\texttt{f} (ℓ ,_ℓ ℓ<ℓ′)$ which is closer to what we believe should be implemented.
+
+% We define $\texttt{suc } ℓ$ as the successor of any ordinals in CNF $\texttt{case}_ℓ \ t \texttt{ of } 0→ ω ↑ 0 + 0; ω ↑ ℓ₁ + ℓ₂→ ω ↑ ℓ₁ + \texttt{suc } ℓ₂$.
+
+Note that $\texttt{suc } ℓ$ and $↑ ℓ$ are essentially just definitions possible when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled.
+We could implement them in an manually checked unsafe module and mark them for the compiler.
+
+\begin{itemize}
+ \item All syntax constructs marked with \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} should only be visible to the compiler / some manually checked prelude module that included the least definitions introduced above. 
+ \item Note that in the case of level quantification the user \emph{sees} $\texttt{\_}<_ℓ\texttt{\_}$ \emph{indirectly} in a secure way.
+ \item IDEA: Can we allow $\texttt{\_}<_ℓ\texttt{\_}$ to appear in the \emph{return type} of a function without breaking decidability of typechecking? Further: We could allow \emph{fully generalized} $ℓ₁ <_ℓ ℓ₂$ as argument.
+ \item Enabling the option for use in any other module, enables the user to break decidability of typechecking but also allows to add custom laws. 
+\end{itemize}
 
 \subsection{Laws}
-
 Idempotence: $ℓ ⊔ ℓ ≡ ℓ$ \\ 
 Associativity: $(ℓ₁ ⊔ ℓ₂) ⊔ ℓ₃ ≡ ℓ₁ ⊔ (ℓ₂ ⊔ ℓ₃)$ \\
 Commutativity: $ℓ₁ ⊔ ℓ₂ ≡ ℓ₂ ⊔ ℓ₁$ \\
-Distributivity: $ω ↑ ℓ +_{\{t\}} (ℓ₁ ⊔ ℓ₂) ≡ ω ↑ ℓ +_{\{t₁\}} ℓ₁ ⊔ ω ↑ ℓ +_{\{t₂\}} ℓ₂$ \\
+Distributivity$₁$: $\text{suc } (ℓ₁ ⊔ ℓ₂) ≡ \texttt{suc } ℓ₁ ⊔ \texttt{suc } ℓ₂$ \\
+Distributivity$₂$: $ω ↑ ℓ +_{t} (ℓ₁ ⊔ ℓ₂) ≡ ω ↑ ℓ +_{t₁} ℓ₁ ⊔ ω ↑ ℓ +_{t₂} ℓ₂$ \\
+Distributivity$₃$: $↑ (ℓ₁ ⊔ ℓ₂) ≡ ↑ ℓ₁ ⊔ ↑ ℓ₂$ \\
 Neutrality: $ℓ ⊔ 0 ≡ ℓ$ \\
-Subsumption: $ℓ ⊔ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + ℓ ≡ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + ℓ$
+Subsumption$₁$: $ℓ ⊔ \texttt{suc}ⁿ \ ℓ ≡ \texttt{suc}ⁿ \ ℓ$\\
+Subsumption$₂$: $ℓ ⊔ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + \texttt{suc}ⁿ \ ℓ ≡ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + \texttt{suc}ⁿ \ ℓ$\\
+Subsumption$₃$: $ℓ ⊔ ↑ ℓ ≡ ℓ$ 
+
+\begin{itemize}
+  \item All laws should be provable when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled
+  \item With  \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} enabled you can add more reduction rules (either applying them explicitly or by using \texttt{\{-\# REWRITE \#-\}} 
+  \item The rewrite system is `best effort', i.e. \emph{not} complete..
+  \item .. it might be confluent though (it probably even \emph{needs} to be?)
+\end{itemize}
+
+We should probably also include a library of manually checked equations enabling inequality-reasoning that make use of \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} (those laws should not be automatically applied by the compiler, but they could be?)
+
+\noindent Transitivity: $ℓ₁ <_ℓ ℓ₂ → ℓ₂ <_ℓ ℓ₃ → ℓ₁ <_ℓ ℓ₃$ \\ 
+Subsumption: $ℓ₁ <_ℓ ℓ₂ → ℓ₁ <_ℓ ℓ₂ ⊔ ℓ₃$
 
 \subsection{Typing}
 
 \infer[\text{T-Var}]{
   Γ ⊢ x : T
 }{
-  (x : T) ∈ Γ
+  (x : T) ∈ Γ 
 }
+\noindent todo: add context well formedness(?) 
+
 \bigskip
 \infer[\text{T-Abs}]{
-  Γ ⊢ λ(x : A) → t : B
+  Γ ⊢ λ(x : A) → t : ∀(x : A) → B
 }{
-  Γ ⊢ A : Set[o₁] &
-  Γ, x : t₁ ⊢ e : ∀(x : t₁) → t₂
+  Γ, x : A ⊢ t : B &
+  Γ ⊢ A : \texttt{Set}_ℓ
 }
 \bigskip
 \infer[\text{T-App}]{
-  Γ ⊢ e₁ e₂ : t₂[x/e₂]
+  Γ ⊢ t₁ \ t₂ : B[x/t₂]
 }{
-  Γ ⊢ e₁ : ∀(x : t₁) → t₂ &
-  Γ ⊢ e₂ : t₁ 
+  Γ ⊢ t₁ : ∀(x : A) → B &
+  Γ ⊢ t₂ : A
 }
 \bigskip
 \infer[\text{T-All}]{
-  Γ ⊢ ∀(x: t₁) → t₁ : Set[o₁ ⊔ suc \ o₂]
+  Γ ⊢ ∀(x: A) → B : \texttt{Set}_{ℓ₁ ⊔ ℓ₂}
 }{
-  Γ ⊢ t₁ : Set[o₁] &
-  Γ, x: t₁ ⊢ t₂ : Set[o₂]
+  Γ ⊢ A : \texttt{Set}_{ℓ₁} &
+  Γ, x : A ⊢ B : \texttt{Set}_{ℓ₂}
 }
 \bigskip
 \infer[\text{T-Conv}]{
-  Γ ⊢ e : t₂
+  Γ ⊢ t₁ : A₁
 }{
-  Γ ⊢ e : t₁ &
-  t₁ ≡ t₂
+  Γ ⊢ t₂ : A₂ &
+  Γ ⊢ A₁ = A₂ : \texttt{Set}_ℓ
 }
+\noindent todo: add definitional equality rules(?)
 
+\bigskip
+\infer[\text{T-Set}]{
+  Γ ⊢ \texttt{Set}_ℓ : \texttt{Set}_{\texttt{suc } ℓ}
+}{
+  Γ ⊢ ℓ : \texttt{Level}
+}
+\noindent todo: add context well formedness(?) 
+
+\bigskip
+\infer[\text{T-Eq}]{
+  Γ ⊢ t₁ ≡_A t₂: \texttt{Set}_ℓ
+}{
+  Γ ⊢ t₁ : A &
+  Γ ⊢ t₂ : A &
+  Γ ⊢ A : \texttt{Set}_ℓ
+}
+\noindent $A ⊎ B$, $\texttt{inj}₁$, $\texttt{inj}₂$, \texttt{case\_of\_} missing
+
+\bigskip
+\infer[\text{T-Level}]{
+  Γ ⊢ \texttt{Level} : \texttt{Set}_{ε₀}
+}{
+}
+\bigskip
+\infer[\text{T-Zero}]{
+  Γ ⊢ 0 : \texttt{Level}
+}{
+}
+\bigskip
+\infer[\text{T-CNF}]{
+  Γ ⊢ ω ↑ ℓ₁ +_t ℓ₂ : \texttt{Level}
+}{
+  Γ ⊢ ℓ₁ : \texttt{Level} &
+  Γ ⊢ ℓ₂ : \texttt{Level} &
+  Γ ⊢ t : ↑ ℓ₂ ≤_ℓ ℓ₁
+}
+\noindent $\texttt{case}_ℓ\texttt{\_of\_}}$ missing
+
+\bigskip
+\infer[\text{T-Suc}]{
+  Γ ⊢ suc ℓ : \texttt{Level}
+}{
+  Γ ⊢ ℓ : \texttt{Level} 
+}
+\bigskip
+\infer[\text{T-Exp}]{
+  Γ ⊢ ↑ ℓ : \texttt{Level}
+}{
+  Γ ⊢ ℓ : \texttt{Level} 
+}
+\bigskip
+\infer[\text{T-LUB}]{
+  Γ ⊢ ℓ₁ ⊔ ℓ₂ : \texttt{Level}
+}{
+  Γ ⊢ ℓ₁ : \texttt{Level} &
+  Γ ⊢ ℓ₂ : \texttt{Level} 
+}
+\bigskip
+\infer[\text{T-LT}]{
+  Γ ⊢ ℓ₁ <_ℓ ℓ₂ : \texttt{Set}
+}{
+  Γ ⊢ ℓ₁ : \texttt{Level} &
+  Γ ⊢ ℓ₂ : \texttt{Level} 
+}
+\bigskip
+\infer[\text{T-LTZero}]{
+  Γ ⊢ <_{ℓ_1} : 0 <_ℓ  ω ↑ ℓ₁ +_t ℓ₂
+}{
+  Γ ⊢ ℓ₁ : \texttt{Level} &
+  Γ ⊢ ℓ₂ : \texttt{Level} &
+  Γ ⊢ t : ↑ ℓ₂ ≤_ℓ ℓ₁
+}
+\bigskip
+\infer[\text{T-LTExp}]{
+  Γ ⊢ <_{ℓ_1} t : ω ↑ ℓ₁ +_t₁ ℓ₂ <_ℓ  ω ↑ ℓ₃ +_t₂ ℓ₄
+}{
+  Γ ⊢ ℓ_{1..4} : \texttt{Level} &
+  Γ ⊢ t₁ : ↑ ℓ₂ ≤_ℓ ℓ₁ &
+  Γ ⊢ t₂ : ↑ ℓ₄ ≤_ℓ ℓ₃ &
+  Γ ⊢ t : ℓ₁ <_ℓ ℓ₃
+}
+\bigskip
+\infer[\text{T-LTCons}]{
+  Γ ⊢ <_{ℓ_1} t t′ : ω ↑ ℓ₁ +_t₁ ℓ₂ <_ℓ  ω ↑ ℓ₃ +_t₂ ℓ₄
+}{
+  Γ ⊢ ℓ_{1..4} : \texttt{Level} &
+  Γ ⊢ t₁ : ↑ ℓ₂ ≤_ℓ ℓ₁ &
+  Γ ⊢ t₂ : ↑ ℓ₄ ≤_ℓ ℓ₃ &
+  Γ ⊢ t : ℓ₁ ≡ ℓ₃ &
+  Γ ⊢ t′ : ℓ₂ <_ℓ ℓ₄
+}
+\noindent $\texttt{case}_{<_ℓ}\texttt{\_of\_}}$ missing
 % \infer[\text{T-OrdZero}]{
 %   Γ ⊢ 0 : Ord
 % }{}
@@ -235,6 +328,13 @@ Subsumption: $ℓ ⊔ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + ℓ ≡ ω ↑ ℓ₁
 %   Γ ⊢ e : t₁ &
 %   t₁ ≡ t₂
 % }
+
+\subsection{Semantics}
+$\texttt{suc } 0 ↪ ω ↑ 0 + 0$ \\
+$\texttt{suc } ω ↑ ℓ₁ + ℓ₂ ↪ ω ↑ ℓ₁ + \text{suc } ℓ₂ $ \\
+$↑ 0 ↪ 0$ \\
+$↑ (ω ↑ ℓ₁ + ℓ₂) ↪ ℓ₁$ \\
+
 \printbibliography{}
 
 \end{document}
