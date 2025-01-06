@@ -41,6 +41,7 @@
   &|\ \texttt{case } t \texttt{ of } \\
   & \quad \texttt{inj}₁ \ t → t₁ \\
   & \quad \texttt{inj}₂ \ t → t₂ \\ 
+  &|\ ⊥ \\
   &|\ \texttt{Level} \\
   &|\ 0 \\
   &|\ ω ↑ ℓ₁ +_t ℓ₂ & ∷ (ℓ₁ : \texttt{Level}) → (ℓ₂ : \texttŧ{Level}) → (t : ↑ ℓ₂ ≤ ℓ₁) \\
@@ -74,12 +75,12 @@ We also write $ℓ₁ ≤_ℓ ℓ₂$ as shorthand for $ℓ₁ <_ℓ ℓ₂ ⊎ 
 
 We might omit the proof $t$ that $↑ ℓ₂ ≤ ℓ₁$ in the constructor $ω ↑ ℓ₁ +_t ℓ₂$ if it follows from context.
 
-By an abuse of notation we may write $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → Set ℓ$ and $\texttt{f} \ ℓ \ \{ℓ<ℓ′}$ instead of $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } (\texttt{proj}_ℓ \ ℓ)$ and $\texttt{f} (ℓ ,_ℓ ℓ<ℓ′)$ which is closer to what we believe should be implemented.
+By an abuse of notation we may write $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } ℓ$ and $\texttt{f} \ ℓ \ \{ℓ<ℓ′\}$ instead of $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } (\texttt{proj}_ℓ \ ℓ)$ and $\texttt{f } (ℓ ,_ℓ ℓ<ℓ′)$ which is closer to what we believe should be implemented.
 
 % We define $\texttt{suc } ℓ$ as the successor of any ordinals in CNF $\texttt{case}_ℓ \ t \texttt{ of } 0→ ω ↑ 0 + 0; ω ↑ ℓ₁ + ℓ₂→ ω ↑ ℓ₁ + \texttt{suc } ℓ₂$.
 
 Note that $\texttt{suc } ℓ$ and $↑ ℓ$ are essentially just definitions possible when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled.
-We could implement them in an manually checked unsafe module and mark them for the compiler.
+We could implement them in an manually checked unsafe module and mark them for the compiler similar to the constructors of Level.
 
 \begin{itemize}
  \item All syntax constructs marked with \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} should only be visible to the compiler / some manually checked prelude module that included the least definitions introduced above. 
@@ -98,7 +99,7 @@ Distributivity$₃$: $↑ (ℓ₁ ⊔ ℓ₂) ≡ ↑ ℓ₁ ⊔ ↑ ℓ₂$ \\
 Neutrality: $ℓ ⊔ 0 ≡ ℓ$ \\
 Subsumption$₁$: $ℓ ⊔ \texttt{suc}ⁿ \ ℓ ≡ \texttt{suc}ⁿ \ ℓ$\\
 Subsumption$₂$: $ℓ ⊔ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + \texttt{suc}ⁿ \ ℓ ≡ ω ↑ ℓ₁ + .. + ω ↑ ℓₙ + \texttt{suc}ⁿ \ ℓ$\\
-Subsumption$₃$: $ℓ ⊔ ↑ ℓ ≡ ℓ$ 
+Subsumption$₃$: $ℓ ⊔ ↑ⁿ ℓ ≡ ℓ$ 
 
 \begin{itemize}
   \item All laws should be provable when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled
@@ -107,7 +108,7 @@ Subsumption$₃$: $ℓ ⊔ ↑ ℓ ≡ ℓ$
   \item .. it might be confluent though (it probably even \emph{needs} to be?)
 \end{itemize}
 
-We should probably also include a library of manually checked equations enabling inequality-reasoning that make use of \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} (those laws should not be automatically applied by the compiler, but they could be?)
+We should probably also include a library of manually checked equations enabling inequality-reasoning that make use of \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}}
 
 \noindent Transitivity: $ℓ₁ <_ℓ ℓ₂ → ℓ₂ <_ℓ ℓ₃ → ℓ₁ <_ℓ ℓ₃$ \\ 
 Subsumption: $ℓ₁ <_ℓ ℓ₂ → ℓ₁ <_ℓ ℓ₂ ⊔ ℓ₃$
@@ -191,7 +192,7 @@ Subsumption: $ℓ₁ <_ℓ ℓ₂ → ℓ₁ <_ℓ ℓ₂ ⊔ ℓ₃$
 
 \bigskip
 \infer[\text{T-Suc}]{
-  Γ ⊢ suc ℓ : \texttt{Level}
+  Γ ⊢ \texttt {suc } ℓ : \texttt{Level}
 }{
   Γ ⊢ ℓ : \texttt{Level} 
 }
@@ -243,97 +244,90 @@ Subsumption: $ℓ₁ <_ℓ ℓ₂ → ℓ₁ <_ℓ ℓ₂ ⊔ ℓ₃$
   Γ ⊢ t′ : ℓ₂ <_ℓ ℓ₄
 }
 \noindent $\texttt{case}_{<_ℓ}\texttt{\_of\_}}$ missing
-% \infer[\text{T-OrdZero}]{
-%   Γ ⊢ 0 : Ord
-% }{}
-% \bigskip
-% \infer[\text{T-OrdCnf}]{
-%   Γ ⊢ ω ↑ o₁ + o₂ : Ord
-% }{
-%   Γ ⊢ o₁ : Ord &
-%   Γ ⊢ o₂ : Ord &
-%   exp(o₂) < o₁
-% }
-% \bigskip
-% \infer[\text{T-OrdEps}]{
-%   Γ ⊢ ε₀ + i : Ord
-% }{}
-% \bigskip
-% \infer[\text{T-OrdSuc}]{
-%   Γ ⊢ suc \ o : Lvl[λ]
-% }{
-%   Γ ⊢ o : Lvl[λ]
-% }
-% \bigskip
-% \infer[\text{T-OrdLub}]{
-%   Γ ⊢ o₁ ⊔ o₂ : Lvl[λ₁ ⊔ λ₂]
-% }{
-%   Γ ⊢ o₁ : Lvl[λ₁] &
-%   Γ ⊢ o₂ : Lvl[λ₂] 
-% }
-% \bigskip
-% % \infer[\text{T-SetOrd}]{
-% %   Γ ⊢ Ord : Set[0]
-% % }{}
-% % \bigskip
-% \infer[\text{T-LimOrd}]{
-%   Γ ⊢ o : Lvl[λ]
-% }{
-%   \text{lim}(λ) ∧ o < λ
-% }
-% \bigskip
-% \infer[\text{T-SetLim}]{
-%   Γ ⊢ Lvl[λ] : Set[λ]
-% }{
-%   \text{lim}(λ)
-% }
-% \bigskip
-% \infer[\text{T-SetSet}]{
-%   Γ ⊢ Set[o] : Set[suc \ o]
-% }{}
-% \bigskip
-% \bigskip
-% \bigskip
-% \bigskip
-% \infer[\text{T-Var}]{
-%   Γ ⊢ x : t
-% }{
-%   (x : t) ∈ Γ
-% }
-% \bigskip
-% \infer[\text{T-Abs}]{
-%   Γ ⊢ λ(x : t₁) → e : t₂
-% }{
-%   Γ ⊢ t₁ : Set[o₁] &
-%   Γ, x : t₁ ⊢ e : ∀(x : t₁) → t₂
-% }
-% \bigskip
-% \infer[\text{T-App}]{
-%   Γ ⊢ e₁ e₂ : t₂[x/e₂]
-% }{
-%   Γ ⊢ e₁ : ∀(x : t₁) → t₂
-%   Γ ⊢ e₂ : t₁ &
-% }
-% \bigskip
-% \infer[\text{T-All}]{
-%   Γ ⊢ ∀(x: t₁) → t₁ : Set[o₁ ⊔ suc \ o₂]
-% }{
-%   Γ ⊢ t₁ : Set[o₁] &
-%   Γ, x: t₁ ⊢ t₂ : Set[o₂]
-% }
-% \bigskip
-% \infer[\text{T-Conv}]{
-%   Γ ⊢ e : t₂
-% }{
-%   Γ ⊢ e : t₁ &
-%   t₁ ≡ t₂
-% }
+
+\bigskip
+\infer[\text{T-BoundLevel}]{
+  Γ ⊢ \texttt{Level}_ℓ : \texttt{Set } ℓ
+}{
+  Γ ⊢ ℓ : \texttt{Level}
+}
+\bigskip
+\infer[\text{T-LevelPair}]{
+  Γ ⊢ ℓ ,_ℓ t : \texttt{Level}_{ℓ′}
+}{
+  Γ ⊢ ℓ : \texttt{Level} &
+  Γ ⊢ ℓ′ : \texttt{Level} &
+  Γ ⊢ t : ℓ <_ℓ ℓ′
+}
+\bigskip
+\infer[\text{T-LevelBoundProj}]{
+  Γ ⊢ \texttt{proj}_ℓ \ t : \texttt{Level}
+}{
+  Γ ⊢ t : \texttt{Level}_ℓ &
+}
+\bigskip
+\infer[\text{T-LevelBoundProofProj}]{
+  Γ ⊢ \texttt{proj}_{<_ℓ} \ t : (\texttt{proj}_ℓ \ t) <_ℓ ℓ
+}{
+  Γ ⊢ t : \texttt{Level}_ℓ &
+}
+\bigskip
+\infer[\text{T-Set}]{
+  Γ ⊢ \texttt{Set}_ℓ : \texttt{Set}_{\texttt{suc } ℓ}
+}{
+  Γ ⊢ ℓ : \texttt{Level} &
+}
+\bigskip
+\infer[\text{T-SetEps}]{
+  Γ ⊢ \texttt{Set}_{ε_0 + i} : \texttt{Set}_{ε_0 + i + 1} \texttt{ for all } i ∈ ℕ
+}{
+}
 
 \subsection{Semantics}
-$\texttt{suc } 0 ↪ ω ↑ 0 + 0$ \\
-$\texttt{suc } ω ↑ ℓ₁ + ℓ₂ ↪ ω ↑ ℓ₁ + \text{suc } ℓ₂ $ \\
-$↑ 0 ↪ 0$ \\
-$↑ (ω ↑ ℓ₁ + ℓ₂) ↪ ℓ₁$ \\
+\bigskip
+\infer[\text{$β$-suc-$0$}]{
+  \texttt{suc } 0 ↪ ω ↑ 0 + 0
+}{
+}
+\bigskip
+\infer[\text{$β$-suc-$ω$}]{
+  \texttt{suc } ω ↑ ℓ₁ + ℓ₂ ↪ ω ↑ ℓ₁ + \texttt{suc } ℓ₂
+}{
+}
+\bigskip
+\infer[\text{$β$-$↑$-$0$}]{
+  ↑ 0 ↪ 0
+}{
+}
+\bigskip
+\infer[\text{$β$-$↑$-$ω$}]{
+  ↑ (ω ↑ ℓ₁ + ℓ₂) ↪ ℓ₁
+}{
+}
+\bigskip
+
+\subsection{Metatheory}
+
+\begin{theorem}[Intrinsic Level Properties]
+The laws from Section 0.2 are correct, i.e. can be proven by induction when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled.
+Furthermore the resulting rewrite system is confluent, i.e. satisfies the diamond property. 
+\end{theorem}
+
+\begin{theorem}[Soundness]
+The system is sound, i.e. progress and subject reduction hold. 
+Progress hold if we have $∅ ⊢ t : A$ then either $t$ is in weak head normal form or $∃ t'. t ↪ t'$. 
+Subject reduction holds if reduction preserves typing, i.e. if $Γ ⊢ t : A$ and $t ↪ t'$ then $Γ ⊢ t' : A$.
+\end{theorem}
+
+\begin{theorem}[Logical Consistency]
+The system is logical consistent if $∅ ⊢ t : ⊥$ is not derivable. 
+This proof requires an logical relation.
+This should hold even when \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} is enabled.
+\end{theorem}
+
+\begin{theorem}[Decidability of Type Checking]
+With \texttt{\{-\# OPTIONS --undecidable-type-checking \#-\}} disabled (and no usage of \texttt{\{-\# TERMINATING \#-\}} or similar) the type checking procedure terminates. When enabled, type checking may run forever. 
+\end{theorem}
 
 \printbibliography{}
 
