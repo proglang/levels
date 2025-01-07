@@ -69,11 +69,11 @@
 
 We write $\texttt{Set}$ for $\texttt{Set}_0$.
 
-We also write $ℓ₁ ≤_ℓ ℓ₂$ as shorthand for $ℓ₁ <_ℓ ℓ₂ ⊎ ℓ₁ ≡ ℓ₂$.
+We also write $ℓ₁ ≤_ℓ ℓ₂$ as shorthand for $ℓ₁ <_ℓ ℓ₂ ⊎ ℓ₁ ≡ ℓ₂$ and $ℓ₁ > ℓ₂$ for $ℓ₂ < ℓ₁$ as well as $ℓ₁ ≥ ℓ₂$ for $ℓ₂ ≤ ℓ₁$.
 
 % We define $↑ ℓ$ for retrieving the exponent of an ordinal in CNF $\texttt{case}_ℓ \ t \texttt{ of } 0→ 0; ω ↑ ℓ₁ + ℓ₂→ ℓ₁$
 
-We might omit the proof $t$ that $↑ ℓ₂ ≤ ℓ₁$ in the constructor $ω ↑ ℓ₁ +_t ℓ₂$ if it follows from context.
+We might omit the proof $t$ that $ℓ₁ ≥ ↑ ℓ₂$ in the constructor $ω ↑ ℓ₁ +_t ℓ₂$ if it follows from context.
 
 By an abuse of notation we may write $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } ℓ$ and $\texttt{f} \ ℓ \ \{ℓ<ℓ′\}$ instead of $\texttt{f} : ∀(ℓ : \texttt{Level}_{ℓ′}) → \texttt{Set } (\texttt{proj}_ℓ \ ℓ)$ and $\texttt{f } (ℓ ,_ℓ ℓ<ℓ′)$ which is closer to what we believe should be implemented.
 
