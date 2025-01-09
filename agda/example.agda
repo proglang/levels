@@ -13,7 +13,7 @@ variable
 Δℓ []      = zero
 Δℓ (ℓ ∷ Δ) = suc ℓ ⊔ Δℓ Δ
 
-⟦_⟧ : (Δ : Env) → Set (Δℓ Δ)
+⟦_⟧Δ : (Δ : Env) → Set (Δℓ Δ)
 ⟦ Δ ⟧Δ = ∀ (ℓ : Level[ Δℓ Δ ]) → ℓ ∈ Δ → Set ℓ
 -- Behaves like ∀ (ℓ : Level) {ℓ < Δℓ Δ} → ℓ ∈ Δ → Set ℓ
 

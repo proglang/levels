@@ -13,7 +13,7 @@ data _∈_ : Nat → List → Set where
   there : ∀ {x} {y} {xs} → x ∈ xs → x ∈ (y ∷ xs)
 
 data _<_ : Nat → Nat → Set where
-  <₁ : ∀ {x} → zero < x
+  <₁ : ∀ {x} → zero < suc x
   <₂ : ∀ {x} {y} → x < y → suc x < suc y
 
 _⊔_ : Nat → Nat → Nat
@@ -36,7 +36,7 @@ lvl [] = zero
 lvl (x ∷ xs) = suc x ⊔ lvl xs
 
 trans : ∀ {x} {y} {z} → x < y → y < z → x < z
-trans <₁ y<z = <₁
+trans <₁ y<z = {!   !}
 trans (<₂ x<y) (<₂ y<z) = <₂ (trans x<y y<z)
 
 lemma₁ : ∀ {x} → x < suc x 
@@ -44,7 +44,7 @@ lemma₁ {zero}  = <₁
 lemma₁ {suc x} = <₂ lemma₁
 
 subsumption : ∀ {x} {y} {z} → x < y → x < (y ⊔ z)
-subsumption {x} {y} {z} <₁       = <₁
+subsumption {x} {y} {z} <₁       = {!   !}
 subsumption {x} {suc y} {zero} x<y = x<y
 subsumption {x} {suc y} {suc z} (<₂ x<y) = <₂ (subsumption {z = z} x<y)
 
