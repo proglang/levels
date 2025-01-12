@@ -12,9 +12,9 @@ terms and an ordering on them.
 
 {-# OPTIONS --cubical --safe #-}
 
-module MutualOrd where
+module Code.Lib.Ordinals.MutualOrd where
 
-open import Preliminaries
+open import Code.Lib.Ordinals.Preliminaries
 
 \end{code}
 

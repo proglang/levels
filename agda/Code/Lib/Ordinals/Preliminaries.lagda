@@ -13,8 +13,8 @@ the cubical library construct and name some data types differently from
 those in the standard library.
 
 \begin{code}
-
 {-# OPTIONS --cubical --safe #-}
+module Code.Lib.Ordinals.Preliminaries where
 
 open import Agda.Primitive public
  using ( Level   -- universe levels
@@ -24,8 +24,6 @@ open import Agda.Primitive public
 
 open import Cubical.Foundations.Everything public
  using ( _∘_     -- function composition
-       ; Type₀
-       ; Type₁
        ; Type    -- universes, renamed from Set to Type
        ; ~_      -- interval reversal
        ; _∧_     -- interval minimum
@@ -55,8 +53,9 @@ open import Agda.Builtin.Cubical.Glue public
 
 open import Cubical.Data.Empty public
  using ( ⊥
-       ; ⊥-elim
        )
+ renaming ( rec to ⊥-elim 
+          )
 
 open import Cubical.Relation.Nullary public
  using ( ¬_
@@ -66,7 +65,7 @@ open import Cubical.Relation.Nullary public
        ; Discrete -- having decidable equality
        )
 
-open import Cubical.Relation.Nullary.DecidableEq public
+open import Cubical.Relation.Nullary.Properties public
  using ( Discrete→isSet
        )
 
@@ -203,3 +202,4 @@ PropEqfromPath : {A : Set ℓ} {x y : A} → x ≡ y → x P.≡ y
 PropEqfromPath {x = x} p = subst (x P.≡_) p P.refl
 
 \end{code}
+  

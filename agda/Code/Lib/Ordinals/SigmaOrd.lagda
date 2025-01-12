@@ -11,9 +11,9 @@ system of ordinals below ε₀ as a Σ-type.
 
 {-# OPTIONS --cubical --safe #-}
 
-module SigmaOrd where
+module Code.Lib.Ordinals.SigmaOrd where
 
-open import Preliminaries
+open import Code.Lib.Ordinals.Preliminaries
 
 \end{code}
 

@@ -14,12 +14,12 @@ and HITOrd.
 
 {-# OPTIONS --cubical --safe #-}
 
-module Equivalences where
+module Code.Lib.Ordinals.Equivalences where
 
-open import Preliminaries
-open import SigmaOrd   as S
-open import MutualOrd  as M
-open import HITOrd     as H
+open import Code.Lib.Ordinals.Preliminaries
+open import Code.Lib.Ordinals.SigmaOrd   as S
+open import Code.Lib.Ordinals.MutualOrd  as M
+open import Code.Lib.Ordinals.HITOrd     as H
 
 \end{code}
 

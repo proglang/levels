@@ -18,9 +18,9 @@ sound.
 
 {-# OPTIONS --cubical --safe #-}
 
-module MutualOrdWithoutNestednessAndRecursion where
+module Code.Lib.Ordinals.MutualOrdWithoutNestednessAndRecursion where
 
-open import Preliminaries
+open import Code.Lib.Ordinals.Preliminaries
 
 import Agda.Builtin.Equality as P
 
@@ -152,7 +152,7 @@ have to prove that the functions between the types preserve the
 relation < at the same time.
 
 \begin{code}
-import MutualOrd as M
+import Code.Lib.Ordinals.MutualOrd as M
 
 to : M.MutualOrd → MutualOrd
 to-> : {a b : M.MutualOrd} -> a M.> b -> (to a) > (to b)

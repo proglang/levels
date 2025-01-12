@@ -13,12 +13,12 @@ transport the constructions and proofs between them.
 
 {-# OPTIONS --cubical --safe #-}
 
-module Arithmetic where
+module Code.Lib.Ordinals.Arithmetic where
 
-open import Preliminaries
-open import HITOrd as H
-open import MutualOrd as M
-open import Equivalences
+open import Code.Lib.Ordinals.Preliminaries
+open import Code.Lib.Ordinals.HITOrd as H
+open import Code.Lib.Ordinals.MutualOrd as M
+open import Code.Lib.Ordinals.Equivalences
 
 infixr 35 _+_ _+ᴴ_ _⊕_ _⊕ᴹ_
 infixr 36 _·_ _·ᴴ_ _⊗_ _⊗ᴹ_

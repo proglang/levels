@@ -21,41 +21,46 @@ All the files are tested with
 • Cubical Agda library
   (commit: d7e345d3bcaefbc066d057487fca9677de7e29c7)
 
+Marius Weidner: Compatibility with
+• Agda development version 2.7.0.1
+• Cubical Agda library version 0.7
+• The project structure 
+
 \begin{code}
 
 {-# OPTIONS --cubical --safe #-}
 
-module index where
+module Code.Lib.Ordinals.index where
 
 -----------------------
 -- Table of contents --
 -----------------------
 
 -- §2 Cubical Agda
-import Preliminaries
+import Code.Lib.Ordinals.Preliminaries
 
 -- §3 Notation systems for ordinals below ε₀
 
 -- §3.1 The subset approach
-import SigmaOrd
+import Code.Lib.Ordinals.SigmaOrd
 
 -- §3.2 The mutual approach
-import MutualOrd
+import Code.Lib.Ordinals.MutualOrd
 
 -- MutualOrd can also be defined without nested and
 -- inductive-recursive definitions
-import MutualOrdWithoutNestednessAndRecursion
+import Code.Lib.Ordinals.MutualOrdWithoutNestednessAndRecursion
 
 -- §3.3 The higher inductive approach
-import HITOrd
+import Code.Lib.Ordinals.HITOrd
 
 -- §3.4 Equivalences between the three approaches
-import Equivalences
+import Code.Lib.Ordinals.Equivalences
 
 -- §4 Ordinal arithmetic
-import Arithmetic
+import Code.Lib.Ordinals.Arithmetic
 
 -- §5 Transfinite induction
-import TransfiniteInduction
+import Code.Lib.Ordinals.TransfiniteInduction
 
 \end{code}

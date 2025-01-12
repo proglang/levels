@@ -1,5 +1,5 @@
-open import Level (zero; suc; Level; Level[_]; _⊔_; _<_)
-open import Data.List ([]; _∷_; List) 
+open import Level using (zero; suc; Level; Level[_]; _⊔_; _<_)
+open import Data.List using ([]; _∷_; List) 
 open import Data.List.Membership.Propositional using (∈)
 
 Env : Set

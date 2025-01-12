@@ -13,13 +13,13 @@ descending sequences of ordinals below ε₀ are finite.
 
 {-# OPTIONS --cubical --safe #-}
 
-module TransfiniteInduction where
+module Code.Lib.Ordinals.TransfiniteInduction where
 
-open import Preliminaries
-open import MutualOrd as M
-open import HITOrd as H
-open import Equivalences
-open import Arithmetic
+open import Code.Lib.Ordinals.Preliminaries
+open import Code.Lib.Ordinals.MutualOrd as M
+open import Code.Lib.Ordinals.HITOrd as H
+open import Code.Lib.Ordinals.Equivalences
+open import Code.Lib.Ordinals.Arithmetic
 
 \end{code}
 
