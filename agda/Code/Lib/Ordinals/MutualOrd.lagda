@@ -249,8 +249,10 @@ rest< a (ω^ b + c [ s ]) (inj₂ e) = <₃ (e ⁻¹) (rest< b c s)
 ω^⟨_⟩ : MutualOrd → MutualOrd
 ω^⟨ a ⟩ = ω^ a + 𝟎 [ ≥𝟎 ]
 
-𝟏 ω : MutualOrd
+𝟏 ω ω+1 : MutualOrd
 𝟏 = ω^⟨ 𝟎 ⟩
 ω = ω^⟨ 𝟏 ⟩
+
+ω+1 = ω^ 𝟏 + 𝟏 [ inj₁ <₁ ]
 
 \end{code}

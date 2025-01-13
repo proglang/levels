@@ -1,13 +1,17 @@
-module Code.Examples.StratifiedSystemF where
-
+{-# OPTIONS --cubical #-}
+module Code.Examples.StratifiedSystemF-SetOmega where
+  
 module Types where
-  open import Level using (Level; zero; suc; _⊔_)
+  open import Code.Level using (Level; zero; suc; _⊔_; cast; module ExtendedHierarchy)
+  open ExtendedHierarchy using (𝟎; 𝟏; ω; ω+1; ⌊_⌋; β-suc-zero; β-suc-ω; ω↑_+_)
+
+  
   open import Data.Nat using (ℕ)
   open import Data.List using (List; []; _∷_)
   open import Data.List.Membership.Propositional using (_∈_)
   open import Data.List.Relation.Unary.Any using (here; there)
   open import Data.List.Relation.Unary.All using (All; [] ; _∷_)
-  open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+  open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong)
   open import Function using (_∘_; id; flip; _$_)
 
   private variable
@@ -25,6 +29,8 @@ module Types where
       `_  : ℓ ∈ Δ → Type Δ ℓ
       _⇒_ : Type Δ ℓ₁ → Type Δ ℓ₂ → Type Δ (ℓ₁ ⊔ ℓ₂)
       ∀α  : Type (ℓ ∷ Δ) ℓ′ → Type Δ (suc ℓ ⊔ ℓ′)
+      Tyω : Type Δ ⌊ ω+1 ⌋ 
+      
     pattern ∀α:_⇒_ ℓ {ℓ′ = ℓ′} T = ∀α {ℓ = ℓ} {ℓ′ = ℓ′} T
 
   module Substitution where
@@ -92,6 +98,7 @@ module Types where
     renᵣ ρ (T₁ ⇒ T₂) = renᵣ ρ T₁ ⇒ renᵣ ρ T₂
     renᵣ ρ (∀α T)    = ∀α (renᵣ (liftᵣ ρ) T)
     renᵣ ρ Nat       = Nat
+    renᵣ ρ Tyω       = Tyω
 
     ⟦_⟧ᵣ_ : Type Δ₁ ℓ → Ren Δ₁ Δ₂ → Type Δ₂ ℓ
     ⟦_⟧ᵣ_ = flip renᵣ
@@ -161,6 +168,7 @@ module Types where
     subₛ σ (T₁ ⇒ T₂) = subₛ σ T₁ ⇒ subₛ σ T₂
     subₛ σ (∀α T)    = ∀α (subₛ (liftₛ σ) T)
     subₛ σ Nat       = Nat
+    subₛ ρ Tyω       = Tyω
 
     ⟦_⟧ₛ_ : Type Δ₁ ℓ → Sub Δ₁ Δ₂ → Type Δ₂ ℓ
     ⟦_⟧ₛ_ = flip subₛ
@@ -190,10 +198,11 @@ module Types where
     sub (σ₁ ≫ₛₛ σ₂) = ⟦_⟧ₛ σ₂ ∘ sub σ₁
 
   module Denotational where
+    
     open Syntax
-      
-    open import Level using (Setω)
-    record Environment : Setω where
+    
+    open ExtendedHierarchy using (Setε₀)
+    record Environment : Setε₀ where
       field 
         ⟦_⟧η   : (Δ : Env) → Set (⨆ Δ)
         []η    : ⟦ [] ⟧η
@@ -207,7 +216,10 @@ module Types where
       ⟦ Nat     ⟧ η = ℕ
       ⟦ ` α     ⟧ η = lookup η α
       ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η   
-      ⟦ ∀α T    ⟧ η = ∀ A → ⟦ T ⟧ (A ∷η η)  
+      ⟦ ∀α T    ⟧ η = ∀ A → ⟦ T ⟧ (A ∷η η)
+      ⟦ Tyω     ⟧ η = cast β-suc-* (Set ⌊ ω ⌋)
+          -- compiler law
+          where β-suc-* = trans (β-suc-ω {ℓ₁ = ⌊ 𝟏 ⌋} {ℓ₂ = ⌊ 𝟎 ⌋}) (cong (ω↑ (⌊ 𝟏 ⌋) +_) β-suc-zero)
       
     module EnvironmentProperties (environment : Environment) where
       open Substitution
@@ -224,25 +236,26 @@ module Types where
       -- TODO: continue to check that all our desired properties are actually independent of the environment representation 
 
     module FunctionEnvironment where
-      open import Code.BoundedLevelQuantification
-      open Level[_]
+      open import Code.Level using (module BoundedQuantification)
+      open BoundedQuantification
+      open BoundLevel
   
       ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : Env} → ℓ ∈ Δ → ℓ < (⨆ Δ)
       ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = ⨆ Δ} <₁
       ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = ⨆ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<⨆Δ x)
   
       ⟦_⟧η : (Δ : Env) → Set (⨆ Δ)
-      ⟦ Δ ⟧η = ∀ (l : Level[ ⨆ Δ ]) → level l ∈ Δ → Lift l (Set (level l)) 
+      ⟦ Δ ⟧η = ∀ (l : BoundLevel (⨆ Δ)) → level l ∈ Δ → BoundLift l (Set (level l)) 
   
       []η : ⟦ [] ⟧η
       []η _ ()
   
       _∷η_ : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
-      (A ∷η η) l (here refl) = lift l A
-      (A ∷η η) l (there x)   = lift l (unlift  (_ , (ℓ∈Δ⇒ℓ<⨆Δ x)) (η _ x)) 
+      (A ∷η η) l (here refl) = bound-lift l A
+      (A ∷η η) l (there x)   = bound-lift l (bound-unlift  (_ , (ℓ∈Δ⇒ℓ<⨆Δ x)) (η _ x)) 
   
       lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
-      lookup η α = unlift (_ , (ℓ∈Δ⇒ℓ<⨆Δ α)) (η _ α)
+      lookup η α = bound-unlift (_ , (ℓ∈Δ⇒ℓ<⨆Δ α)) (η _ α)
 
       FunctionEnvironment : Environment
       FunctionEnvironment = record 
@@ -278,4 +291,4 @@ module Types where
         ; _∷η_   = _∷η_ 
         ; lookup = lookup 
         }
-       
+        
