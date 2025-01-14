@@ -18,9 +18,9 @@ sound.
 
 {-# OPTIONS --cubical --safe #-}
 
-module Code.Lib.Ordinals.MutualOrdWithoutNestednessAndRecursion where
+module MutualOrdWithoutNestednessAndRecursion where
 
-open import Code.Lib.Ordinals.Preliminaries
+open import Preliminaries
 
 import Agda.Builtin.Equality as P
 

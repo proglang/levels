@@ -1,8 +1,7 @@
-{-# OPTIONS --cubical #-}
-module Code.Examples.StratifiedSystemF-SetOmega where
+module Examples.StratifiedSystemF-SetOmega where
   
 module Types where
-  open import Code.Level using (Level; zero; suc; _⊔_; cast; module ExtendedHierarchy)
+  open import Level2 using (Level; zero; suc; _⊔_; cast; module ExtendedHierarchy)
   open ExtendedHierarchy using (𝟎; 𝟏; ω; ω+1; ⌊_⌋; β-suc-zero; β-suc-ω; ω↑_+_)
 
   
@@ -236,7 +235,7 @@ module Types where
       -- TODO: continue to check that all our desired properties are actually independent of the environment representation 
 
     module FunctionEnvironment where
-      open import Code.Level using (module BoundedQuantification)
+      open import Level2 using (module BoundedQuantification)
       open BoundedQuantification
       open BoundLevel
   

@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-module Code.Level where
+module Level2 where
   
 open import Agda.Builtin.Equality using (_≡_; refl)
 open import Level public
@@ -38,18 +37,10 @@ module ExtendedHierarchy where
     subsumption₂₂ : ℓ ⊔ ω↑ ℓ₁ + ω↑ ℓ₂ + suc (suc ℓ) ≡ ω↑ ℓ₁ + ω↑ ℓ₂ + suc (suc ℓ)
 
     -- ...
-  
-  postulate
-    -- by definition
-    ↑_       : (ℓ : Level) → Level
-    β-↑-zero : ↑ zero ≡ zero
-    -- note: β-↑-suc must not defined: apply β-suc-0 and β-suc-ω manually then use β-↑-ω
-    --       β-↑-suc : ↑ (suc ℓ) ≡ ↑ ℓ
-    β-↑-ω    : ↑ (ω↑ ℓ₁ + ℓ₂) ≡ ℓ₁  
 
 
   -- compatibility 
-  open import Code.Lib.Ordinals.MutualOrd public
+  open import Ordinal public
   ⌊_⌋ : MutualOrd → Level
   ⌊ 𝟎 ⌋                = zero
   ⌊ ω^ l₁ + l₂ [ _ ] ⌋ = ω↑ ⌊ l₁ ⌋ + ⌊ l₂ ⌋
