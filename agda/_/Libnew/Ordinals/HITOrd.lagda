@@ -13,9 +13,9 @@ inductive type (HIT) of so-called hereditary multisets.
 
 {-# OPTIONS --cubical --safe #-}
 
-module Code.Lib.Ordinals.HITOrd where
+module Lib.Ordinals.HITOrd where
 
-open import Code.Lib.Ordinals.Preliminaries
+open import Lib.Ordinals.Preliminaries
 
 \end{code}
 

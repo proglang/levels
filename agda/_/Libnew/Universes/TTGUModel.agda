@@ -3,11 +3,11 @@
   Sketch of the IR model of TTGU, over an arbitrary level structure.
 -}
 
-open import IRUniverse
-open import Lib
+open import Lib.Universes.IRUniverse
+open import Lib.Universes.Lib
 open import Data.Nat using (ℕ; zero; suc)
 
-module TTGUModel (L : LvlStruct) where
+module Lib.Universes.TTGUModel (L : LvlStruct) where
 
   module IR = IR-Universe L
   open IR hiding (Lift; Lift∘)

@@ -1,5 +1,4 @@
-{-# OPTIONS --cubical #-}
-module Code.Examples.StratifiedSystemF-Default where
+module Examples.StratifiedSystemF-Default where
 
 module Types where
   open import Level using (Level; zero; suc; _⊔_)
@@ -17,9 +16,9 @@ module Types where
   module Syntax where
     Env = List Level
      
-    ⨆_ : Env → Level
-    ⨆ []       = zero
-    ⨆ (ℓ ∷ ℓs) = suc ℓ ⊔ ⨆ ℓs
+    suc⨆_ : Env → Level
+    suc⨆ []       = zero
+    suc⨆ (ℓ ∷ ℓs) = suc ℓ ⊔ suc⨆ ℓs
     
     data Type (Δ : Env) : Level → Set where
       Nat : Type Δ zero
@@ -57,7 +56,7 @@ module Types where
         ren : REN Δ₁ Δ₂
 
       TR-level : Level
-      TR-level = (⨆ Δ₁) ⊔ (⨆ Δ₂)
+      TR-level = (suc⨆ Δ₁) ⊔ (suc⨆ Δ₂)
 
       wkᵣ : REN Δ₁ (ℓ ∷ Δ₂)
       wkᵣ = there ∘ ren
@@ -123,7 +122,7 @@ module Types where
         sub : SUB Δ₁ Δ₂
 
       TS-level : Level
-      TS-level = (⨆ Δ₁) ⊔ (⨆ Δ₂)
+      TS-level = (suc⨆ Δ₁) ⊔ (suc⨆ Δ₂)
 
       wkₛ : SUB Δ₁ (ℓ ∷ Δ₂)
       wkₛ = wk ∘ sub
@@ -196,7 +195,7 @@ module Types where
     open import Level using (Setω)
     record Environment : Setω where
       field 
-        ⟦_⟧η   : (Δ : Env) → Set (⨆ Δ)
+        ⟦_⟧η   : (Δ : Env) → Set (suc⨆ Δ)
         []η    : ⟦ [] ⟧η
         _∷η_   : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
         lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
@@ -209,42 +208,26 @@ module Types where
       ⟦ ` α     ⟧ η = lookup η α
       ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η   
       ⟦ ∀α T    ⟧ η = ∀ A → ⟦ T ⟧ (A ∷η η)  
-      
-    module EnvironmentProperties (environment : Environment) where
-      open Substitution
-      open Environment environment
-      open Semantics environment
-
-      private variable
-        Δ Δ′ Δ₁ Δ₂ Δ₃ : Env
-
-      ⟦_⟧ηᵣ_ : ⟦ Δ₂ ⟧η → Ren Δ₁ Δ₂ → ⟦ Δ₁ ⟧η
-      ⟦_⟧ηᵣ_ {Δ₁ = []}     η ρ = []η
-      ⟦_⟧ηᵣ_ {Δ₁ = ℓ ∷ Δ₁} η ρ = (⟦ ` (ren ρ) (here refl) ⟧ η) ∷η (⟦ η ⟧ηᵣ dropᵣ ρ)
-
-      -- TODO: continue to check that all our desired properties are actually independent of the environment representation 
 
     module FunctionEnvironment where
-      open import Code.Level using (module BoundedQuantification)
-      open BoundedQuantification
-      open BoundLevel
+      open import BoundQuantification
   
-      ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : Env} → ℓ ∈ Δ → ℓ < (⨆ Δ)
-      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = ⨆ Δ} <₁
-      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = ⨆ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<⨆Δ x)
+      ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : Env} → ℓ ∈ Δ → ℓ < (suc⨆ Δ)
+      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = suc⨆ Δ} <₁
+      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = suc⨆ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<⨆Δ x)
   
-      ⟦_⟧η : (Δ : Env) → Set (⨆ Δ)
-      ⟦ Δ ⟧η = ∀ (l : BoundLevel (⨆ Δ)) → level l ∈ Δ → BoundLift l (Set (level l)) 
+      ⟦_⟧η : (Δ : Env) → Set (suc⨆ Δ)
+      ⟦ Δ ⟧η = ∀ (l : BoundLevel (suc⨆ Δ)) → # l ∈ Δ → BoundLift (#<Λ l) (Set (# l))
   
       []η : ⟦ [] ⟧η
       []η _ ()
   
       _∷η_ : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
-      (A ∷η η) l (here refl) = bound-lift l A
-      (A ∷η η) l (there x)   = bound-lift l (bound-unlift  (_ , (ℓ∈Δ⇒ℓ<⨆Δ x)) (η _ x)) 
+      (A ∷η η) l (here refl) = bound-lift (#<Λ l) A
+      (A ∷η η) l (there x)   = bound-lift (#<Λ l) (bound-unlift (ℓ∈Δ⇒ℓ<⨆Δ x) (η _ x)) 
   
       lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
-      lookup η α = bound-unlift (_ , (ℓ∈Δ⇒ℓ<⨆Δ α)) (η _ α)
+      lookup η α = bound-unlift (ℓ∈Δ⇒ℓ<⨆Δ α) (η _ α)
 
       FunctionEnvironment : Environment
       FunctionEnvironment = record 
@@ -254,12 +237,11 @@ module Types where
         ; lookup = lookup 
         }
         
-  
     module DatatypeEnvironment where
       open import Data.Unit using (⊤; tt)
       open import Data.Product using (_×_; _,_)
   
-      ⟦_⟧η : (Δ : Env) → Set (⨆ Δ)
+      ⟦_⟧η : (Δ : Env) → Set (suc⨆ Δ)
       ⟦  []   ⟧η = ⊤
       ⟦ ℓ ∷ Δ ⟧η = Set ℓ × ⟦ Δ ⟧η
   

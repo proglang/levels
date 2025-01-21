@@ -30,37 +30,37 @@ Marius Weidner: Compatibility with
 
 {-# OPTIONS --cubical --safe #-}
 
-module Code.Lib.Ordinals.index where
+module Lib.Ordinals.index where
 
 -----------------------
 -- Table of contents --
 -----------------------
 
 -- §2 Cubical Agda
-import Code.Lib.Ordinals.Preliminaries
+import Lib.Ordinals.Preliminaries
 
 -- §3 Notation systems for ordinals below ε₀
 
 -- §3.1 The subset approach
-import Code.Lib.Ordinals.SigmaOrd
+import Lib.Ordinals.SigmaOrd
 
 -- §3.2 The mutual approach
-import Code.Lib.Ordinals.MutualOrd
+import Lib.Ordinals.MutualOrd
 
 -- MutualOrd can also be defined without nested and
 -- inductive-recursive definitions
-import Code.Lib.Ordinals.MutualOrdWithoutNestednessAndRecursion
+import Lib.Ordinals.MutualOrdWithoutNestednessAndRecursion
 
 -- §3.3 The higher inductive approach
-import Code.Lib.Ordinals.HITOrd
+import Lib.Ordinals.HITOrd
 
 -- §3.4 Equivalences between the three approaches
-import Code.Lib.Ordinals.Equivalences
+import Lib.Ordinals.Equivalences
 
 -- §4 Ordinal arithmetic
-import Code.Lib.Ordinals.Arithmetic
+import Lib.Ordinals.Arithmetic
 
 -- §5 Transfinite induction
-import Code.Lib.Ordinals.TransfiniteInduction
+import Lib.Ordinals.TransfiniteInduction
 
 \end{code}

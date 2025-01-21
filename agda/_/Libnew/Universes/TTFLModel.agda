@@ -1,13 +1,13 @@
 
-module TTFLModel where
+module Lib.Universes.TTFLModel where
 
 {-
 This file contains a sketch model of the TTFL model when we have ω levels, and
 levels are strictly identified with internal natural numbers.
 -}
 
-open import Lib
-open import IRUniverse
+open import Lib.Universes.Lib
+open import Lib.Universes.IRUniverse
 open import Data.Nat using (ℕ; zero; suc)
 
 -- First, we construct a concrete level structure with Lvl = ℕ

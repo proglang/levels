@@ -1,10 +1,7 @@
 module Examples.StratifiedSystemF-SetOmega where
   
 module Types where
-  open import Level2 using (Level; zero; suc; _⊔_; cast; module ExtendedHierarchy)
-  open ExtendedHierarchy using (𝟎; 𝟏; ω; ω+1; ⌊_⌋; β-suc-zero; β-suc-ω; ω↑_+_)
-
-  
+  open import Level using (Level; zero; suc; _⊔_)
   open import Data.Nat using (ℕ)
   open import Data.List using (List; []; _∷_)
   open import Data.List.Membership.Propositional using (_∈_)
@@ -13,15 +10,18 @@ module Types where
   open import Relation.Binary.PropositionalEquality using (_≡_; refl; trans; cong)
   open import Function using (_∘_; id; flip; _$_)
 
+  open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω+1; ⌊_⌋; cast; β-suc-zero; β-suc-ω; ω^_+_)
+
+
   private variable
     ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : Level
 
   module Syntax where
     Env = List Level
      
-    ⨆_ : Env → Level
-    ⨆ []       = zero
-    ⨆ (ℓ ∷ ℓs) = suc ℓ ⊔ ⨆ ℓs
+    suc⨆_ : Env → Level
+    suc⨆ []       = zero
+    suc⨆ (ℓ ∷ ℓs) = suc ℓ ⊔ suc⨆ ℓs
     
     data Type (Δ : Env) : Level → Set where
       Nat : Type Δ zero
@@ -61,7 +61,7 @@ module Types where
         ren : REN Δ₁ Δ₂
 
       TR-level : Level
-      TR-level = (⨆ Δ₁) ⊔ (⨆ Δ₂)
+      TR-level = (suc⨆ Δ₁) ⊔ (suc⨆ Δ₂)
 
       wkᵣ : REN Δ₁ (ℓ ∷ Δ₂)
       wkᵣ = there ∘ ren
@@ -128,7 +128,7 @@ module Types where
         sub : SUB Δ₁ Δ₂
 
       TS-level : Level
-      TS-level = (⨆ Δ₁) ⊔ (⨆ Δ₂)
+      TS-level = (suc⨆ Δ₁) ⊔ (suc⨆ Δ₂)
 
       wkₛ : SUB Δ₁ (ℓ ∷ Δ₂)
       wkₛ = wk ∘ sub
@@ -203,7 +203,7 @@ module Types where
     open ExtendedHierarchy using (Setε₀)
     record Environment : Setε₀ where
       field 
-        ⟦_⟧η   : (Δ : Env) → Set (⨆ Δ)
+        ⟦_⟧η   : (Δ : Env) → Set (suc⨆ Δ)
         []η    : ⟦ [] ⟧η
         _∷η_   : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
         lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
@@ -218,43 +218,27 @@ module Types where
       ⟦ ∀α T    ⟧ η = ∀ A → ⟦ T ⟧ (A ∷η η)
       ⟦ Tyω     ⟧ η = cast β-suc-* (Set ⌊ ω ⌋)
           -- compiler law
-          where β-suc-* = trans (β-suc-ω {ℓ₁ = ⌊ 𝟏 ⌋} {ℓ₂ = ⌊ 𝟎 ⌋}) (cong (ω↑ (⌊ 𝟏 ⌋) +_) β-suc-zero)
-      
-    module EnvironmentProperties (environment : Environment) where
-      open Substitution
-      open Environment environment
-      open Semantics environment
-
-      private variable
-        Δ Δ′ Δ₁ Δ₂ Δ₃ : Env
-
-      ⟦_⟧ηᵣ_ : ⟦ Δ₂ ⟧η → Ren Δ₁ Δ₂ → ⟦ Δ₁ ⟧η
-      ⟦_⟧ηᵣ_ {Δ₁ = []}     η ρ = []η
-      ⟦_⟧ηᵣ_ {Δ₁ = ℓ ∷ Δ₁} η ρ = (⟦ ` (ren ρ) (here refl) ⟧ η) ∷η (⟦ η ⟧ηᵣ dropᵣ ρ)
-
-      -- TODO: continue to check that all our desired properties are actually independent of the environment representation 
+          where β-suc-* = trans (β-suc-ω {ℓ₁ = ⌊ 𝟏 ⌋} {ℓ₂ = ⌊ 𝟎 ⌋}) (cong (ω^ (⌊ 𝟏 ⌋) +_) β-suc-zero)
 
     module FunctionEnvironment where
-      open import Level2 using (module BoundedQuantification)
-      open BoundedQuantification
-      open BoundLevel
+      open import BoundQuantification
   
-      ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : Env} → ℓ ∈ Δ → ℓ < (⨆ Δ)
-      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = ⨆ Δ} <₁
-      ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = ⨆ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<⨆Δ x)
+      ℓ∈Δ⇒ℓ<suc⨆Δ : ∀ {ℓ} {Δ : Env} → ℓ ∈ Δ → ℓ < (suc⨆ Δ)
+      ℓ∈Δ⇒ℓ<suc⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = suc⨆ Δ} <₁
+      ℓ∈Δ⇒ℓ<suc⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = suc⨆ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<suc⨆Δ x)
   
-      ⟦_⟧η : (Δ : Env) → Set (⨆ Δ)
-      ⟦ Δ ⟧η = ∀ (l : BoundLevel (⨆ Δ)) → level l ∈ Δ → BoundLift l (Set (level l)) 
+      ⟦_⟧η : (Δ : Env) → Set (suc⨆ Δ)
+      ⟦ Δ ⟧η = ∀ (l : BoundLevel (suc⨆ Δ)) → # l ∈ Δ → BoundLift (#<Λ l) (Set (# l)) 
   
       []η : ⟦ [] ⟧η
       []η _ ()
   
       _∷η_ : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
-      (A ∷η η) l (here refl) = bound-lift l A
-      (A ∷η η) l (there x)   = bound-lift l (bound-unlift  (_ , (ℓ∈Δ⇒ℓ<⨆Δ x)) (η _ x)) 
+      (A ∷η η) l (here refl) = bound-lift (#<Λ l) A
+      (A ∷η η) l (there x)   = bound-lift (#<Λ l) (bound-unlift  (ℓ∈Δ⇒ℓ<suc⨆Δ x) (η _ x)) 
   
       lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
-      lookup η α = bound-unlift (_ , (ℓ∈Δ⇒ℓ<⨆Δ α)) (η _ α)
+      lookup η α = bound-unlift (ℓ∈Δ⇒ℓ<suc⨆Δ α) (η _ α)
 
       FunctionEnvironment : Environment
       FunctionEnvironment = record 
@@ -269,7 +253,7 @@ module Types where
       open import Data.Unit using (⊤; tt)
       open import Data.Product using (_×_; _,_)
   
-      ⟦_⟧η : (Δ : Env) → Set (⨆ Δ)
+      ⟦_⟧η : (Δ : Env) → Set (suc⨆ Δ)
       ⟦  []   ⟧η = ⊤
       ⟦ ℓ ∷ Δ ⟧η = Set ℓ × ⟦ Δ ⟧η
   

@@ -11,9 +11,9 @@ Summary of super and Mahlo universes:
   (U, El) is *Mahlo* if for every internal (Famᵘ → Famᵘ) operator there is an internal sub-universe closed under it.
 -}
 
-module Super where
+module Lib.Universes.Super where
 
-open import Lib
+open import Lib.Universes.Lib
 open import Data.Nat
 open import Function
 

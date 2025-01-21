@@ -1,6 +1,5 @@
 module Universe where
 
-
 module Lib where
   open import Data.Unit using (⊤; tt) public
   open import Data.Empty using (⊥; ⊥-elim) public
@@ -394,7 +393,7 @@ module TTGUModel (L : IRUniverse.LvlStruct) where
   liftSuc : ∀ {Γ i j p t} → lift {Γ}{i}{j} p {Nat i} (Suc {Γ}{i} t) ≡ Suc {Γ}{j} (lift {Γ}{i}{j} p {Nat i} t)
   liftSuc = refl
 
-module CNF-example where
+module MutualOrdInstance where
   open import Relation.Binary.Definitions using (Irreflexive)
   open import Induction using (RecStruct)
   open import Induction.WellFounded using (WellFounded; WfRec)
@@ -403,7 +402,6 @@ module CNF-example where
   open IRUniverse
   open import Function using (flip)
 
-  
 
   --module Lex {A : Set a} {B : A → Set b}
   --                   (RelA : Rel A ℓ₁)
@@ -436,12 +434,9 @@ module CNF-example where
 --
   --    well-founded = wellFounded
 
-   
-
   <-Rec : ∀{ℓ} → RecStruct MutualOrd ℓ ℓ
   <-Rec = WfRec _<_
 
-  
   <-wellFounded : WellFounded _<_
   <-wellFounded′ : ∀ a → <-Rec (Acc _<_) a
 

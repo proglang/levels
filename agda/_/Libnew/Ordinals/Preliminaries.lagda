@@ -14,7 +14,7 @@ those in the standard library.
 
 \begin{code}
 {-# OPTIONS --cubical --safe #-}
-module Preliminaries where
+module Lib.Ordinals.Preliminaries where
 
 open import Agda.Primitive public
  using ( Level   -- universe levels
