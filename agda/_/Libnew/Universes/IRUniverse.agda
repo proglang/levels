@@ -1,5 +1,5 @@
 
-module Lib.Universes.IRUniverse where
+module IRUniverse where
 
 {-
 Inductive-recursive universes over arbitrary level structures.
@@ -12,7 +12,7 @@ We also give a simple example for having _⊔_ operation on levels when levels
 form a type theoretic ordinal.
 -}
 
-open import Lib.Universes.Lib
+open import Lib
 
 -- set with well-founded transitive relation
 record LvlStruct : Set₁ where

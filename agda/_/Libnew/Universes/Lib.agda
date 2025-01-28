@@ -1,4 +1,4 @@
-module Lib.Universes.Lib where
+module Lib where
 
 open import Data.Unit using (⊤; tt) public
 open import Data.Empty using (⊥; ⊥-elim) public

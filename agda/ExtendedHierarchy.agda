@@ -1,4 +1,4 @@
-open import Agda.Builtin.Equality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; trans; subst)
 open import Level
 
 -- we postulate the existence of ordinals in cantor normal form (cnf).
@@ -44,3 +44,10 @@ postulate
 -- this can be useful when working with explicit reduction (i.e. using the equalities above)
 cast : ∀ {ℓ₁ ℓ₂} → ℓ₁ ≡ ℓ₂ → Set ℓ₁ → Set ℓ₂ 
 cast refl A = A
+
+-- other interaction properties
+
+β-suc-⌊⌋ : ∀ {a} → suc ⌊ a ⌋ ≡ ⌊ sucₒ a ⌋
+β-suc-⌊⌋ {𝟎} = β-suc-zero
+β-suc-⌊⌋ {ω^ a + b [ r ]} = 
+  subst (λ x → suc (ω^ ⌊ a ⌋ + ⌊ b ⌋) ≡ ω^ ⌊ a ⌋ + x) (β-suc-⌊⌋ {b})  (β-suc-ω {⌊ a ⌋} {⌊ b ⌋}) 
