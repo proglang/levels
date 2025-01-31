@@ -443,14 +443,6 @@ module MutualOrdInstance where
   <-wellFounded a = acc (<-wellFounded′ a)
   <-wellFounded′ z {y} y<z = {!   !}
 
-  -- <-wellFounded n = acc (<-wellFounded′ n)
-
-  -- <-wellFounded′ ω^ γ + δ [ γ≥↑δ ] <₁            = acc λ { () }
-  -- <-wellFounded′ ω^ γ + δ [ γ≥↑δ ] (<₂ {α = α} {β = β} {α≥↑β = α≥↑β} α<γ) with <-wellFounded′ γ α<γ 
-  -- ... | a = {!   !} -- with <-wellFounded′ α γ<α 
-  -- -- ... | hjkl = acc λ x → <-wellFounded′ (↑ β) {!   !} 
-  -- <-wellFounded′ ω^ γ + δ [ γ≥↑δ ] (<₃ refl β<δ) = {!   !}
-
   lvl : LvlStruct
   lvl = record {
       Lvl    = MutualOrd
