@@ -34,7 +34,7 @@
 
 ## Problems 
 
-| Name       | Suffers Subst Hell | Hits Hierarchy Limit |
+| Name       | Suffers Subst Hell Unnecessarily | Hits Hierarchy Limit |
 |------------|--------------------|----------------------|
 | SSF        | no                 | yes                  |
 | SSF-UP     | yes                | yes                  |

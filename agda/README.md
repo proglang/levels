@@ -11,5 +11,4 @@
 - `Ordinal.agda`: 
 - `ExtendedHierarchy.agda`: 
 - `BoundQuantification.agda`: 
-- `Lib/`: see `Lib/README.md`
 - `Examples/`: see `Examples/README.md`
