@@ -181,7 +181,7 @@ a              ⊔ₒ 𝟎              = a
 ... | inj₂ (inj₂ _) with <-tri b d 
 ... | inj₁ _        = ω^ c + d [ s ]
 ... | inj₂ (inj₁ _) = ω^ a + b [ r ]
-... | inj₂ (inj₂ _) = ω^ a + b [ r ]
+... | inj₂ (inj₂ _) = ω^ c + d [ s ]
 
 open import Data.Nat using (ℕ)
 ℕ→MutualOrd : ℕ → MutualOrd
@@ -229,8 +229,13 @@ module Properties where
   ¬ω^a+suc[b]<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
   ¬ω^a+suc[b]<b (<₃ refl x)      = ⊥-elim (¬ω^a+suc[b]<b x)
 
+  ω^a+b≡ω^a+c→b≡c :  ∀ {a b c : MutualOrd} {r : a ≥ fst b} {s : a ≥ fst c} → ω^ a + b [ r ] ≡ ω^ a + c [ s ] → b ≡ c
+  ω^a+b≡ω^a+c→b≡c refl = refl 
+  
   ¬ω^a+suc[b]≡b : ∀ {a b : MutualOrd} {r : a ≥ fst (sucₒ b)} → ¬ (ω^ a + sucₒ b [ r ] ≡ b)
-  ¬ω^a+suc[b]≡b {a} {b} {r = r} x = {!  !}
+  ¬ω^a+suc[b]≡b {a} {ω^ b + b₁ [ x₂ ]} {r = inj₁ x₁} x = {!   !}
+  ¬ω^a+suc[b]≡b {.(fst (sucₒ ω^ b + b₁ [ x₁ ]))} {ω^ b + b₁ [ x₁ ]} {r = inj₂ refl} x 
+    = ⊥-elim (¬ω^a+suc[b]≡b (ω^a+b≡ω^a+c→b≡c x))
   
   subsumption₁₁ : ∀ (b a  : MutualOrd) (s : a ≥ fst (sucₒ b)) → b ⊔ₒ ω^ a + sucₒ b [ s ] ≡ ω^ a + sucₒ b [ s ]
   subsumption₁₁ 𝟎              a s = refl 
@@ -242,5 +247,5 @@ module Properties where
   ... | inj₂ (inj₁ x) = ⊥-elim (¬ω^a+suc[b]<b x)
   ... | inj₂ (inj₂ y) = ⊥-elim (¬ω^a+suc[b]≡b (y ⁻¹)) 
 
-                     
-  module TypeTheoreticOrdinal where           
+                      
+  module TypeTheoreticOrdinal where              

@@ -201,6 +201,7 @@ module Types where
   module Denotational where
     open Syntax
     open Syntax.Environment
+    open Substitution
     open import Level using (Setω)
     
     record EnvironmentInterface : Setω where
@@ -209,15 +210,33 @@ module Types where
         []η    : ⟦ [] ⟧η
         _∷η_   : ∀ {ℓ} {Δ : Env} → Set ℓ → ⟦ Δ ⟧η → ⟦ ℓ ∷ Δ ⟧η
         lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
+        lookup-∷η-cancel : ∀ {ℓ} {Δ₁ : Env} {Δ₂ : Env} (A : Set ℓ) (η : ⟦ Δ₂ ⟧η) (ρ : Ren (ℓ′ ∷ Δ₁) Δ₂) → 
+          lookup (A ∷η η) (there (renᵣ ρ (here refl))) ≡ lookup η (renᵣ ρ (here refl))
 
     module Semantics (environment : EnvironmentInterface) where
       open EnvironmentInterface environment
       
-      ⟦_⟧_ : ∀ {ℓ} {Δ : Env} → (T : Type Δ ℓ) → ⟦ Δ ⟧η → Set ℓ
-      ⟦ Nat     ⟧ η = ℕ
-      ⟦ ` α     ⟧ η = lookup η α
-      ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η   
-      ⟦ ∀α T    ⟧ η = ∀ A → ⟦ T ⟧ (A ∷η η)  
+      ⟦_⟧T_ : ∀ {ℓ} {Δ : Env} → (T : Type Δ ℓ) → ⟦ Δ ⟧η → Set ℓ
+      ⟦ Nat     ⟧T η = ℕ
+      ⟦ ` α     ⟧T η = lookup η α
+      ⟦ T₁ ⇒ T₂ ⟧T η = ⟦ T₁ ⟧T η → ⟦ T₂ ⟧T η   
+      ⟦ ∀α T    ⟧T η = ∀ A → ⟦ T ⟧T (A ∷η η)  
+
+      module Properties where
+        open Substitution
+        open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong₂)
+
+        ⟦_⟧ρ_ : Ren Δ₁ Δ₂ → ⟦ Δ₂ ⟧η → ⟦ Δ₁ ⟧η
+        ⟦_⟧ρ_ {Δ₁ = []}    ρ η = []η
+        ⟦_⟧ρ_ {Δ₁ = _ ∷ _} ρ η = (⟦ ` renᵣ ρ (here refl) ⟧T η) ∷η (⟦ dropᵣ ρ ⟧ρ η)
+
+        ⟦⟧η-preserves-idᵣ : (ρ : Ren Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧η)  (A : Set ℓ) → (⟦ ρ ≫ᵣᵣ idᵣ ⟧ρ η) ≡ ⟦ ρ ⟧ρ η
+        ⟦⟧η-preserves-idᵣ ρ η A = refl
+
+        ⟦⟧η-preserves-skipᵣ : (ρ : Ren Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧η)  (A : Set ℓ) → (⟦ ρ ≫ᵣᵣ skipᵣ ⟧ρ (A ∷η η)) ≡ ⟦ ρ ⟧ρ η
+        ⟦⟧η-preserves-skipᵣ {[]} ρ η A    = refl
+        ⟦⟧η-preserves-skipᵣ {ℓ ∷ Δ} ρ η A = cong₂ _∷η_ (lookup-∷η-cancel A η ρ) (⟦⟧η-preserves-skipᵣ (dropᵣ ρ) η A)
+
 
     module FunctionEnvironment where
       open import BoundQuantification
@@ -239,12 +258,14 @@ module Types where
       lookup : ∀ {ℓ} {Δ : Env} → ⟦ Δ ⟧η → ℓ ∈ Δ → Set ℓ 
       lookup η α = bound-unlift (ℓ∈Δ⇒ℓ<⨆Δ α) (η _ α)
 
+      open Properties using (inverse-property)
       FunctionEnvironment : EnvironmentInterface
       FunctionEnvironment = record 
         { ⟦_⟧η   = ⟦_⟧η 
         ; []η    = []η 
         ; _∷η_   = _∷η_ 
         ; lookup = lookup 
+        ; lookup-∷η-cancel = λ A η ρ → inverse-property (ℓ∈Δ⇒ℓ<⨆Δ (renᵣ ρ (here refl))) _
         }
         
     module DatatypeEnvironment where
@@ -271,6 +292,7 @@ module Types where
         ; []η    = []η 
         ; _∷η_   = _∷η_ 
         ; lookup = lookup 
+        ; lookup-∷η-cancel = λ A η ρ → refl
         }
 
 module Expressions where
@@ -453,11 +475,5 @@ module Expressions where
       ‵suc : Exp Γ Nat → Exp Γ Nat
       _·_  : (f : Exp Γ (T ⇒ T′)) → Exp Γ T → Exp Γ T′
       _∙_  : Exp Γ (∀α T) → (T′ : Type Δ ℓ) → Exp Γ (T [ T′ ]) 
-
-    -- pattern ‵var x  = val (‵ x)
-    -- pattern ‵# n = ‵val (# n)
-    -- pattern ‵ƛ e = ‵val (ƛ e)
-    -- pattern ‵Λ_⇒_ l e = ‵val (Λ l ⇒ e)
-    -- pattern _∙[_]_ e T T′  = _∙_ {T = T} e T′
 
     
