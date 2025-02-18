@@ -180,15 +180,17 @@ module _ (δ : LvlEnv) where
   data LimLvl : Set where
     `fin  : FinLvl → LimLvl
     _`⊔_  : LimLvl → LimLvl → LimLvl
+    `suc  : LimLvl → LimLvl
     `omg  : ℕ → LimLvl
 
 _⊔ℓ_ : LimLvl δ → LimLvl δ → LimLvl δ
 _⊔ℓ_ = _`⊔_
 
 sucℓ : LimLvl δ → LimLvl δ
-sucℓ (`fin x) = `fin (`suc x)
-sucℓ (x `⊔ y) = sucℓ x `⊔ sucℓ y
-sucℓ (`omg x) = `omg (ℕ.suc x)
+sucℓ = `suc
+-- sucℓ (`fin x) = `fin (`suc x)
+-- sucℓ (x `⊔ y) = sucℓ x `⊔ sucℓ y
+-- sucℓ (`omg x) = `omg (ℕ.suc x)
 
 wkₗ  : FinLvl δ → FinLvl (tt ∷ δ)
 wkₗ `zero      = `zero
@@ -199,31 +201,37 @@ wkₗ (l₁ `⊔ l₂) = wkₗ l₁ `⊔ wkₗ l₂
 wkₗ′ : LimLvl δ → LimLvl (tt ∷ δ)
 wkₗ′ (`fin x) = `fin (wkₗ x)
 wkₗ′ (x `⊔ y) = wkₗ′ x `⊔ wkₗ′ y
+wkₗ′ (`suc x) = `suc (wkₗ′ x)
 wkₗ′ (`omg x) = `omg x
 
 wkₗ-⊔ : (l₁ l₂ : LimLvl δ) → wkₗ′ (l₁ ⊔ℓ l₂) ≡ wkₗ′ l₁ ⊔ℓ wkₗ′ l₂
 wkₗ-⊔ l₁ l₂ = refl
 
 wkₗ-suc : (l : LimLvl δ) → wkₗ′ (sucℓ l) ≡ sucℓ (wkₗ′ l)
-wkₗ-suc (`fin x) = refl
-wkₗ-suc (x `⊔ y) = cong₂ _`⊔_ (wkₗ-suc x) (wkₗ-suc y)
-wkₗ-suc (`omg x) = refl
+wkₗ-suc x = refl
+-- wkₗ-suc (`fin x) = refl
+-- wkₗ-suc (x `⊔ y) = cong₂ _`⊔_ (wkₗ-suc x) (wkₗ-suc y)
+-- wkₗ-suc (`omg x) = refl
+
+-- semantics of finite levels
+FLvl = ℕ
 
 DEnv : LvlEnv → Set
-DEnv δ = tt ∈ δ → ℕ
+DEnv δ = tt ∈ δ → FLvl
 
-⟦_⟧ℓ : FinLvl δ → DEnv δ → Lvl
-⟦ `zero ⟧ℓ d = # ℕ.zero
-⟦ `suc l ⟧ℓ d = Lvl-suc (⟦ l ⟧ℓ d)
-⟦ l₁ `⊔ l₂ ⟧ℓ d = ⟦ l₁ ⟧ℓ d ⊔ ⟦ l₂ ⟧ℓ d
-⟦ ` x ⟧ℓ d = ℕ.zero , d x
+⟦_⟧ℓ : FinLvl δ → DEnv δ → FLvl
+⟦ `zero ⟧ℓ d = ℕ.zero
+⟦ `suc l ⟧ℓ d = ℕ.suc (⟦ l ⟧ℓ d)
+⟦ l₁ `⊔ l₂ ⟧ℓ d = ⟦ l₁ ⟧ℓ d ⊔ℕ ⟦ l₂ ⟧ℓ d
+⟦ ` x ⟧ℓ d = d x
 
 ⟦_⟧ℓ′ : LimLvl δ → DEnv δ → Lvl
-⟦ `fin x ⟧ℓ′ d = ⟦ x ⟧ℓ d
+⟦ `fin x ⟧ℓ′ d = ℕ.zero , ⟦ x ⟧ℓ d
 ⟦ x `⊔ y ⟧ℓ′ d = ⟦ x ⟧ℓ′ d ⊔ ⟦ y ⟧ℓ′ d
+⟦ `suc x ⟧ℓ′ d = Lvl-suc (⟦ x ⟧ℓ′ d)
 ⟦ `omg k ⟧ℓ′ d = ω + (0 , k)
 
-DEnv-ext : DEnv δ → ℕ → DEnv (tt ∷ δ)
+DEnv-ext : DEnv δ → FLvl → DEnv (tt ∷ δ)
 DEnv-ext d ℓ (here refl) = ℓ
 DEnv-ext d ℓ (there x) = d x
 
@@ -265,51 +273,38 @@ Uᵈ′ d l = U (Lᵈ′ d l)
 -- -- ⟦⟧ℓ-⊔ : (d : DEnv δ) (l₁ : FinLvl δ) (l₂ : FinLvl δ) → ⟦ l₁ ⟧ℓ d ⊔ ⟦ l₂ ⟧ℓ d ≡ ⟦ l₁ `⊔ l₂ ⟧ℓ d
 -- -- definitional
 
-⟦⟧ℓ-fin : (d : DEnv δ) (l : FinLvl δ) → ∃[ k ] ⟦ l ⟧ℓ d ≡ (0 , k)
-⟦⟧ℓ-fin d `zero = ℕ.zero , refl
-⟦⟧ℓ-fin d (`suc l)
-  with ⟦⟧ℓ-fin d l
-... | k , p rewrite p = ℕ.suc k , refl
-⟦⟧ℓ-fin d (l₁ `⊔ l₂)
-  with ⟦⟧ℓ-fin d l₁ | ⟦⟧ℓ-fin d l₂
-... | k₁ , p₁ | k₂ , p₂
-  rewrite p₁ | p₂
-  with cmp-ℕ k₁ k₂
-... | inj₁ x = k₂ , refl
-... | inj₂ (inj₁ x) = k₁ , refl
-... | inj₂ (inj₂ refl) = k₂ , refl
-⟦⟧ℓ-fin d (` x) = d x , refl
-
 ⟦⟧ℓ-⊔ℓ : (d : DEnv δ) (l₁ l₂ : LimLvl δ) → ⟦ l₁ ⊔ℓ l₂ ⟧ℓ′ d ≡ ⟦ l₁ ⟧ℓ′ d ⊔ ⟦ l₂ ⟧ℓ′ d
 ⟦⟧ℓ-⊔ℓ d l₁ l₂ = refl
 
 ⟦⟧ℓ-suc : (d : DEnv δ) (l : LimLvl δ) → ⟦ sucℓ l ⟧ℓ′ d ≡ Lvl-suc (⟦ l ⟧ℓ′ d)
-⟦⟧ℓ-suc d (`fin x) = refl
-⟦⟧ℓ-suc d (x `⊔ y) = trans (cong₂ _⊔_ (⟦⟧ℓ-suc d x) (⟦⟧ℓ-suc d y)) (sym (Lvl-suc-⊔ (⟦ x ⟧ℓ′ d) (⟦ y ⟧ℓ′ d)))
-⟦⟧ℓ-suc d (`omg x) = refl
+⟦⟧ℓ-suc d x = refl
+-- ⟦⟧ℓ-suc d (`fin x) = refl
+-- ⟦⟧ℓ-suc d (x `⊔ y) = trans (cong₂ _⊔_ (⟦⟧ℓ-suc d x) (⟦⟧ℓ-suc d y)) (sym (Lvl-suc-⊔ (⟦ x ⟧ℓ′ d) (⟦ y ⟧ℓ′ d)))
+-- ⟦⟧ℓ-suc d (`omg x) = refl
 
 Lᵈ′-⊔ : (d : DEnv δ) (l₁ : LimLvl δ) (l₂ : LimLvl δ) → Lᵈ′ d l₁ ⊔ Lᵈ′ d l₂ ≡ Lᵈ′ d (l₁ ⊔ℓ l₂)
 Lᵈ′-⊔ d l₁ l₂ = refl
 
-coef :  (d : DEnv δ) (x : ℕ) (fl : FinLvl δ) → ⟦ fl ⟧ℓ d ≡ ⟦ wkₗ fl ⟧ℓ  (DEnv-ext d x)
+coef :  (d : DEnv δ) (x : FLvl) (fl : FinLvl δ) → ⟦ fl ⟧ℓ d ≡ ⟦ wkₗ fl ⟧ℓ  (DEnv-ext d x)
 coef d x `zero = refl
-coef d x (`suc fl) = cong Lvl-suc (coef d x fl)
-coef d x (fl₁ `⊔ fl₂) = cong₂ _⊔_ (coef d x fl₁) (coef d x fl₂)
+coef d x (`suc fl) = cong ℕ.suc (coef d x fl)
+coef d x (fl₁ `⊔ fl₂) = cong₂ _⊔ℕ_ (coef d x fl₁) (coef d x fl₂)
 coef d x (` z) = refl
 
-denv-wk-ext : (d : DEnv δ) (x : ℕ) (ll : LimLvl δ) → ⟦ ll ⟧ℓ′ d ≡ ⟦ wkₗ′ ll ⟧ℓ′ (DEnv-ext d x)
-denv-wk-ext d x (`fin fl) = coef d x fl
+denv-wk-ext : (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → ⟦ ll ⟧ℓ′ d ≡ ⟦ wkₗ′ ll ⟧ℓ′ (DEnv-ext d x)
+denv-wk-ext d x (`fin fl) = cong (ℕ.zero ,_) (coef d x fl)
 denv-wk-ext d x (ll₁ `⊔ ll₂) = cong₂ _⊔_ (denv-wk-ext d x ll₁) (denv-wk-ext d x ll₂)
+denv-wk-ext d x (`suc ll) = cong Lvl-suc (denv-wk-ext d x ll)
 denv-wk-ext d x (`omg x₁) = refl
 
-coel :  (d : DEnv δ) (x : ℕ) (ll : LimLvl δ) → Uᵈ′ d ll ≡ Uᵈ′ (DEnv-ext d x) (wkₗ′ ll)
+coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ′ d ll ≡ Uᵈ′ (DEnv-ext d x) (wkₗ′ ll)
 coel d x ll = cong U (denv-wk-ext d x ll)
 
 -- -- coe1 :  (d : DEnv δ) (x : Lvl) (ll : LimLvl δ) → (u  : Uᵈ′ d ll) → Uᵈ′ (DEnv-ext d x) (wkₗ′ ll)
 -- -- coe1 d x (`fin fl) u = subst U (coef d x fl) u
 -- -- coe1 d x (`omg k) u = u
 
-coe* : {Δ : Env δ} (d : DEnv δ) (x : ℕ) → All (Uᵈ′ d) Δ → All (Uᵈ′ (DEnv-ext d x)) (wkₗₑ Δ)
+coe* : {Δ : Env δ} (d : DEnv δ) (x : FLvl) → All (Uᵈ′ d) Δ → All (Uᵈ′ (DEnv-ext d x)) (wkₗₑ Δ)
 coe* d x [] = []
 coe* {Δ = ll ∷ _} d x (u ∷ η) = coe (coel d x ll) u ∷ coe* d x η
 
@@ -329,12 +324,11 @@ encode d (` α) η = lookup η α
 encode d (`∀α_,_ {l′ = l′} l T) η
   =
   let ≤-witness = ⊔₁ (⟦ sucℓ l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d) in
-  Π' (U' {j = ⟦ l ⟧ℓ′ d}
-         (<≤-trans ℕ*ℕ-example.<suc (≤-trans (inj₂ (sym (⟦⟧ℓ-suc d l))) ≤-witness)))
+  Π' (U' {j = ⟦ l ⟧ℓ′ d} (<≤-trans ℕ*ℕ-example.<suc ≤-witness))
      λ u → let r = encode d T (coe  (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧ℓ′ d} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) u ∷ η) in
          Lift≤ (⊔₂ (⟦ sucℓ l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d)) r
 encode d (`∀ℓ_ {l = l} T) η = Π' ℕ' (λ x → let r = coe (sym (coel d x l)) (encode (DEnv-ext d x) T (coe* d x η))
-                                             in  Lift≤ (≤-trans (⊔₂ ω (Lᵈ′ d l)) (inj₂ (sym (⟦⟧ℓ-⊔ℓ d (`omg ℕ.zero) l)))) r)
+                                            in  Lift≤ (⊔₂ ω (Lᵈ′ d l)) r)
 
 
 ⟦_⟧ᵀ : (T : Type δ Δ l) (d : DEnv δ) → (η : Env* d Δ) → Set
@@ -344,7 +338,7 @@ encode d (`∀ℓ_ {l = l} T) η = Π' ℕ' (λ x → let r = coe (sym (coel d x
 -- type environments
 data Ctx : ∀ {δ} → Env δ → Set where
   ∅     : Ctx {δ} []
-  _◁_   : Type δ Δ l → Ctx Δ → Ctx Δ          
+  _◁_   : Type δ Δ l → Ctx Δ → Ctx Δ
   _◁*_  : (l : LimLvl δ) → Ctx Δ → Ctx (l ∷ Δ)
   ◁ℓ_   : Ctx Δ → Ctx (wkₗₑ Δ)
 
@@ -403,6 +397,9 @@ postulate
 
   subst-env : ∀ {d : DEnv δ} (T : Type δ (l′ ∷ Δ) l) (T′ : Type δ Δ l′) (η : Env* d Δ) → ⟦ T ⟧ᵀ d (encode d T′ η ∷ η) ≡ ⟦ T [ T′ ]T ⟧ᵀ d η
 
+coe** : {Γ : Ctx Δ} (d : DEnv δ) (η : Env* d Δ) (lev : FLvl) → VEnv d Γ η → VEnv (DEnv-ext d lev) (◁ℓ Γ) (coe* d lev η)
+coe** d η lev γ l T x = {!!}
+
 
 E⟦_⟧ : ∀ {T : Type δ Δ l}{Γ : Ctx Δ} → (e : Expr Γ T) (d : DEnv δ) (η : Env* d Δ) → (γ : VEnv d Γ η) → ⟦ T ⟧ᵀ d η
 E⟦ ## n ⟧ d η γ = n
@@ -428,3 +425,14 @@ E⟦ _∙_ {l = l} {l′ = l′}{T = T} M T′ ⟧ d η γ =
   let r = F (coe eq2 u′) in
   coe (trans (trans (cong (λ □ → Elⁱʳ (Lift≤ (⊔₂ (Lᵈ′ d (sucℓ l)) (Lᵈ′ d l′)) (encode d T (□ ∷ η)))) (coe-coe eq2 eq1 {u′}))
                     (ElLift≤ (⊔₂ (Lᵈ′ d (sucℓ l)) (Lᵈ′ d l′)) (encode d T (u′ ∷ η)))) (subst-env T T′ η)) r
+E⟦ Λℓ_ {l = l}{T = T} M ⟧ d η γ =
+  λ x → let r = E⟦ M ⟧ (DEnv-ext d x) (coe* d x η) (coe** d η x γ) in
+        coe (sym (trans
+                    (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
+                    {!!})) r
+E⟦ _·ℓ_ {l = l}{T = T} M newl ⟧ d η γ =
+  let r = E⟦ M ⟧ d η γ in
+  let x = ⟦ newl ⟧ℓ d in
+  coe (trans
+         (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
+         {!!}) (r x)
