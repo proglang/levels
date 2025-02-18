@@ -1,3 +1,7 @@
+-- ###################################
+-- ## BEGIN CODE FROM ORDINAL PAPER ##
+-- ###################################
+
 module Ordinal where
 
 open import Data.Sum using (_⊎_; inj₁; inj₂) 
@@ -10,31 +14,29 @@ open import Level using(Level)
 private variable
   ℓ : Level
 
-infix 30 _<_ _≤_ _>_ _≥_
-
 data MutualOrd : Set
-data _<_ : MutualOrd → MutualOrd → Set
 fst : MutualOrd → MutualOrd
 
+infix 30 _<_ _≤_ _>_ _≥_
+data _<_ : MutualOrd → MutualOrd → Set
 _>_ _≥_ _≤_ : MutualOrd → MutualOrd → Set
 a > b = b < a
 a ≥ b = a > b ⊎ a ≡ b
 a ≤ b = b ≥ a
 
 data MutualOrd where
- 𝟎 : MutualOrd
- ω^_+_[_] : (a b : MutualOrd) → a ≥ fst b → MutualOrd
+  𝟎 : MutualOrd
+  ω^_+_[_] : (a b : MutualOrd) → a ≥ fst b → MutualOrd
 
-private
- variable
+private variable
   a b c d : MutualOrd
   r : a ≥ fst b
   s : c ≥ fst d
 
 data _<_ where
- <₁ : 𝟎 < ω^ a + b [ r ]
- <₂ : a < c → ω^ a + b [ r ] < ω^ c + d [ s ]
- <₃ : a ≡ c → b < d → ω^ a + b [ r ] < ω^ c + d [ s ]
+  <₁ : 𝟎 < ω^ a + b [ r ]
+  <₂ : a < c → ω^ a + b [ r ] < ω^ c + d [ s ]
+  <₃ : a ≡ c → b < d → ω^ a + b [ r ] < ω^ c + d [ s ]
 
 fst  𝟎               = 𝟎
 fst (ω^ a + _ [ _ ]) = a
@@ -111,7 +113,6 @@ Lm[≥→¬<] : a ≥ b → ¬ a < b
 Lm[≥→¬<] (inj₁ b<a) a<b = <-irrefl (<-trans a<b b<a)
 Lm[≥→¬<] (inj₂ a=b)     = <-irreflexive a=b
 
-
 Lm[<→¬≥] : a < b → ¬ a ≥ b
 Lm[<→¬≥] a<b (inj₁ a>b) = <-irrefl (<-trans a<b a>b)
 Lm[<→¬≥] a<b (inj₂ a=b) = <-irreflexive a=b a<b
@@ -152,100 +153,45 @@ rest< a  𝟎                _       = <₁
 rest< a (ω^ b + c [ s ]) (inj₁ r) = <₂ r
 rest< a (ω^ b + c [ s ]) (inj₂ e) = <₃ (e ⁻¹) (rest< b c s)
 
-ω^⟨_⟩ : MutualOrd → MutualOrd
-ω^⟨ a ⟩ = ω^ a + 𝟎 [ ≥𝟎 ]
+open import Induction.WellFounded
 
-𝟏 ω ω+1 ω+2 : MutualOrd
-𝟏 = ω^⟨ 𝟎 ⟩
-𝟐 = ω^ 𝟎 + 𝟏 [ inj₂ refl ]
-ω = ω^⟨ 𝟏 ⟩
+𝟎Acc : Acc _<_ 𝟎
+𝟎Acc = acc (λ x<𝟎 → ⊥-elim (≮𝟎 x<𝟎))
 
-ω+1 = ω^ 𝟏 + 𝟏 [ inj₁ <₁ ]
-ω+2 = ω^ 𝟏 + 𝟐 [ inj₁ <₁ ]
+fstAcc : ∀ {a a'} → Acc _<_ a' → a ≡ a'
+  → ∀ {b x} → Acc _<_ b → x < a' → (r : x ≥ fst b)
+  → Acc _<_ (ω^ x + b [ r ])
+sndAcc : ∀ {a a'} → Acc _<_ a' → a ≡ a'
+  → ∀ {c y} → Acc _<_ c → y < c → (r : a ≥ fst y)
+  → Acc _<_ (ω^ a + y [ r ])
 
-sucₒ : MutualOrd → MutualOrd
-fst-ignores-suc : ∀ a → (fst a) ≡ fst (sucₒ a)
+fstAcc {a} {a'} (acc ξ) a=a' {b} {x} acᵇ x<a r = acc goal
+  where
+   goal : ∀ {z} → z < ω^ x + b [ r ] → Acc _<_ z
+   goal {𝟎} <₁ = 𝟎Acc
+   goal {ω^ c + d [ s ]} (<₂ c<y) = fstAcc (ξ x<a) refl (goal {d} (<-trans (rest< c d s) (<₂ c<y))) c<y s
+   goal {ω^ c + d [ s ]} (<₃ c=y d<b) = sndAcc (ξ x<a) c=y acᵇ d<b s
 
-sucₒ 𝟎 = 𝟏
-sucₒ ω^ a + b [ r ] = ω^ a + sucₒ b [ subst (a ≥_) (fst-ignores-suc b) r ]
+sndAcc {a} {a'} acᵃ a=a' {c} {y} (acc ξᶜ) y<c r = acc goal
+  where
+   goal : ∀ {z} → z < ω^ a + y [ r ] → Acc _<_ z
+   goal {𝟎} <₁ = 𝟎Acc
+   goal {ω^ b + d [ t ]} (<₂ b<a) = fstAcc acᵃ a=a' (goal {d} (<-trans (rest< b d t) (<₂ b<a))) (subst (b <_) a=a' b<a) t
+   goal {ω^ b + d [ t ]} (<₃ b=a d<y) = sndAcc acᵃ (b=a ∙ a=a') (ξᶜ y<c) d<y t
 
-fst-ignores-suc 𝟎              = refl
-fst-ignores-suc ω^ a + b [ r ] = refl
-  
-_⊔ₒ_ : MutualOrd → MutualOrd → MutualOrd
-𝟎 ⊔ₒ              a              = a
-a              ⊔ₒ 𝟎              = a
-ω^ a + b [ r ] ⊔ₒ ω^ c + d [ s ] with <-tri a c 
-... | inj₁ _        = ω^ c + d [ s ]
-... | inj₂ (inj₁ _) = ω^ a + b [ r ]
-... | inj₂ (inj₂ _) with <-tri b d 
-... | inj₁ _        = ω^ c + d [ s ]
-... | inj₂ (inj₁ _) = ω^ a + b [ r ]
-... | inj₂ (inj₂ _) = ω^ c + d [ s ]
+ω+Acc : (a b : MutualOrd) (r : a ≥ fst b)
+      →  Acc _<_ a →  Acc _<_ b → Acc _<_ (ω^ a + b [ r ])
+ω+Acc a b r acᵃ acᵇ = acc goal
+ where
+  goal : ∀ {z} → z < ω^ a + b [ r ] → Acc _<_ z
+  goal {𝟎} <₁ = 𝟎Acc
+  goal {ω^ c + d [ s ]} (<₂ c<a) = fstAcc acᵃ refl (goal {d} (<-trans (rest< c d s) (<₂ c<a))) c<a s
+  goal {ω^ c + d [ s ]} (<₃ c=a d<b) = sndAcc acᵃ c=a acᵇ d<b s
 
-open import Data.Nat using (ℕ)
-ℕ→MutualOrd : ℕ → MutualOrd
-ℕ→MutualOrd ℕ.zero    = 𝟎
-ℕ→MutualOrd (ℕ.suc n) = sucₒ (ℕ→MutualOrd n)
+WF : (x : MutualOrd) → Acc _<_ x
+WF 𝟎 = 𝟎Acc
+WF (ω^ a + b [ r ]) = ω+Acc a b r (WF a) (WF b)
 
-fst[ℕ→MutualOrd]≡0 : ∀ n → fst (ℕ→MutualOrd n) ≡ 𝟎
-fst[ℕ→MutualOrd]≡0 ℕ.zero    = refl
-fst[ℕ→MutualOrd]≡0 (ℕ.suc n) = (fst-ignores-suc (ℕ→MutualOrd n) ⁻¹) ∙ (fst[ℕ→MutualOrd]≡0 n)
-
-ω+ₙ_ : ℕ → MutualOrd
-ω+ₙ n = ω^ 𝟏 + ℕ→MutualOrd n [ subst (𝟏 ≥_) (fst[ℕ→MutualOrd]≡0 n ⁻¹) (inj₁ <₁) ]
-
-module Properties where 
-  distributivity : ∀ (a b c : MutualOrd) (r : a ≥ fst (b ⊔ₒ c)) (s : a ≥ fst b) (t : a ≥ fst c) → 
-    ω^ a + (b ⊔ₒ c) [ r ] ≡ ω^ a + b [ s ] ⊔ₒ ω^ a + c [ t ]
-  distributivity a b c r s t with <-tri a a
-  ... | inj₁ a<a = ⊥-elim (<-irrefl a<a)
-  ... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
-  distributivity a 𝟎 𝟎 r s t | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl
-  distributivity a 𝟎 ω^ c + c₁ [ x ] r s t | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl
-  distributivity a ω^ b + b₁ [ x ] 𝟎 r s t | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl
-  distributivity a ω^ ba + bb [ br ] ω^ ca + cb [ ct ] r s t | inj₂ (inj₂ refl) with <-tri ba ca 
-  ... | inj₁ _ = MutualOrd⁼ refl refl
-  ... | inj₂ (inj₁ _) = MutualOrd⁼ refl refl
-  ... | inj₂ (inj₂ refl) with <-tri bb cb 
-  ... | inj₁ _ = MutualOrd⁼ refl refl
-  ... | inj₂ (inj₁ _) = MutualOrd⁼ refl refl
-  ... | inj₂ (inj₂ _) = MutualOrd⁼ refl refl
-
-  ¬ω^a+b<b : ∀ {a b : MutualOrd} {r : a ≥ fst b} → ¬ (ω^ a + b [ r ] < b)
-  ¬ω^a+b<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
-  ¬ω^a+b<b (<₃ refl x)      = ⊥-elim (¬ω^a+b<b x)
-  
-  subsumption₁₀ : ∀ (b a  : MutualOrd) (s : a ≥ fst b) → b ⊔ₒ ω^ a + b [ s ] ≡ ω^ a + b [ s ]
-  subsumption₁₀ 𝟎              a s = refl 
-  subsumption₁₀ ω^ b + d [ r ] a s with <-tri b a 
-  ... | inj₁ _          = refl
-  ... | inj₂ (inj₁ a<b) = ⊥-elim (Lm[≥→¬<] s a<b)
-  ... | inj₂ (inj₂ refl) with <-tri d ω^ b + d [ r ]
-  ... | inj₁ _ = refl
-  ... | inj₂ (inj₁ ω^b+d<d) = (⊥-elim (¬ω^a+b<b ω^b+d<d)) 
-
-  ¬ω^a+suc[b]<b : ∀ {a b : MutualOrd} {r : a ≥ fst (sucₒ b)} → ¬ (ω^ a + sucₒ b [ r ] < b)
-  ¬ω^a+suc[b]<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
-  ¬ω^a+suc[b]<b (<₃ refl x)      = ⊥-elim (¬ω^a+suc[b]<b x)
-
-  ω^a+b≡ω^a+c→b≡c :  ∀ {a b c : MutualOrd} {r : a ≥ fst b} {s : a ≥ fst c} → ω^ a + b [ r ] ≡ ω^ a + c [ s ] → b ≡ c
-  ω^a+b≡ω^a+c→b≡c refl = refl 
-  
-  ¬ω^a+suc[b]≡b : ∀ {a b : MutualOrd} {r : a ≥ fst (sucₒ b)} → ¬ (ω^ a + sucₒ b [ r ] ≡ b)
-  ¬ω^a+suc[b]≡b {a} {ω^ b + b₁ [ x₂ ]} {r = inj₁ x₁} x = {!   !}
-  ¬ω^a+suc[b]≡b {.(fst (sucₒ ω^ b + b₁ [ x₁ ]))} {ω^ b + b₁ [ x₁ ]} {r = inj₂ refl} x 
-    = ⊥-elim (¬ω^a+suc[b]≡b (ω^a+b≡ω^a+c→b≡c x))
-  
-  subsumption₁₁ : ∀ (b a  : MutualOrd) (s : a ≥ fst (sucₒ b)) → b ⊔ₒ ω^ a + sucₒ b [ s ] ≡ ω^ a + sucₒ b [ s ]
-  subsumption₁₁ 𝟎              a s = refl 
-  subsumption₁₁ ω^ b + d [ r ] a s with <-tri b a 
-  ... | inj₁ _          = refl
-  ... | inj₂ (inj₁ a<b) = ⊥-elim (Lm[≥→¬<] s a<b)
-  ... | inj₂ (inj₂ refl) with <-tri d (ω^ b + sucₒ d [ subst (λ b₁ → b₁ < b ⊎ b ≡ b₁) (fst-ignores-suc d) r ]) 
-  ... | inj₁ x = refl
-  ... | inj₂ (inj₁ x) = ⊥-elim (¬ω^a+suc[b]<b x)
-  ... | inj₂ (inj₂ y) = ⊥-elim (¬ω^a+suc[b]≡b (y ⁻¹)) 
-
-                      
-  module TypeTheoreticOrdinal where              
+-- #################################
+-- ## END CODE FROM ORDINAL PAPER ##
+-- #################################

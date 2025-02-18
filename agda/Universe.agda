@@ -1,3 +1,7 @@
+-- ####################################
+-- ## BEGIN CODE FROM UNIVERSE PAPER ##
+-- ####################################
+
 module Universe where
 
 module Lib where
@@ -212,6 +216,90 @@ module IRUniverse where
     LiftU : ∀ {i j}(p : i < j) → El (U' p) → U j
     LiftU p a = Lift p (coe U<-compute a)
 
+  -- finite levels
+  module ℕ-example where
+    open import Data.Nat
+    open import Data.Nat.Properties
+    open import Data.Nat.Induction
+  
+    lvl : LvlStruct
+    lvl = record {
+        Lvl = ℕ
+      ; _<_ = _<_
+      ; <-prop = <-irrelevant _ _
+      ; _∘_ = λ p q → <-trans q p
+      ; wf  = <-wellFounded _
+      }
+  
+    open IR-Universe lvl hiding (_<_)
+  
+    <suc : ∀ {i} → i < suc i
+    <suc {i} = ≤-refl
+  
+    id' : ∀ {i} → El {suc i} (Π' (U' <suc) λ A → LiftU <suc A ⇒' LiftU <suc A)
+    id' {i} A x = x
+  
+    const₀' : El {1} (Π' (U' <suc) λ A → Π' (U' <suc) λ B → LiftU <suc A ⇒' LiftU <suc B ⇒' LiftU <suc A)
+    const₀' A B x y = x
+  
+  -- ω*ω levels
+  module ℕ*ℕ-example where
+  
+    import Data.Nat as N
+    open import Data.Nat.Properties
+    open import Data.Nat.Induction
+    open Lexicographic N._<_ (λ _ → N._<_)
+  
+    trs : ∀ {i j k} → j < k → i < j → i < k
+    trs (left  p) (left  q) = left (<-trans q p)
+    trs (left  p) (right q) = left p
+    trs (right p) (left  q) = left q
+    trs (right p) (right q) = right (<-trans q p)
+  
+    <-irr : ∀{x y}(a b : x < y) → a ≡ b
+    <-irr (left  p) (left  q) = left & <-irrelevant _ _
+    <-irr (left  p) (right q) = ⊥-elim (<-irrefl refl p)
+    <-irr (right p) (left  q) = ⊥-elim (<-irrefl refl q)
+    <-irr (right p) (right q) = right & <-irrelevant _ _
+  
+    --  representation: (i, j) ~ (ω*i + j)
+    lvl : LvlStruct
+    lvl = record {
+        Lvl = N.ℕ × N.ℕ
+      ; _<_ = _<_
+      ; <-prop = <-irr _ _
+      ; _∘_ = trs
+      ; wf  = wellFounded <-wellFounded <-wellFounded _
+      }
+    open IR-Universe lvl hiding (_<_)
+
+    -- raise by 1
+    <suc : ∀ {i j} → (i , j) < (i , N.suc j)
+    <suc {i} = right ≤-refl
+  
+    -- raise to closest limit level
+    <Suc : ∀ {i} j → (i , j) < (N.suc i , 0)
+    <Suc {i} j = left ≤-refl
+  
+    ω : Lvl
+    ω = 1 , 0
+  
+    #_ : N.ℕ → Lvl; infix 10 #_
+    # n = 0 , n
+  
+    _+_ : Lvl → Lvl → Lvl; infix 6 _+_
+    (i , j) + (i' , j') = i N.+ i' , j N.+ j'
+  
+    idω : El {ω} (Π' ℕ' λ i → Π' (U' (<Suc i)) λ A → LiftU (<Suc i) A ⇒' LiftU (<Suc i) A)
+    idω i A x = x
+  
+    idω' : El {ω} (Π' Lvl' λ i → Π' (i <' ω) λ p → Π' (U' p) λ A → LiftU p A ⇒' LiftU p A)
+    idω' i p A x = x
+  
+    fω+2 : El {ω + # 2} (U' (trs <suc <suc) ⇒' U' <suc)
+    fω+2 = LiftU <suc
+
+
 
   -- Type-theoretic ordinals
   --------------------------------------------------------------------------------
@@ -393,77 +481,6 @@ module TTGUModel (L : IRUniverse.LvlStruct) where
   liftSuc : ∀ {Γ i j p t} → lift {Γ}{i}{j} p {Nat i} (Suc {Γ}{i} t) ≡ Suc {Γ}{j} (lift {Γ}{i}{j} p {Nat i} t)
   liftSuc = refl
 
-module MutualOrdInstance where
-  open import Relation.Binary.Definitions using (Irreflexive)
-  open import Induction using (RecStruct)
-  open import Induction.WellFounded using (WellFounded; WfRec)
-  open import Ordinal
-  open Lib
-  open IRUniverse
-  open import Function using (flip)
-
-
-  --module Lex {A : Set a} {B : A → Set b}
-  --                   (RelA : Rel A ℓ₁)
-  --                   (RelB : ∀ x → Rel (B x) ℓ₂) where
-  --                   
-  --  infix 4 _<_
-  --  data _<_ : Rel (Σ A B) (a ⊔ b ⊔ ℓ₁ ⊔ ℓ₂) where
-  --    left  : ∀ {x₁ y₁ x₂ y₂} (x₁<x₂ : RelA   x₁ x₂) → (x₁ , y₁) < (x₂ , y₂)
-  --    right : ∀ {x y₁ y₂}     (y₁<y₂ : RelB x y₁ y₂) → (x  , y₁) < (x  , y₂)
---
-  --  mutual
---
-  --    accessible : ∀ {x y} →
-  --                 Acc RelA x → (∀ {x} → WellFounded (RelB x)) →
-  --                 Acc _<_ (x , y)
-  --    accessible accA wfB = acc (accessible′ accA (wfB _) wfB)
---
---
-  --    accessible′ :
-  --      ∀ {x y} →
-  --      Acc RelA x → Acc (RelB x) y → (∀ {x} → WellFounded (RelB x)) →
-  --      WfRec _<_ (Acc _<_) (x , y)
-  --    accessible′ (acc rsA) _    wfB (left  x′<x) = accessible (rsA x′<x) wfB
-  --    accessible′ accA (acc rsB) wfB (right y′<y) =
-  --      acc (accessible′ accA (rsB y′<y) wfB)
---
-  --    wellFounded : WellFounded RelA → (∀ {x} → WellFounded (RelB x)) →
-  --                  WellFounded _<_
-  --    wellFounded wfA wfB p = accessible (wfA (proj₁ p)) wfB
---
-  --    well-founded = wellFounded
-
-  <-Rec : ∀{ℓ} → RecStruct MutualOrd ℓ ℓ
-  <-Rec = WfRec _<_
-
-  <-wellFounded : WellFounded _<_
-  <-wellFounded′ : ∀ a → <-Rec (Acc _<_) a
-
-  <-wellFounded a = acc (<-wellFounded′ a)
-  <-wellFounded′ z {y} y<z = {!   !}
-
-  lvl : LvlStruct
-  lvl = record {
-      Lvl    = MutualOrd
-    ; _<_    = _<_
-    ; <-prop = <IsPropValued _ _
-    ; _∘_    = flip <-trans
-    ; wf     = <-wellFounded _
-    }
-    
-  open IR-Universe lvl hiding (_<_)
-  
-  <-extensional : {a b : MutualOrd} → ((c : MutualOrd) → (c < a → c < b) × (c < b → c < a)) → a ≡ b
-  <-extensional {a} {b} f with <-tri a b | f a | f b 
-  ... | inj₁ a<b         | _ , a<b→a<a | _ , _ = ⊥-elim (<-irrefl (a<b→a<a a<b))
-  ... | inj₂ (inj₁ b<a)  | _ , _ | b<a→b<b , _ = ⊥-elim (<-irrefl (b<a→b<b b<a))
-  ... | inj₂ (inj₂ refl) | _ , _ | _ , _       = refl
-  
-  ord : Ordinal lvl
-  ord = record { 
-      cmp   = <-tri 
-    ; <-ext = <-extensional 
-    } 
-    
-  open IR-Univ-Ordinal ord  
+-- ##################################
+-- ## END CODE FROM UNIVERSE PAPER ##
+-- ##################################
