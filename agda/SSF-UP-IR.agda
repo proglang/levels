@@ -300,18 +300,15 @@ denv-wk-ext d x (`omg x₁) = refl
 coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ′ d ll ≡ Uᵈ′ (DEnv-ext d x) (wkₗ′ ll)
 coel d x ll = cong U (denv-wk-ext d x ll)
 
--- -- coe1 :  (d : DEnv δ) (x : Lvl) (ll : LimLvl δ) → (u  : Uᵈ′ d ll) → Uᵈ′ (DEnv-ext d x) (wkₗ′ ll)
--- -- coe1 d x (`fin fl) u = subst U (coef d x fl) u
--- -- coe1 d x (`omg k) u = u
-
-coe* : {Δ : Env δ} (d : DEnv δ) (x : FLvl) → All (Uᵈ′ d) Δ → All (Uᵈ′ (DEnv-ext d x)) (wkₗₑ Δ)
-coe* d x [] = []
-coe* {Δ = ll ∷ _} d x (u ∷ η) = coe (coel d x ll) u ∷ coe* d x η
-
 
 
 Env* : DEnv δ → Env δ → Set
 Env* d Δ = All (Uᵈ′ d) Δ
+
+coe* : {Δ : Env δ} (d : DEnv δ) (x : FLvl) → Env* d Δ → Env* (DEnv-ext d x) (wkₗₑ Δ)
+coe* d x [] = []
+coe* {Δ = ll ∷ _} d x (u ∷ η) = coe (coel d x ll) u ∷ coe* d x η
+
 
 
 encode : (d : DEnv δ) (T : Type δ Δ l) (η : Env* d Δ) → Uᵈ′ d l
@@ -352,12 +349,7 @@ postulate
   _[_]ℓℓ : LimLvl (tt ∷ δ) → FinLvl δ → LimLvl δ
   _[_]ℓ : ∀ {l : LimLvl (tt ∷ δ)} → Type (tt ∷ δ) (wkₗₑ Δ) l → (newl : FinLvl δ) → Type δ Δ (l [ newl ]ℓℓ)
 
-wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)
-wkₗₜ `ℕ = `ℕ
-wkₗₜ (T₁ `⇒ T₂) = subst (Type _ _) (sym (wkₗ-⊔ _ _))  (wkₗₜ T₁ `⇒ wkₗₜ T₂)
-wkₗₜ (` α) = {!!}
-wkₗₜ (`∀α l , T) = subst (Type _ _) (trans (cong (_⊔ℓ _) (sym (wkₗ-suc l))) (sym (wkₗ-⊔ _ _))) {!`∀α l , ?!}
-wkₗₜ (`∀ℓ T) = subst (Type _ _) (sym (wkₗ-⊔ _ _)) (`∀ℓ {!!})
+  wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)
 
 --! inn
 data inn : Type δ Δ l → Ctx Δ → Set where
@@ -397,8 +389,20 @@ postulate
 
   subst-env : ∀ {d : DEnv δ} (T : Type δ (l′ ∷ Δ) l) (T′ : Type δ Δ l′) (η : Env* d Δ) → ⟦ T ⟧ᵀ d (encode d T′ η ∷ η) ≡ ⟦ T [ T′ ]T ⟧ᵀ d η
 
+  T-wk-ext : ∀ (d   : DEnv δ) (η   : Env* d Δ) (lev : FLvl) (T   : Type δ Δ l) → ⟦ T ⟧ᵀ d η ≡ ⟦ wkₗₜ T ⟧ᵀ (DEnv-ext d lev) (coe* d lev η)
+
+
+postulate
+  subst-lev-env : (newl : FinLvl δ) (d    : DEnv δ) (η    : Env* d Δ) (T    : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l))
+    → ⟦ T ⟧ᵀ (DEnv-ext d (⟦ newl ⟧ℓ d)) (coe* d (⟦ newl ⟧ℓ d) η) ≡ ⟦ T [ newl ]ℓ ⟧ᵀ d η
+
+  -- this crucial equation needs to be proved!
+
+  crucial-equation : (l : LimLvl δ) (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)) (d : DEnv δ) (η : Env* d Δ) (x : FLvl)
+    → El (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))) ≡ ⟦ T ⟧ᵀ (DEnv-ext d x) (coe* d x η)
+
 coe** : {Γ : Ctx Δ} (d : DEnv δ) (η : Env* d Δ) (lev : FLvl) → VEnv d Γ η → VEnv (DEnv-ext d lev) (◁ℓ Γ) (coe* d lev η)
-coe** d η lev γ l T x = {!!}
+coe** d η lev γ .(wkₗ′ _) .(wkₗₜ T) (lskip{T = T} x) = coe (T-wk-ext d η lev T) (γ _ T x)
 
 
 E⟦_⟧ : ∀ {T : Type δ Δ l}{Γ : Ctx Δ} → (e : Expr Γ T) (d : DEnv δ) (η : Env* d Δ) → (γ : VEnv d Γ η) → ⟦ T ⟧ᵀ d η
@@ -429,10 +433,15 @@ E⟦ Λℓ_ {l = l}{T = T} M ⟧ d η γ =
   λ x → let r = E⟦ M ⟧ (DEnv-ext d x) (coe* d x η) (coe** d η x γ) in
         coe (sym (trans
                     (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-                    {!!})) r
+                    (crucial-equation l T d η x)
+                    )) r
+-- Goal: El (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η)))
+--      ≡ Elⁱʳ (encode (DEnv-ext d x) T (coe* d x η))
+
 E⟦ _·ℓ_ {l = l}{T = T} M newl ⟧ d η γ =
   let r = E⟦ M ⟧ d η γ in
   let x = ⟦ newl ⟧ℓ d in
   coe (trans
          (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-         {!!}) (r x)
+         (trans (crucial-equation l T d η x)
+                (subst-lev-env newl d η T))) (r x)
