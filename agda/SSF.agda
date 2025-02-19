@@ -164,7 +164,7 @@ drop-η (_ , η) = η
 
 ⟦⟧ρ-Tidᵣ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidᵣ ⟧Tρ η) ≡ η
 ⟦⟧ρ-Tidᵣ {[]}     η = refl
-⟦⟧ρ-Tidᵣ {x ∷ Δ₂} (A , γ) = cong (A ∷η_) (trans (⟦⟧ρ-Twkᵣ Tidᵣ γ A) (⟦⟧ρ-Tidᵣ γ))
+⟦⟧ρ-Tidᵣ {_ ∷ Δ₂} (A , η) = cong (A ∷η_) (trans (⟦⟧ρ-Twkᵣ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η))
 
 ⟦⟧ρ-Tliftᵣ : ∀ {ℓ} (ρ : TRen Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) →
    (⟦ Tliftᵣ ρ ℓ ⟧Tρ (A ∷η η)) ≡ (A ∷η (⟦ ρ ⟧Tρ η))
@@ -182,33 +182,33 @@ drop-η (_ , η) = η
 ⟦⟧T-Tren η ρ (∀α {ℓ} T) = dep-ext λ A → 
   trans (⟦⟧T-Tren (A ∷η η) (Tliftᵣ ρ ℓ) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦⟧ρ-Twkᵣ ρ η A))
 
-⟦_⟧σ_ : TSub Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
-⟦_⟧σ_ {Δ₁ = []}    σ η = []η
-⟦_⟧σ_ {Δ₁ = _ ∷ _} σ η = (⟦ σ _ (here refl) ⟧T η) ∷η (⟦ Tdropₛ σ ⟧σ η)
+⟦_⟧Tσ_ : TSub Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
+⟦_⟧Tσ_ {Δ₁ = []}    σ η = []η
+⟦_⟧Tσ_ {Δ₁ = _ ∷ _} σ η = (⟦ σ _ (here refl) ⟧T η) ∷η (⟦ Tdropₛ σ ⟧Tσ η)
 
-⟦⟧σ-Twkᵣ : (σ : TSub Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
-  (⟦ σ T≫ₛᵣ Twkᵣ Tidᵣ ⟧σ (A ∷η η)) ≡ ⟦ σ ⟧σ η
-⟦⟧σ-Twkᵣ {[]} σ η A    = refl
-⟦⟧σ-Twkᵣ {ℓ ∷ Δ} σ η A = 
+⟦⟧Tσ-Twkᵣ : (σ : TSub Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
+  (⟦ σ T≫ₛᵣ Twkᵣ Tidᵣ ⟧Tσ (A ∷η η)) ≡ ⟦ σ ⟧Tσ η
+⟦⟧Tσ-Twkᵣ {[]} σ η A    = refl
+⟦⟧Tσ-Twkᵣ {ℓ ∷ Δ} σ η A = 
   cong₂ _∷η_ (trans (⟦⟧T-Tren (A ∷η η) (Twkᵣ Tidᵣ) (σ ℓ (here refl))) 
       (cong (λ η → ⟦ σ ℓ (here refl) ⟧T η) (trans (⟦⟧ρ-Twkᵣ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η)))) 
-  (⟦⟧σ-Twkᵣ (Tdropₛ σ) η A)
+  (⟦⟧Tσ-Twkᵣ (Tdropₛ σ) η A)
 
-⟦⟧σ-Tidₛ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidₛ ⟧σ η) ≡ η
-⟦⟧σ-Tidₛ {[]}     η = refl
-⟦⟧σ-Tidₛ {x ∷ Δ₂} (A , γ) = cong (A ∷η_) (trans (⟦⟧σ-Twkᵣ Tidₛ γ A) (⟦⟧σ-Tidₛ γ))
+⟦⟧Tσ-Tidₛ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidₛ ⟧Tσ η) ≡ η
+⟦⟧Tσ-Tidₛ {[]}     η = refl
+⟦⟧Tσ-Tidₛ {x ∷ Δ₂} (A , γ) = cong (A ∷η_) (trans (⟦⟧Tσ-Twkᵣ Tidₛ γ A) (⟦⟧Tσ-Tidₛ γ))
 
 ⟦⟧T-Tsub : (η : ⟦ Δ₂ ⟧Δ) (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ ℓ) → 
-  ⟦ Tsub σ T ⟧T η ≡ ⟦ T ⟧T (⟦ σ ⟧σ η)
+  ⟦ Tsub σ T ⟧T η ≡ ⟦ T ⟧T (⟦ σ ⟧Tσ η)
 ⟦⟧T-Tsub η σ Nat       = refl
 ⟦⟧T-Tsub η σ (` x)     = ⟦⟧Δ-lookup η σ x
   where ⟦⟧Δ-lookup : ∀ {ℓ} (η : ⟦ Δ₂ ⟧Δ) (σ : TSub Δ₁ Δ₂) (x : ℓ ∈ Δ₁) → 
-                          (⟦ σ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ σ ⟧σ η))
+                          (⟦ σ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ σ ⟧Tσ η))
         ⟦⟧Δ-lookup η σ (here refl) = refl
         ⟦⟧Δ-lookup η σ (there x) rewrite ⟦⟧Δ-lookup η (Tdropₛ σ) x = refl
 ⟦⟧T-Tsub η σ (T₁ ⇒ T₂) rewrite ⟦⟧T-Tsub η σ T₁ | ⟦⟧T-Tsub η σ T₂ = refl
 ⟦⟧T-Tsub η σ (∀α T)    = dep-ext λ A → 
-  trans (⟦⟧T-Tsub (A ∷η η) (Tliftₛ σ _) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦⟧σ-Twkᵣ σ η A))
+  trans (⟦⟧T-Tsub (A ∷η η) (Tliftₛ σ _) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦⟧Tσ-Twkᵣ σ η A))
   
 data EEnv : (Δ : TEnv) → Set where
   []   : EEnv Δ
@@ -281,7 +281,7 @@ lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦
 ⟦_⟧E {_} {Δ} {T} {Γ}             (Λ ℓ ⇒ e) η γ = λ A → ⟦ e ⟧E (A ∷η η) (_∷γℓ_ {Γ = Γ} A γ)
 ⟦ e₁ · e₂ ⟧E η γ = ⟦ e₁ ⟧E η γ (⟦ e₂ ⟧E η γ)
 ⟦ _∙_ {T = T} e T′ ⟧E η γ = subst id (trans 
-  (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦⟧σ-Tidₛ η))) 
+  (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦⟧Tσ-Tidₛ η))) 
   (sym (⟦⟧T-Tsub η (Textₛ Tidₛ T′) T))) (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
   
                

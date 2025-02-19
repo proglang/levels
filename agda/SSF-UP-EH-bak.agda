@@ -1,4 +1,4 @@
-module SSF-up where
+module SSF-up2-EH where
 
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open import Level using (Level; Lift; lift; zero; suc; _⊔_)

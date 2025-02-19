@@ -1,4 +1,4 @@
-module SSF-up-EH where
+module SSF-up-EH2 where
 
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open import Level using (Level; Lift; lift; zero; suc; _⊔_)
@@ -11,8 +11,8 @@ open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst)
 open import Function using (_∘_; id; flip; _$_)
-open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω+ₙ_; ⌊_⌋; cast; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
-open import BoundQuantification using (BoundLevel; BoundLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-lub; ≤-add; ≤-exp; ≤-lublub)
+open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
+open import BoundQuantification using (BoundLevel; BoundLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub)
 
 postulate
   fun-ext : ∀ {ℓ₁ ℓ₂} → Extensionality ℓ₁ ℓ₂
@@ -34,76 +34,85 @@ variable
   μ μ′ μ₁ μ₂ μ₃ : LivesIn
     
 data Lvl (δ : LEnv) : LivesIn → Set where 
-  `zero  : Lvl δ <ω
-  `suc   : Lvl δ μ → Lvl δ μ
-  `_     : tt ∈ δ → Lvl δ <ω
-  _`⊔_   : Lvl δ <ω → Lvl δ <ω → Lvl δ <ω
-  _``⊔_  : Lvl δ μ₁ → Lvl δ μ₂ → Lvl δ <ω>
+  `zero : Lvl δ <ω
+  `suc  : Lvl δ μ → Lvl δ μ
+  `_    : tt ∈ δ → Lvl δ <ω
+  _`⊔_  : Lvl δ μ → Lvl δ μ → Lvl δ μ
+  ⟨_⟩   : Lvl δ μ → Lvl δ <ω>
   `ω    : Lvl δ <ω>
-
-↑_ : Lvl δ <ω → Lvl δ <ω> 
-↑ l = l ``⊔ l 
       
 variable
   l l′ l₁ l₂ l₃ : Lvl δ μ
 
--- LRen : LEnv → LEnv → Set
--- LRen δ₁ δ₂ = tt ∈ δ₁ → tt ∈ δ₂
--- 
--- Lidᵣ : LRen δ δ
--- Lidᵣ = id
--- 
--- Ldropᵣ : LRen (tt ∷ δ₁) δ₂ → LRen δ₁ δ₂
--- Ldropᵣ ρ x = ρ (there x)
--- 
--- Lwkᵣ : LRen δ₁ δ₂ → LRen δ₁ (tt ∷ δ₂)
--- Lwkᵣ ρ x = there (ρ x)
--- 
--- Lliftᵣ : LRen δ₁ δ₂ →  LRen (tt ∷ δ₁) (tt ∷ δ₂)
--- Lliftᵣ ρ (here refl) = here refl
--- Lliftᵣ ρ (there x)   = there (ρ x)
--- 
--- Lren : LRen δ₁ δ₂ → Lvl δ₁ μ → Lvl δ₂ μ
--- Lren ρ `zero       = `zero
--- Lren ρ (`suc l)    = `suc (Lren ρ l)
--- Lren ρ (` x)       = ` ρ x
--- Lren ρ (l₁ `⊔ l₂)  = Lren ρ l₁ `⊔ Lren ρ l₂
--- Lren ρ (l₁ ``⊔ l₂) = Lren ρ l₁ ``⊔ Lren ρ l₂
--- Lren ρ `ω          = `ω
+LRen : LEnv → LEnv → Set
+LRen δ₁ δ₂ = tt ∈ δ₁ → tt ∈ δ₂
 
-Lwk  : Lvl δ μ → Lvl (tt ∷ δ) μ
-Lwk l = {!   !}  
+Lidᵣ : LRen δ δ
+Lidᵣ = id
 
--- LSub : LEnv → LEnv → Set
--- LSub δ₁ δ₂ = tt ∈ δ₁ → Lvl δ₂ <ω 
--- 
--- Lidₛ : LSub δ δ
--- Lidₛ = `_
--- 
--- Ldropₛ : LSub (tt ∷ δ₁) δ₂ → LSub δ₁ δ₂
--- Ldropₛ σ x = σ (there x)
--- 
--- Lwkₛ : LSub δ₁ δ₂ → LSub δ₁ (tt ∷ δ₂)
--- Lwkₛ σ x = Lwk (σ x)
--- 
--- Lliftₛ : LSub δ₁ δ₂ → LSub (tt ∷ δ₁) (tt ∷ δ₂)
--- Lliftₛ σ (here refl) = ` (here refl)
--- Lliftₛ σ (there x)   = Lwk (σ x)
--- 
--- Lsub : LSub δ₁ δ₂ → Lvl δ₁ μ → Lvl δ₂ μ
--- Lsub σ `zero      = `zero
--- Lsub σ (`suc l)   = `suc (Lsub σ l)
--- Lsub σ (` x)      = σ x
--- Lsub σ (l₁ `⊔ l₂) = Lsub σ l₁ `⊔ Lsub σ l₂
--- Lsub σ (l₁ ``⊔ l₂) = Lsub σ l₁ ``⊔ Lsub σ l₂
--- Lsub σ `ω         = `ω
--- 
--- Lextₛ : LSub δ₁ δ₂ → Lvl δ₂ <ω → LSub (tt ∷ δ₁) δ₂
--- Lextₛ σ l′ (here refl) = l′
--- Lextₛ σ l′ (there x)   = σ x
+Ldropᵣ : LRen (tt ∷ δ₁) δ₂ → LRen δ₁ δ₂
+Ldropᵣ ρ x = ρ (there x)
+
+Lwkᵣ : LRen δ₁ δ₂ → LRen δ₁ (tt ∷ δ₂)
+Lwkᵣ ρ x = there (ρ x)
+
+Lliftᵣ : LRen δ₁ δ₂ →  LRen (tt ∷ δ₁) (tt ∷ δ₂)
+Lliftᵣ ρ (here refl) = here refl
+Lliftᵣ ρ (there x)   = there (ρ x)
+
+Lren : LRen δ₁ δ₂ → Lvl δ₁ μ → Lvl δ₂ μ
+Lren ρ `zero       = `zero
+Lren ρ (`suc l)    = `suc (Lren ρ l)
+Lren ρ (` x)       = ` ρ x
+Lren ρ (l₁ `⊔ l₂)  = Lren ρ l₁ `⊔ Lren ρ l₂
+Lren ρ ⟨ l ⟩       = ⟨ Lren ρ l ⟩
+Lren ρ `ω          = `ω
+
+Lwk : Lvl δ μ → Lvl (tt ∷ δ) μ
+Lwk = Lren (Lwkᵣ Lidᵣ)
+
+LSub : LEnv → LEnv → Set
+LSub δ₁ δ₂ = tt ∈ δ₁ → Lvl δ₂ <ω 
+
+Lidₛ : LSub δ δ
+Lidₛ = `_
+
+Ldropₛ : LSub (tt ∷ δ₁) δ₂ → LSub δ₁ δ₂
+Ldropₛ σ x = σ (there x)
+
+Lwkₛ : LSub δ₁ δ₂ → LSub δ₁ (tt ∷ δ₂)
+Lwkₛ σ x = Lwk (σ x)
+
+Lliftₛ : LSub δ₁ δ₂ → LSub (tt ∷ δ₁) (tt ∷ δ₂)
+Lliftₛ σ (here refl) = ` (here refl)
+Lliftₛ σ (there x)   = Lwk (σ x)
+
+Lsub : LSub δ₁ δ₂ → Lvl δ₁ μ → Lvl δ₂ μ
+Lsub σ `zero      = `zero
+Lsub σ (`suc l)   = `suc (Lsub σ l)
+Lsub σ (` x)      = σ x
+Lsub σ (l₁ `⊔ l₂) = Lsub σ l₁ `⊔ Lsub σ l₂
+Lsub σ ⟨ l ⟩      = ⟨ Lsub σ l ⟩
+Lsub σ `ω         = `ω
+
+Lextₛ : LSub δ₁ δ₂ → Lvl δ₂ <ω → LSub (tt ∷ δ₁) δ₂
+Lextₛ σ l′ (here refl) = l′
+Lextₛ σ l′ (there x)   = σ x
 
 _[_]LL : Lvl (tt ∷ δ) μ → Lvl δ <ω → Lvl δ μ
-l [ l′ ]LL = {!   !}
+l [ l′ ]LL = Lsub (Lextₛ Lidₛ l′) l
+
+_L≫ᵣᵣ_ : LRen δ₁ δ₂ → LRen δ₂ δ₃ → LRen δ₁ δ₃
+(ρ₁ L≫ᵣᵣ ρ₂) x = ρ₂ (ρ₁ x)
+
+_L≫ᵣₛ_ : LRen δ₁ δ₂ → LSub δ₂ δ₃ → LSub δ₁ δ₃
+(ρ L≫ᵣₛ σ) x = σ (ρ x)
+
+_L≫ₛᵣ_ : LSub δ₁ δ₂ → LRen δ₂ δ₃ → LSub δ₁ δ₃
+(σ L≫ₛᵣ ρ) x = Lren ρ (σ x)
+
+_L≫ₛₛ_ : LSub δ₁ δ₂ → LSub δ₂ δ₃ → LSub δ₁ δ₃
+(σ₁ L≫ₛₛ σ₂) x = Lsub σ₂ (σ₁ x)
 
 ⟦_⟧δ : (δ : LEnv) → Set
 ⟦ []    ⟧δ = ⊤
@@ -127,7 +136,7 @@ drop-κ (_ , κ) = κ
 ⟦ `suc l    ⟧L κ = suc (⟦ l ⟧L κ)
 ⟦ ` x       ⟧L κ = # (lookup-κ κ x)
 ⟦ l₁ `⊔ l₂  ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
-⟦ l₁ ``⊔ l₂ ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
+⟦ ⟨ l ⟩     ⟧L κ = ⟦ l ⟧L κ
 ⟦ `ω        ⟧L κ = ⌊ ω ⌋
 
 ⟦_⟧L′ : ∀ {δ : LEnv} → Lvl δ <ω → ⟦ δ ⟧δ → BoundLevel ⌊ ω ⌋
@@ -136,10 +145,83 @@ drop-κ (_ , κ) = κ
 ⟦ ` x      ⟧L′ κ = lookup-κ κ x 
 ⟦ l₁ `⊔ l₂ ⟧L′ κ = # (⟦ l₁ ⟧L′ κ) ⊔ # (⟦ l₂ ⟧L′ κ) , ≤-lublub (#<Λ (⟦ l₁ ⟧L′ κ)) (#<Λ (⟦ l₂ ⟧L′ κ))
 
-⟦Lwk⟧L-drop : ∀ (l : Lvl δ μ) κ → ⟦ Lwk l ⟧L κ ≡ ⟦ l ⟧L (drop-κ κ)
-⟦Lwk⟧L-drop  l κ = {!  !}
-⟦Lwk⟧L-∷κ : ∀ (l : Lvl δ μ) κ (ℓ : BoundLevel ⌊ ω ⌋) → ⟦ Lwk l ⟧L (ℓ ∷κ κ) ≡ ⟦ l ⟧L κ
-⟦Lwk⟧L-∷κ  l κ ℓ = {!   !}
+-- ⟦_⟧L′′ : ∀ {δ : LEnv} → (l : Lvl δ μ) → ⟦ δ ⟧δ → BoundLevel ⌊ ω² ⌋
+-- ⟦ `zero     ⟧L′′ κ = zero , ≤-exp zero (subst (suc zero ≤_) {!   !} (≤-id (suc zero)))
+-- ⟦ `suc l    ⟧L′′ κ = (suc (⟦ l ⟧L κ)) , {!   !}
+-- ⟦ ` x       ⟧L′′ κ = # (lookup-κ κ x) , {!   !}
+-- ⟦ l₁ `⊔ l₂  ⟧L′′ κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ) , {!   !}
+-- ⟦ ⟨ l ⟩     ⟧L′′ κ = ⟦ l ⟧L κ , {!   !}
+-- ⟦ `ω        ⟧L′′ κ = ⌊ ω ⌋ , {!   !}
+
+⟦_⟧Lρ_ : LRen δ₁ δ₂ → ⟦ δ₂ ⟧δ → ⟦ δ₁ ⟧δ
+⟦_⟧Lρ_ {δ₁ = []}    ρ κ = []κ
+⟦_⟧Lρ_ {δ₁ = _ ∷ _} ρ κ = (⟦ ` ρ (here refl) ⟧L′ κ) ∷κ (⟦ Ldropᵣ ρ ⟧Lρ κ)
+
+⟦⟧ρ-Lwkᵣ : (ρ : LRen δ₁ δ₂) (κ : ⟦ δ₂ ⟧δ) (ℓ : BoundLevel ⌊ ω ⌋) → 
+  (⟦ ρ L≫ᵣᵣ Lwkᵣ Lidᵣ ⟧Lρ (ℓ ∷κ κ)) ≡ ⟦ ρ ⟧Lρ κ
+⟦⟧ρ-Lwkᵣ {[]} ρ κ ℓ    = refl
+⟦⟧ρ-Lwkᵣ {_ ∷ Δ} ρ κ ℓ = cong ((lookup-κ κ (ρ (here refl))) ,_) (⟦⟧ρ-Lwkᵣ (Ldropᵣ ρ) κ ℓ)
+
+⟦⟧ρ-Lidᵣ : (κ : ⟦ δ ⟧δ) → (⟦ Lidᵣ ⟧Lρ κ) ≡ κ
+⟦⟧ρ-Lidᵣ {[]}     κ = refl
+⟦⟧ρ-Lidᵣ {_ ∷ δ₂} (ℓ , κ) = cong (ℓ ∷κ_) (trans (⟦⟧ρ-Lwkᵣ Lidᵣ κ ℓ) (⟦⟧ρ-Lidᵣ κ))
+
+⟦⟧ρ-Lliftᵣ : ∀ (ρ : LRen δ₁ δ₂) (κ : ⟦ δ₂ ⟧δ) (ℓ : BoundLevel ⌊ ω ⌋) →
+   (⟦ Lliftᵣ ρ ⟧Lρ (ℓ ∷κ κ)) ≡ (ℓ ∷κ (⟦ ρ ⟧Lρ κ))
+⟦⟧ρ-Lliftᵣ ρ κ l = cong (_ ∷κ_) (⟦⟧ρ-Lwkᵣ ρ κ l)
+  
+⟦⟧L-Lren′ : (κ : ⟦ δ₂ ⟧δ) (ρ : LRen δ₁ δ₂) (l : Lvl δ₁ <ω) → 
+  ⟦ Lren ρ l ⟧L′ κ ≡ ⟦ l ⟧L′ (⟦ ρ ⟧Lρ κ)
+⟦⟧L-Lren′ κ ρ `zero     = refl
+⟦⟧L-Lren′ κ ρ (` x)     = ⟦⟧δ-lookup κ ρ x
+  where ⟦⟧δ-lookup : ∀ {ℓ} (κ : ⟦ δ₂ ⟧δ) (ρ : LRen δ₁ δ₂) (x : ℓ ∈ δ₁) → 
+                        (⟦ ` ρ x ⟧L′ κ) ≡ (⟦ ` x ⟧L′ (⟦ ρ ⟧Lρ κ))
+        ⟦⟧δ-lookup κ ρ (here refl) = refl
+        ⟦⟧δ-lookup κ ρ (there x) = ⟦⟧δ-lookup κ (Ldropᵣ ρ) x
+⟦⟧L-Lren′ κ ρ (`suc l) =  {!   !}
+⟦⟧L-Lren′ κ ρ (l₁ `⊔ l₂) = {!   !} -- cong₂ _⊔_ (⟦⟧T-Lren κ ρ l₁) (⟦⟧T-Lren κ ρ l₂) 
+
+⟦⟧L-Lren : (κ : ⟦ δ₂ ⟧δ) (ρ : LRen δ₁ δ₂) (l : Lvl δ₁ μ) → 
+  ⟦ Lren ρ l ⟧L κ ≡ ⟦ l ⟧L (⟦ ρ ⟧Lρ κ)
+⟦⟧L-Lren κ ρ `zero     = refl
+⟦⟧L-Lren κ ρ (` x)     = ⟦⟧δ-lookup κ ρ x
+  where ⟦⟧δ-lookup : ∀ {ℓ} (κ : ⟦ δ₂ ⟧δ) (ρ : LRen δ₁ δ₂) (x : ℓ ∈ δ₁) → 
+                        (⟦ ` ρ x ⟧L κ) ≡ (⟦ ` x ⟧L (⟦ ρ ⟧Lρ κ))
+        ⟦⟧δ-lookup κ ρ (here refl) = refl
+        ⟦⟧δ-lookup κ ρ (there x) = ⟦⟧δ-lookup κ (Ldropᵣ ρ) x
+⟦⟧L-Lren κ ρ (`suc l)   =  cong suc ((⟦⟧L-Lren κ ρ l))
+⟦⟧L-Lren κ ρ (l₁ `⊔ l₂) = cong₂ _⊔_ (⟦⟧L-Lren κ ρ l₁) (⟦⟧L-Lren κ ρ l₂)
+⟦⟧L-Lren κ ρ ⟨ l ⟩      = ⟦⟧L-Lren κ ρ l
+⟦⟧L-Lren κ ρ `ω         = refl
+
+⟦_⟧Lσ_ : LSub δ₁ δ₂ → ⟦ δ₂ ⟧δ → ⟦ δ₁ ⟧δ
+⟦_⟧Lσ_ {δ₁ = []}    σ κ = []κ
+⟦_⟧Lσ_ {δ₁ = _ ∷ _} σ κ = (⟦ σ (here refl) ⟧L′ κ) ∷κ (⟦ Ldropₛ σ ⟧Lσ κ)
+
+⟦⟧Lσ-Lwkᵣ : (σ : LSub δ₁ δ₂) (κ : ⟦ δ₂ ⟧δ) (ℓ : BoundLevel ⌊ ω ⌋) → 
+  (⟦ σ L≫ₛᵣ Lwkᵣ Lidᵣ ⟧Lσ (ℓ ∷κ κ)) ≡ ⟦ σ ⟧Lσ κ
+⟦⟧Lσ-Lwkᵣ {[]} σ κ ℓ    = refl
+⟦⟧Lσ-Lwkᵣ {_ ∷ δ} σ κ ℓ = 
+  cong₂ _∷κ_ (trans (⟦⟧L-Lren′ (ℓ ∷κ κ) (Lwkᵣ Lidᵣ) (σ (here refl))) 
+      (cong (λ κ → ⟦ σ (here refl) ⟧L′ κ) (trans (⟦⟧ρ-Lwkᵣ Lidᵣ κ ℓ) (⟦⟧ρ-Lidᵣ κ)))) 
+  (⟦⟧Lσ-Lwkᵣ (Ldropₛ σ) κ ℓ)
+
+⟦⟧Lσ-Lidₛ : (κ : ⟦ δ ⟧δ) → (⟦ Lidₛ ⟧Lσ κ) ≡ κ
+⟦⟧Lσ-Lidₛ {[]}     κ = refl
+⟦⟧Lσ-Lidₛ {_ ∷ δ₂} (ℓ , κ) = cong (ℓ ∷κ_) (trans (⟦⟧Lσ-Lwkᵣ Lidₛ κ ℓ) (⟦⟧Lσ-Lidₛ κ))
+-- 
+-- ⟦⟧T-Lsub : (κ : ⟦ δ₂ ⟧δ) (σ : LSub δ₁ δ₂) (T : Type δ₁ ℓ) → 
+--   ⟦ Tsub σ T ⟧T κ ≡ ⟦ T ⟧T (⟦ σ ⟧σ κ)
+-- ⟦⟧T-Lsub κ σ Nat       = refl
+-- ⟦⟧T-Lsub κ σ (` x)     = ⟦⟧δ-lookup κ σ x
+--   where ⟦⟧δ-lookup : ∀ {ℓ} (κ : ⟦ δ₂ ⟧δ) (σ : LSub δ₁ δ₂) (x : ℓ ∈ δ₁) → 
+--                           (⟦ σ ℓ x ⟧T κ) ≡ (⟦ ` x ⟧T (⟦ σ ⟧σ κ))
+--         ⟦⟧δ-lookup κ σ (here refl) = refl
+--         ⟦⟧δ-lookup κ σ (there x) rewrite ⟦⟧δ-lookup κ (Tdropₛ σ) x = refl
+-- ⟦⟧T-Lsub κ σ (T₁ ⇒ T₂) rewrite ⟦⟧T-Lsub κ σ T₁ | ⟦⟧T-Lsub κ σ T₂ = refl
+-- ⟦⟧T-Lsub κ σ (∀α T)    = dep-ext λ A → 
+--   trans (⟦⟧T-Lsub (A ∷κ κ) (Lliftₛ σ _) T) (cong (λ κ → ⟦ T ⟧T (A , κ)) (⟦⟧σ-Lwkᵣ σ κ A))
+-- 
 
 data TEnv : LEnv → Set where
   []   : TEnv δ
@@ -163,8 +245,8 @@ data Type {δ : LEnv} (Δ : TEnv δ) : Lvl δ μ → Set where
   Nat   : Type Δ `zero
   `_    : Δ ∍ l → Type Δ l
   _⇒_   : Type Δ l₁ → Type Δ l₂ → Type Δ (l₁ `⊔ l₂) 
-  ∀α    : {l : Lvl δ <ω>} → Type (l ∷ Δ) l′ → Type Δ (`suc l ``⊔ l′) 
-  ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω ``⊔ l)
+  ∀α    : {l : Lvl δ μ} → Type (l ∷ Δ) l′ → Type Δ (`suc l `⊔ l′) 
+  ∀ℓ    : {l : Lvl δ μ} → Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ ⟨ l ⟩)
       
 pattern ∀α:_⇒_ l {l′ = l′} T = ∀α {l = l} {l′ = l′} T
 
@@ -218,8 +300,8 @@ TTren ρ (∀ℓ T)    = ∀ℓ (TTren (TLliftᵣ ρ) T)
 TTwk : Type Δ l′ → Type (l ∷ Δ) l′
 TTwk = TTren (Twkᵣ Tidᵣ)
 
-TLwk : Type Δ l′ → Type (∷l Δ) (Lwk l′)
-TLwk T = {!   !}
+postulate
+  TLwk : Type Δ l′ → Type (∷l Δ) (Lwk l′)
 
 TSub : TEnv δ → TEnv δ → Set
 TSub {δ} Δ₁ Δ₂ = ∀ μ (l : Lvl δ μ) → Δ₁ ∍ l → Type Δ₂ l
@@ -297,7 +379,7 @@ _∷ηℓ_ {δ} {Δ} {κ} ℓ η = η
 lookup-η : ∀ {l : Lvl δ μ} {Δ : TEnv δ} {κ : ⟦ δ ⟧δ} → ⟦ Δ ⟧Δ κ → Δ ∍ l → Set (⟦ l ⟧L κ) 
 lookup-η (A , _) here = A
 lookup-η (_ , η) (there x) = lookup-η η x
-lookup-η {κ = κ} η (lskip {l = l} x) = cast (sym (⟦Lwk⟧L-drop  l κ)) (lookup-η η x)
+lookup-η {κ = κ} η (lskip {l = l} x) = cast {!   !} (lookup-η η x)
 
 drop-η : ∀ {l : Lvl δ μ} {Δ : TEnv δ} {κ : ⟦ δ ⟧δ} → ⟦ l ∷ Δ ⟧Δ κ → ⟦ Δ ⟧Δ κ 
 drop-η (_ , η) = η
@@ -310,7 +392,7 @@ drop-η (_ , η) = η
 ⟦_⟧T {δ = δ} {Δ = Δ} (∀α {l = l} T) κ η = 
     ∀ (A : Set (⟦ l ⟧L κ)) → ⟦ T ⟧T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ}  A η)
 ⟦_⟧T {l = l} {Δ = Δ} (∀ℓ T) κ η = ∀ (ℓ : BoundLevel ⌊ ω ⌋) → 
-  cast (⟦Lwk⟧L-∷κ l κ ℓ) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) (_∷ηℓ_ {Δ = Δ} {κ = κ} ℓ η)))
+  cast ({!   !}) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) (_∷ηℓ_ {Δ = Δ} {κ = κ} ℓ η)))
   -- this cast would be gone, if the extended level hierarchy were part of agda
 
 postulate 
@@ -408,7 +490,7 @@ data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
   ‵suc  : Expr Γ Nat → Expr Γ Nat
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : ∀ l {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
-  Λℓ_⇒_ : ∀ (l : Lvl δ μ) {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
+  Λℓ_   : ∀ {l : Lvl δ μ} {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
   _·_   : Expr Γ (T ⇒ T′) → Expr Γ T → Expr Γ T′
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
   _∙ℓ_  : ∀ {l : Lvl δ μ} {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ <ω) → Expr Γ (T [ l′ ]TL) 
@@ -441,7 +523,7 @@ lookup-γ (A , γ) here       = A
 lookup-γ (_ , γ) (there x)  = lookup-γ γ x
 lookup-γ {Γ = _ ∷l Γ} {κ = κ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦⟧T-ren η (Twkᵣ Tidᵣ) T)) 
    (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ κ η) (sym (trans (⟦⟧ρ-Twkᵣ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x) 
-lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = κ} {η = η} γ (lskip x) = lookup-γ {δ = δ} {κ = drop-κ κ} γ x
+lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = κ} {η = η} γ (lskip x) = {! lookup-γ {δ = δ} {κ = drop-κ κ} γ x  !}
   -- subst id (sym (⟦⟧T-ren η (Twkᵣ Tidᵣ) T)) 
   -- (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ η) (sym (trans (⟦⟧ρ-Twkᵣ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x) 
   
@@ -452,11 +534,17 @@ lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = κ} {η = η} γ (lskip x) = loo
 ⟦ ‵suc e  ⟧E κ η γ = sucℕ (⟦ e ⟧E κ η γ)
 ⟦_⟧E {Δ = Δ} {T = (T₁ ⇒ T₂)} {Γ} (λx e) κ η γ = λ x → ⟦ e ⟧E κ η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
 ⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ_⇒_ {l′ = l′} l e) κ η γ = λ A → ⟦ e ⟧E κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} A η) (_∷γl_ {l = l} {Γ = Γ} A γ)
-⟦_⟧E {_} {Δ} {T} {Γ = Γ} (Λℓ l ⇒ e) κ η γ = λ ℓ → {! lift (⟦ e ⟧E (ℓ ∷κ κ) (ℓ ∷ηℓ η) (ℓ ∷γℓ γ))  !}
+⟦_⟧E (Λℓ e) κ η γ = {! λ (ℓ : BoundLevel ⌊ ω ⌋) → lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) (ℓ ∷ηℓ η) (ℓ ∷γℓ γ))  !}
+  -- where f : ∀  {l : Lvl δ μ} {Δ : TEnv δ} {T : Type (∷l Δ) (Lwk l)} {Γ : EEnv Δ} 
+  --              (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → (⟦ Γ ⟧Γ κ η) → (ℓ : BoundLevel (ω^ ω^ zero + zero + zero)) → 
+  --              cast (⟦⟧L-Lwk-∷κ (`ω `⊔ ⟨ l ⟩) κ ℓ) (Lift (ω^ ω^ zero + zero + zero) (⟦ T ⟧T (ℓ ∷κ κ) (_∷ηℓ_ {Δ = Δ} {κ = κ} ℓ η)))
+  --       f {l = l} κ η γ ℓ = {!    !}
+  -- --λ where 
+  -- ℓ → {! lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) (ℓ ∷ηℓ η) (ℓ ∷γℓ γ))  !}
 ⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
 ⟦_⟧E {Δ = Δ} (_∙_ {T = T} e T′) κ η γ = subst id (trans 
   (cong (λ η′ → ⟦ T ⟧T κ ((⟦ T′ ⟧T κ η) , η′)) (sym (⟦⟧σ-Tidₛ {Δ = Δ} {κ = κ} η))) 
   (sym {! (⟦⟧T-sub η (Textₛ Tidₛ T′) T)  !})) (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 
-⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ {- rewrite ⟦Lwk⟧L-∷κ l κ (⟦ l′ ⟧L′ κ) -} = {!   !} --(⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))
+⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ {- rewrite ⟦⟧L-Lwk-∷κ l κ (⟦ l′ ⟧L′ κ) -} = {!   !} --(⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))
    
                          
