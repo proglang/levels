@@ -355,9 +355,9 @@ postulate
 wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)
 wkₗₜ `ℕ = `ℕ
 wkₗₜ (T₁ `⇒ T₂) = subst (Type _ _) (sym (wkₗ-⊔ _ _))  (wkₗₜ T₁ `⇒ wkₗₜ T₂)
-wkₗₜ (` α) = {!!}
-wkₗₜ (`∀α l , T) = subst (Type _ _) (trans (cong (_⊔ℓ _) (sym (wkₗ-suc l))) (sym (wkₗ-⊔ _ _))) {!`∀α l , ?!}
-wkₗₜ (`∀ℓ T) = subst (Type _ _) (sym (wkₗ-⊔ _ _)) (`∀ℓ {!!})
+wkₗₜ (` α) = {! !}
+wkₗₜ (`∀α l , T) = subst (Type _ _) (trans (cong (_⊔ℓ _) (sym (wkₗ-suc l))) (sym (wkₗ-⊔ _ _))) {!`∀α l , ? !}
+wkₗₜ (`∀ℓ T) = subst (Type _ _) (sym (wkₗ-⊔ _ _)) (`∀ℓ {! !})
 
 --! inn
 data inn : Type δ Δ l → Ctx Δ → Set where
@@ -398,7 +398,7 @@ postulate
   subst-env : ∀ {d : DEnv δ} (T : Type δ (l′ ∷ Δ) l) (T′ : Type δ Δ l′) (η : Env* d Δ) → ⟦ T ⟧ᵀ d (encode d T′ η ∷ η) ≡ ⟦ T [ T′ ]T ⟧ᵀ d η
 
 coe** : {Γ : Ctx Δ} (d : DEnv δ) (η : Env* d Δ) (lev : FLvl) → VEnv d Γ η → VEnv (DEnv-ext d lev) (◁ℓ Γ) (coe* d lev η)
-coe** d η lev γ l T x = {!!}
+coe** d η lev γ l T x = {! !}
 
 
 E⟦_⟧ : ∀ {T : Type δ Δ l}{Γ : Ctx Δ} → (e : Expr Γ T) (d : DEnv δ) (η : Env* d Δ) → (γ : VEnv d Γ η) → ⟦ T ⟧ᵀ d η
@@ -429,10 +429,10 @@ E⟦ Λℓ_ {l = l}{T = T} M ⟧ d η γ =
   λ x → let r = E⟦ M ⟧ (DEnv-ext d x) (coe* d x η) (coe** d η x γ) in
         coe (sym (trans
                     (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-                    {!!})) r
+                    {! !})) r
 E⟦ _·ℓ_ {l = l}{T = T} M newl ⟧ d η γ =
   let r = E⟦ M ⟧ d η γ in
   let x = ⟦ newl ⟧ℓ d in
   coe (trans
          (ElLift≤ (⊔₂ ω (Lᵈ′ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-         {!!}) (r x)
+         {! !}) (r x)

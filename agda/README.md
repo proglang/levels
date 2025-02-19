@@ -32,7 +32,7 @@
 |-----|--------------------------|
 | SSF | Stratified System F      |
 | UP  | Universe Polymorphism    |
-| ELH | Extended Level Hierarchy |
+| EH  | Extended Level Hierarchy |
 | IR  | Induction Recursion      |
 
 ##### Object Language
@@ -41,7 +41,7 @@
 |------------|--------------------|-----------------------|
 | SSF        | yes                | no                    |
 | SSF-UP     | yes                | yes                   |
-| SSF-UP-ELH | yes                | yes                   |
+| SSF-UP-EH  | yes                | yes                   |
 | SSF-UP-IR  | yes                | yes                   |
 
 ##### Formalization Methods
@@ -50,7 +50,7 @@
 |------------|-------------|---------------------|--------------------------|
 | SSF        | yes         | no                  | no                       |
 | SSF-UP     | no          | no                  | no                       |
-| SSF-UP-ELH | yes (*)     | no                  | yes                      | 
+| SSF-UP-EH  | yes (*)     | no                  | yes                      | 
 | SSF-UP-IR  | no          | yes                 | no                       |
 
 
@@ -58,7 +58,7 @@
 
 | Name       | Suffers Subst Hell Unnecessarily | Hits Hierarchy Limit |
 |------------|--------------------|----------------------|
-| SSF        | no                 | no                  |
+| SSF        | no                 | no                   |
 | SSF-UP     | yes                | yes                  |
-| SSF-UP-ELH | no (*)             | no                   |
+| SSF-UP-EH  | no (*)             | no                   |
 | SSF-UP-IR  | yes                | no                   |
