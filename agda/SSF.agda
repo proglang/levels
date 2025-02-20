@@ -114,21 +114,11 @@ module FunctionTypeSemEnv where
   open import BoundQuantification 
   
   ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : TEnv} → ℓ ∈ Δ → ℓ < (suc⨆Δ Δ)
-  ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = <₃ {ℓ₂ = suc⨆Δ Δ} <₁
-  ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = <₃ {ℓ₂ = suc⨆Δ (ℓ′ ∷ Δ)} (ℓ∈Δ⇒ℓ<⨆Δ x)
+  ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = ≤-lub (suc⨆Δ Δ) (≤-id (suc ℓ)) 
+  ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = ≤-lub (suc⨆Δ (ℓ′ ∷ Δ)) (ℓ∈Δ⇒ℓ<⨆Δ x) 
   
   ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
   ⟦ Δ ⟧Δ = ∀ (ℓ : BoundLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundLift (#<Λ ℓ) (Set (# ℓ))
-  
-  []η : ⟦ [] ⟧Δ
-  []η _ ()
-  
-  _∷η_ : ∀ {ℓ} {Δ : TEnv} → Set ℓ → ⟦ Δ ⟧Δ → ⟦ ℓ ∷ Δ ⟧Δ
-  (A ∷η η) ℓ (here refl) = bound-lift (#<Λ ℓ) A
-  (A ∷η η) ℓ (there x)   = bound-lift (#<Λ ℓ) (bound-unlift (ℓ∈Δ⇒ℓ<⨆Δ x) (η _ x)) 
-  
-  lookup-η : ∀ {ℓ} {Δ : TEnv} → ⟦ Δ ⟧Δ → ℓ ∈ Δ → Set ℓ 
-  lookup-η η α = bound-unlift (ℓ∈Δ⇒ℓ<⨆Δ α) (η _ α)
         
 ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
 ⟦  []   ⟧Δ = ⊤
@@ -142,14 +132,14 @@ _∷η_ = _,_
   
 lookup-η : ∀ {ℓ} {Δ : TEnv} → ⟦ Δ ⟧Δ → ℓ ∈ Δ → Set ℓ 
 lookup-η (A , _) (here refl) = A
-lookup-η (_ , η) (there α)   = lookup-η η α
+lookup-η (_ , η) (there x)   = lookup-η η x
 
 drop-η : ∀ {ℓ} {Δ : TEnv} → ⟦ ℓ ∷ Δ ⟧Δ →  ⟦ Δ ⟧Δ
 drop-η (_ , η) = η
 
 ⟦_⟧T_ : ∀ {ℓ} {Δ : TEnv} → (T : Type Δ ℓ) → ⟦ Δ ⟧Δ → Set ℓ
 ⟦ Nat     ⟧T η = ℕ
-⟦ ` α     ⟧T η = lookup-η η α
+⟦ ` x     ⟧T η = lookup-η η x
 ⟦ T₁ ⇒ T₂ ⟧T η = ⟦ T₁ ⟧T η → ⟦ T₂ ⟧T η   
 ⟦ ∀α T    ⟧T η = ∀ A → ⟦ T ⟧T (A ∷η η)  
 
@@ -241,8 +231,8 @@ module FunctionExprSemEnv where
   open import BoundQuantification 
   
   Γ∋T⇒Tℓ≤⨆Γ : ∀ {ℓ} {Δ : TEnv} {T : Type Δ ℓ} {Γ : EEnv Δ} → Γ ∋ T → ℓ ≤ (⨆Γ Γ)
-  Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ Γ} here       = <₃ {ℓ₂ = ⨆Γ Γ} <₁
-  Γ∋T⇒Tℓ≤⨆Γ {Γ = _∷_ {ℓ = ℓ} _ Γ} (there x) = <₃ {ℓ₂ = ℓ} (Γ∋T⇒Tℓ≤⨆Γ x)
+  Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ Γ} here = ≤-lub (⨆Γ Γ) (≤-id _)
+  Γ∋T⇒Tℓ≤⨆Γ {Γ = _∷_ {ℓ = ℓ} _ Γ} (there x) = ≤-lub ℓ (Γ∋T⇒Tℓ≤⨆Γ x)
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ℓ Γ} (tskip x) = Γ∋T⇒Tℓ≤⨆Γ x
   
   ⟦_⟧Γ : ∀ {Δ} → (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)

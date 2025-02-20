@@ -62,3 +62,24 @@
 | SSF-UP     | yes                | yes                  |
 | SSF-UP-EH  | no (*)             | no                   |
 | SSF-UP-IR  | yes                | no                   |
+
+## Solver Laws
+
+```agda
+open import Level
+open import Relation.Binary.PropositionalEquality using (_≡_)
+
+infix 40 ω^_+_
+postulate
+  ω^_+_ : (ℓ₁ ℓ₂ : Level) → Level
+
+private variable
+  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level
+  
+postulate 
+  β-suc-zero     : suc zero ≡ ω^ zero + zero                                     -- by definition 
+  β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂                             -- by definition      
+  distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂                      -- ω^_+_ distributes _⊔_
+  subsumption₁   : ℓ ⊔ ω^ ℓ₁ + ℓ′ ≡ ω^ ℓ₁ + ℓ′              -- if ℓ occurs in ℓ′ -- _⊔_ subsumes ω^_+_ additive component
+  subsumption₂   : ℓ ⊔ ω^ ℓ′ + ℓ₁ ≡ ω^ ℓ′ + ℓ₁              -- if ℓ occurs in ℓ′ -- _⊔_ subsumes ω^_+_ exponentiation component
+```
