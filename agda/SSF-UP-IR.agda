@@ -165,38 +165,37 @@ LvlEnv = List ⊤
 variable
       δ δ′ δ₁ δ₂ δ₃ : LvlEnv
 
+data Mode : Set where
+  <ω ≤ω : Mode
+
+variable μ : Mode
 
 module _ (δ : LvlEnv) where
 
-  data FinLvl : Set where
-    `zero : FinLvl
-    `suc  : FinLvl → FinLvl
-    _`⊔_  : FinLvl → FinLvl → FinLvl
-    `_    : tt ∈ δ → FinLvl
+  data MLvl : Mode → Set where
+    `zero : MLvl <ω
+    `suc  : MLvl μ → MLvl μ
+    _`⊔_  : MLvl μ → MLvl μ → MLvl μ
+    `_    : tt ∈ δ → MLvl <ω
+    `fin  : MLvl <ω → MLvl ≤ω
+    `omg  : ℕ → MLvl ≤ω
+    
+  FinLvl = MLvl <ω
+  LimLvl = MLvl ≤ω
 
-  data LimLvl : Set where
-    `fin  : FinLvl → LimLvl
-    _`⊔_  : LimLvl → LimLvl → LimLvl
-    `suc  : LimLvl → LimLvl
-    `omg  : ℕ → LimLvl
-
-wkₗ  : FinLvl δ → FinLvl (tt ∷ δ)
+wkₗ  : MLvl δ μ → MLvl (tt ∷ δ) μ
 wkₗ `zero      = `zero
 wkₗ (`suc l)   = `suc (wkₗ l)
 wkₗ (` x)      = ` (there x)
 wkₗ (l₁ `⊔ l₂) = wkₗ l₁ `⊔ wkₗ l₂
-
-wkₗ′ : LimLvl δ → LimLvl (tt ∷ δ)
-wkₗ′ (`fin x) = `fin (wkₗ x)
-wkₗ′ (x `⊔ y) = wkₗ′ x `⊔ wkₗ′ y
-wkₗ′ (`suc x) = `suc (wkₗ′ x)
-wkₗ′ (`omg x) = `omg x
+wkₗ (`fin x) = `fin (wkₗ x)
+wkₗ (`omg x) = `omg x
 
 module these-hold-definitionally where
-  wkₗ-⊔ : (l₁ l₂ : LimLvl δ) → wkₗ′ (l₁ `⊔ l₂) ≡ wkₗ′ l₁ `⊔ wkₗ′ l₂
+  wkₗ-⊔ : (l₁ l₂ : LimLvl δ) → wkₗ (l₁ `⊔ l₂) ≡ wkₗ l₁ `⊔ wkₗ l₂
   wkₗ-⊔ l₁ l₂ = refl
 
-  wkₗ-suc : (l : LimLvl δ) → wkₗ′ (`suc l) ≡ `suc (wkₗ′ l)
+  wkₗ-suc : (l : LimLvl δ) → wkₗ (`suc l) ≡ `suc (wkₗ l)
   wkₗ-suc x = refl
 
 -- semantics of finite levels
@@ -234,7 +233,7 @@ Env δ = List (LimLvl δ)
 
 wkₗₑ : Env δ → Env (tt ∷ δ)
 wkₗₑ []      = []
-wkₗₑ (l ∷ Δ) = wkₗ′ l ∷ wkₗₑ Δ
+wkₗₑ (l ∷ Δ) = wkₗ l ∷ wkₗₑ Δ
 
 
 variable Δ Δ₁ Δ₂ Δ₃ : Env δ
@@ -248,7 +247,7 @@ data Type δ (Δ : Env δ) : LimLvl δ → Set where
   _`⇒_    : (T₁ : Type δ Δ l₁) (T₂ : Type δ Δ l₂) → Type δ Δ (l₁ `⊔ l₂)
   `_      : (α : l ∈ Δ) → Type δ Δ l
   `∀α_,_  : (l : LimLvl δ) (T : Type δ (l ∷ Δ) l′) → Type δ Δ (`suc l `⊔ l′)
-  `∀ℓ_    : (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)) → Type δ Δ (`omg ℕ.zero `⊔ l)
+  `∀ℓ_    : (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)) → Type δ Δ (`omg ℕ.zero `⊔ l)
 
 Lᵈ : DEnv δ → LimLvl δ → Lvl
 Lᵈ d l = ⟦ l ⟧ℓ′ d
@@ -271,13 +270,13 @@ coef d x (`suc fl) = cong ℕ.suc (coef d x fl)
 coef d x (fl₁ `⊔ fl₂) = cong₂ _⊔ℕ_ (coef d x fl₁) (coef d x fl₂)
 coef d x (` z) = refl
 
-denv-wk-ext : (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → ⟦ ll ⟧ℓ′ d ≡ ⟦ wkₗ′ ll ⟧ℓ′ (DEnv-ext d x)
+denv-wk-ext : (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → ⟦ ll ⟧ℓ′ d ≡ ⟦ wkₗ ll ⟧ℓ′ (DEnv-ext d x)
 denv-wk-ext d x (`fin fl) = cong (ℕ.zero ,_) (coef d x fl)
 denv-wk-ext d x (ll₁ `⊔ ll₂) = cong₂ _⊔_ (denv-wk-ext d x ll₁) (denv-wk-ext d x ll₂)
 denv-wk-ext d x (`suc ll) = cong Lvl-suc (denv-wk-ext d x ll)
 denv-wk-ext d x (`omg x₁) = refl
 
-coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ d ll ≡ Uᵈ (DEnv-ext d x) (wkₗ′ ll)
+coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ d ll ≡ Uᵈ (DEnv-ext d x) (wkₗ ll)
 coel d x ll = cong U (denv-wk-ext d x ll)
 
 
@@ -329,7 +328,7 @@ postulate
   _[_]ℓℓ : LimLvl (tt ∷ δ) → FinLvl δ → LimLvl δ
   _[_]ℓ : ∀ {l : LimLvl (tt ∷ δ)} → Type (tt ∷ δ) (wkₗₑ Δ) l → (newl : FinLvl δ) → Type δ Δ (l [ newl ]ℓℓ)
 
-  wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)
+  wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)
 
 --! inn
 data inn : Type δ Δ l → Ctx Δ → Set where
@@ -347,8 +346,8 @@ data Expr {δ} {Δ : Env δ} (Γ : Ctx Δ) : Type δ Δ l → Set where
   _·_   : ∀ {T : Type δ Δ l} {T′ : Type δ Δ l′} → Expr Γ (T `⇒ T′) → Expr Γ T → Expr Γ T′
   Λ_⇒_  : ∀ (l : LimLvl δ) → {T : Type δ (l ∷ Δ) l′} → Expr (l ◁* Γ) T → Expr Γ (`∀α l , T)
   _∙_    : ∀ {T : Type δ (l ∷ Δ) l′} → Expr Γ (`∀α l , T) → (T′ : Type δ Δ l) → Expr Γ (T [ T′ ]T)
-  Λℓ_   : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)} → Expr (◁ℓ Γ) T → Expr Γ (`∀ℓ T)
-  _·ℓ_  : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)} → Expr Γ (`∀ℓ T) → (newl : FinLvl δ) → Expr Γ (T [ newl ]ℓ)
+  Λℓ_   : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)} → Expr (◁ℓ Γ) T → Expr Γ (`∀ℓ T)
+  _·ℓ_  : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)} → Expr Γ (`∀ℓ T) → (newl : FinLvl δ) → Expr Γ (T [ newl ]ℓ)
 
 variable e e₁ e₂ e₃ : Expr Γ T
 variable n : ℕ
@@ -373,19 +372,19 @@ postulate
 
 
 postulate
-  subst-lev-env : (newl : FinLvl δ) (d    : DEnv δ) (η    : Env* d Δ) (T    : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l))
+  subst-lev-env : (newl : FinLvl δ) (d    : DEnv δ) (η    : Env* d Δ) (T    : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l))
     → ⟦ T ⟧ᵀ (DEnv-ext d (⟦ newl ⟧ℓ d)) (coe* d (⟦ newl ⟧ℓ d) η) ≡ ⟦ T [ newl ]ℓ ⟧ᵀ d η
 
 
-crucial-equation : (l : LimLvl δ) (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ′ l)) (d : DEnv δ) (η : Env* d Δ) (x : FLvl)
-  (code : Uᵈ (DEnv-ext d x) (wkₗ′ l))
+crucial-equation : (l : LimLvl δ) (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)) (d : DEnv δ) (η : Env* d Δ) (x : FLvl)
+  (code : Uᵈ (DEnv-ext d x) (wkₗ l))
     → El {Lᵈ d l} (coe (coel d x l ⁻¹) code)
-    ≡ El {Lᵈ (DEnv-ext d x) (wkₗ′ l)} code
+    ≡ El {Lᵈ (DEnv-ext d x) (wkₗ l)} code
 crucial-equation l T d η x code rewrite denv-wk-ext d x l = refl
 
 
 coe** : {Γ : Ctx Δ} (d : DEnv δ) (η : Env* d Δ) (lev : FLvl) → VEnv d Γ η → VEnv (DEnv-ext d lev) (◁ℓ Γ) (coe* d lev η)
-coe** d η lev γ .(wkₗ′ _) .(wkₗₜ T) (lskip{T = T} x) = coe (T-wk-ext d η lev T) (γ _ T x)
+coe** d η lev γ .(wkₗ _) .(wkₗₜ T) (lskip{T = T} x) = coe (T-wk-ext d η lev T) (γ _ T x)
 
 -- expression semantics
 
