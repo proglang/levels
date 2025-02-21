@@ -1,7 +1,6 @@
 -- ####################################
 -- ## BEGIN CODE FROM UNIVERSE PAPER ##
 -- ####################################
-
 module Universe where
 
 module Lib where
@@ -9,9 +8,9 @@ module Lib where
   open import Data.Empty using (⊥; ⊥-elim) public
   open import Data.Product renaming (proj₁ to ₁; proj₂ to ₂) public
   open import Data.Sum using (_⊎_; inj₁; inj₂) public
-  open import Function hiding (id; _∘_; _⇔_) public
+  open import Function hiding (id; _∘_; _⇔_; _∋_) public
   open import Induction.WellFounded public
-  open import Relation.Binary public
+  open import Relation.Binary hiding (_⇒_) public
   open import Relation.Binary.PropositionalEquality
     hiding (decSetoid; preorder; setoid; [_]) public
   
@@ -217,7 +216,7 @@ module IRUniverse where
     LiftU p a = Lift p (coe U<-compute a)
 
   -- finite levels
-  module ℕ-example where
+  module ℕ where
     open import Data.Nat
     open import Data.Nat.Properties
     open import Data.Nat.Induction
@@ -243,7 +242,7 @@ module IRUniverse where
     const₀' A B x y = x
   
   -- ω*ω levels
-  module ℕ*ℕ-example where
+  module ℕ*ℕ where
   
     import Data.Nat as N
     open import Data.Nat.Properties

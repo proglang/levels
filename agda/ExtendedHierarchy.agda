@@ -32,13 +32,7 @@ postulate
   β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- by definition      
   distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂ 
   subsumption-add₁₀ : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
-  -- subsumption-add₁₁  : ℓ ⊔ ω^ ℓ₁ + suc ℓ ≡ ω^ ℓ₁ + suc ℓ
-
-  -- subsumption-exp-exp₁₁ : ℓ ⊔ ω^ (ω^ ℓ + ℓ₂) + ℓ₁ ≡ ω^ (ω^ ℓ + ℓ₂) + ℓ₁
-  -- subsumption-exp-exp₁₂ : ℓ ⊔ ω^ (ω^ ℓ₂ + ℓ) + ℓ₁ ≡ ω^ (ω^ ℓ₂ + ℓ) + ℓ₁
   subsumption-exp₁₀ : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
-  -- subsumption-exp₁  : ℓ ⊔ ω^ suc ℓ + ℓ₁ ≡ ω^ suc ℓ + ℓ₁
-
   -- in reality the Agda compiler would apply an infinite set of equations:
   -- subsumption-addₙₘ for all n, m ∈ ℕ
   -- subsumption-expₙₘ for all n, m ∈ ℕ
@@ -63,7 +57,7 @@ cast-elim-intro-cancel refl a = refl
 cast-intro-elim-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : cast eq A) → cast-intro eq (cast-elim eq a) ≡ a 
 cast-intro-elim-cancel refl a = refl
 
--- Example MutualOrd Instanciations -------------------------------------------
+-- MutualOrd Instanciations ---------------------------------------------------
 
 open import Data.Sum using (_⊎_; inj₁; inj₂) 
 
@@ -182,48 +176,6 @@ subsumption-exp₁₀′ 𝟎                b s = refl
 subsumption-exp₁₀′ ω^ aa + ab [ r ] b s with <-tri aa (ω^ aa + ab [ r ])
 ... | inj₁ x = refl
 ... | inj₂ (inj₁ x) = ⊥-elim (¬ω^a+b<a x)
-
--- ¬ω^a+suc[b]<b : ∀ {a b : MutualOrd} {r : a ≥ fst (sucₒ b)} → 
---   ¬ (ω^ a + sucₒ b [ r ] < b)
--- ¬ω^a+suc[b]<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
--- ¬ω^a+suc[b]<b (<₃ refl x)      = ⊥-elim (¬ω^a+suc[b]<b x)
--- 
--- ω^a+b≡ω^c+d→a≡c :  ∀ {a b c d : MutualOrd} {r : a ≥ fst b} {s : c ≥ fst d} →
---    ω^ a + b [ r ] ≡ ω^ c + d [ s ] → a ≡ c
--- ω^a+b≡ω^c+d→a≡c refl = refl 
--- 
--- ω^a+b≡ω^c+d→b≡d :  ∀ {a b c d : MutualOrd} {r : a ≥ fst b} {s : c ≥ fst d} → 
---   ω^ a + b [ r ] ≡ ω^ c + d [ s ] → b ≡ d
--- ω^a+b≡ω^c+d→b≡d refl = refl 
--- 
--- ¬ω^a+suc[b]≡b : ∀ {a b : MutualOrd} {r : a ≥ fst (sucₒ b)} → 
---   ¬ (ω^ a + sucₒ b [ r ] ≡ b)
--- ¬ω^a+suc[b]≡b {a} {ω^ b + b₁ [ x₂ ]} {r = inj₁ x₁} x = 
---   ⊥-elim (<-irreflexive (ω^a+b≡ω^c+d→a≡c x ⁻¹) x₁)
--- ¬ω^a+suc[b]≡b {.(fst (sucₒ ω^ b + b₁ [ x₁ ]))} {ω^ b + b₁ [ x₁ ]} {r = inj₂ refl} x =
---   ⊥-elim (¬ω^a+suc[b]≡b (ω^a+b≡ω^c+d→b≡d x))
--- 
--- subsumption₁₁′ : ∀ (a b : MutualOrd) (s : a ≥ fst (sucₒ b)) → 
---   b ⊔ₒ ω^ a + sucₒ b [ s ] ≡ ω^ a + sucₒ b [ s ]
--- subsumption₁₁′ a 𝟎              s = refl 
--- subsumption₁₁′ a ω^ b + d [ r ] s with <-tri b a 
--- ... | inj₁ _          = refl
--- ... | inj₂ (inj₁ a<b) = ⊥-elim (Lm[≥→¬<] s a<b)
--- ... | inj₂ (inj₂ refl) 
---   with <-tri d (ω^ b + sucₒ d [ subst (λ b₁ → b₁ < b ⊎ b ≡ b₁) (fst-ignores-suc d) r ]) 
--- ... | inj₁ _ = refl
--- ... | inj₂ (inj₁ x) = ⊥-elim (¬ω^a+suc[b]<b x)
--- ... | inj₂ (inj₂ y) = ⊥-elim (¬ω^a+suc[b]≡b (y ⁻¹)) 
-
--- subsumption₂₀′ : ∀ (a b c : MutualOrd) (r : a ≥ b) (s : b ≥ fst c) → 
---   c ⊔ₒ ω^ a + (ω^ b + c [ s ]) [ r ] ≡ ω^ a + (ω^ b + c [ s ]) [ r ]
--- subsumption₂₀′ a b 𝟎 r s               = refl
--- subsumption₂₀′ a b ω^ ca + cb [ cr ] r s with <-tri ca a 
--- ... | inj₁ _ = refl
--- ... | inj₂ (inj₁ x) = {!   !} --⊥-elim (<-irreflexive (ω^a+b≡ω^c+d→a≡c {!   !}) x)
--- ... | inj₂ (inj₂ refl) with <-tri cb ω^ b + ω^ a + cb [ cr ] [ s ]
--- ... | inj₁ _ = refl
--- ... | inj₂ (inj₁ x) = {!   !} 
 
 -- Type Theoretic Ordinal Property --------------------------------------------
 

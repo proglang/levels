@@ -4,7 +4,7 @@ open import Axiom.Extensionality.Propositional using (∀-extensionality; Extens
 open import Level using (Level; Lift; lift; zero; suc; _⊔_)
 open import Data.Unit using (⊤; tt)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
-open import Data.Nat using (ℕ) renaming (zero to zeroℕ; suc to sucℕ) 
+open import Data.Nat using (ℕ) 
 open import Data.List using (List; []; _∷_)
 open import Data.List.Membership.Propositional using (_∈_) 
 open import Data.List.Relation.Unary.Any using (here; there)
@@ -37,9 +37,22 @@ data Lvl (δ : LEnv) : Mode → Set where
 variable
   l l′ l₁ l₂ l₃ : Lvl δ any
 
-postulate 
-  LLwk  : Lvl δ μ → Lvl (tt ∷ δ) μ
-  _[_]LL : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
+Lwk  : Lvl δ μ → Lvl (tt ∷ δ) μ
+Lwk `zero      = `zero
+Lwk (`suc l)   = `suc (Lwk l)
+Lwk (` x)      = ` (there x)
+Lwk (l₁ `⊔ l₂) = Lwk l₁ `⊔ Lwk l₂
+Lwk ⟨ l ⟩      = ⟨ Lwk l ⟩
+Lwk `ω         = `ω
+
+_[_]L : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
+`zero         [ l′ ]L = `zero
+`suc l        [ l′ ]L = `suc (l [ l′ ]L)
+(` here refl) [ l′ ]L = l′
+(` there x)   [ l′ ]L = ` x
+(l₁ `⊔ l₂)    [ l′ ]L = (l₁ [ l′ ]L) `⊔ (l₂ [ l′ ]L)
+⟨ l ⟩         [ l′ ]L = ⟨ l [ l′ ]L ⟩
+`ω            [ l′ ]L = `ω 
 
 variable
   ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : BoundLevel ⌊ ω ⌋
@@ -61,28 +74,29 @@ lookup-κ {_ ∷ δ} (ℓ , κ) (there x)   = lookup-κ κ x
 drop-κ : ⟦ tt ∷ δ ⟧δ → ⟦ δ ⟧δ
 drop-κ (_ , κ) = κ
 
-⟦_⟧L : (l : Lvl δ μ) → ⟦ δ ⟧δ → Level
-⟦ `zero     ⟧L κ = zero
-⟦ `suc l    ⟧L κ = suc (⟦ l ⟧L κ)
-⟦ ` x       ⟧L κ = # (lookup-κ κ x)
-⟦ l₁ `⊔ l₂  ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
-⟦ ⟨ l ⟩     ⟧L κ = ⟦ l ⟧L κ
-⟦ `ω        ⟧L κ = ⌊ ω ⌋
-
 ⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → BoundLevel ⌊ ω ⌋
-⟦ `zero    ⟧L′ κ = zero , let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in  -- subst would be gone if EH be part of agda
+⟦ `zero    ⟧L′ κ = zero , 
+  -- subst would be gone if EH be part of agda
+  let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in 
   ≤-exp zero 0<ω
-⟦ `suc l   ⟧L′ κ = (suc (# (⟦ l ⟧L′ κ))) , let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in
+⟦ `suc l   ⟧L′ κ = (suc (# (⟦ l ⟧L′ κ))) , 
+  let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in
   <-suc-lim _ _ (#<Λ (⟦ l ⟧L′ κ)) (lim 0<ω)
 ⟦ ` x      ⟧L′ κ = lookup-κ κ x 
 ⟦ l₁ `⊔ l₂ ⟧L′ κ = # (⟦ l₁ ⟧L′ κ) ⊔ # (⟦ l₂ ⟧L′ κ) , 
   ≤-lublub (#<Λ (⟦ l₁ ⟧L′ κ)) (#<Λ (⟦ l₂ ⟧L′ κ))
 
+⟦_⟧L : (l : Lvl δ any) → ⟦ δ ⟧δ → Level
+⟦ `suc l    ⟧L κ = suc (⟦ l ⟧L κ)
+⟦ l₁ `⊔ l₂  ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
+⟦ ⟨ l ⟩     ⟧L κ = # (⟦ l ⟧L′ κ)
+⟦ `ω        ⟧L κ = ⌊ ω ⌋
+
 postulate
-  ⟦LLwk⟧L  : ∀ (l : Lvl δ μ) (κ : ⟦ δ ⟧δ) ℓ → 
-    ⟦ LLwk l ⟧L (ℓ ∷κ κ) ≡ ⟦ l ⟧L κ
-  ⟦[]LL⟧L : ∀ (l : Lvl (tt ∷ δ) μ) (κ : ⟦ δ ⟧δ) l′ → 
-    ⟦ l [ l′ ]LL ⟧L κ ≡ ⟦ l ⟧L (⟦ l′ ⟧L′ κ , κ)
+  ⟦Lwk⟧L : ∀ (l : Lvl δ any) (κ : ⟦ δ ⟧δ) ℓ → 
+    ⟦ Lwk l ⟧L (ℓ ∷κ κ) ≡ ⟦ l ⟧L κ
+  ⟦[]L⟧L : ∀ (l : Lvl (tt ∷ δ) any) (κ : ⟦ δ ⟧δ) l′ → 
+    ⟦ l [ l′ ]L ⟧L κ ≡ ⟦ l ⟧L (⟦ l′ ⟧L′ κ , κ)
 
 data TEnv : LEnv → Set where
   []   : TEnv δ
@@ -100,23 +114,23 @@ suc⨆Δ κ (∷l Δ)  = suc⨆Δ (drop-κ κ) Δ
 data _∍_ : TEnv δ → Lvl δ any → Set where
   here  : (l ∷ Δ) ∍ l
   there : Δ ∍ l → (l′ ∷ Δ) ∍ l
-  lskip : Δ ∍ l → (∷l Δ) ∍ LLwk l
+  lskip : Δ ∍ l → (∷l Δ) ∍ Lwk l
 
 data Type (Δ : TEnv δ) : Lvl δ any → Set where
   Nat   : Type Δ ⟨ `zero ⟩
   `_    : Δ ∍ l → Type Δ l
   _⇒_   : Type Δ l₁ → Type Δ l₂ → Type Δ (l₁ `⊔ l₂) 
   ∀α    : Type (l ∷ Δ) l′ → Type Δ (`suc l `⊔ l′) 
-  ∀ℓ    : Type (∷l Δ) (LLwk l) → Type Δ (`ω `⊔ l)
+  ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ l)
       
 variable
   T T′ T₁ T₂ T₃ : Type Δ l
 
 postulate
   TTwk : Type Δ l′ → Type (l ∷ Δ) l′
-  TLLwk : Type Δ l → Type (∷l Δ) (LLwk l)
+  TLwk : Type Δ l → Type (∷l Δ) (Lwk l)
   _[_]TT : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
-  _[_]TL : Type (∷l Δ) l → (l′ : Lvl δ fin) → Type Δ (l [ l′ ]LL)
+  _[_]TL : Type (∷l Δ) l → (l′ : Lvl δ fin) → Type Δ (l [ l′ ]L)
        
 ⟦_⟧Δ_ : (Δ : TEnv δ) → (κ : ⟦ δ ⟧δ) → Set (suc⨆Δ κ Δ)
 ⟦  []   ⟧Δ κ = ⊤
@@ -129,7 +143,7 @@ _∷η_ = _,_
 lookup-η : {κ : ⟦ δ ⟧δ} → ⟦ Δ ⟧Δ κ → Δ ∍ l → Set (⟦ l ⟧L κ) 
 lookup-η (A , _) here                    = A
 lookup-η (_ , η) (there x)               = lookup-η η x
-lookup-η {κ = ℓ , κ} η (lskip {l = l} x) = cast (sym (⟦LLwk⟧L l κ ℓ)) (lookup-η η x)
+lookup-η {κ = ℓ , κ} η (lskip {l = l} x) = cast (sym (⟦Lwk⟧L l κ ℓ)) (lookup-η η x)
 
 drop-η : {κ : ⟦ δ ⟧δ} → ⟦ l ∷ Δ ⟧Δ κ → ⟦ Δ ⟧Δ κ 
 drop-η (_ , η) = η
@@ -138,19 +152,20 @@ drop-η (_ , η) = η
 ⟦ Nat     ⟧T κ η = ℕ
 ⟦ ` α     ⟧T κ η = lookup-η η α
 ⟦ T₁ ⇒ T₂ ⟧T κ η = ⟦ T₁ ⟧T κ η → ⟦ T₂ ⟧T κ η   
-⟦_⟧T {Δ = Δ} (∀α {l = l} T) κ η = 
-  ∀ (A : Set (⟦ l ⟧L κ)) → ⟦ T ⟧T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} A η)
-⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = 
-  ∀ (ℓ : BoundLevel ⌊ ω ⌋) → cast (cong (⌊ ω ⌋ ⊔_) (⟦LLwk⟧L l₁ κ ℓ)) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
+⟦_⟧T {Δ = Δ} (∀α {l = l} T) κ η = ∀ (A : Set (⟦ l ⟧L κ)) → 
+  let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in
+  ⟦ T ⟧T κ η′
+⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundLevel ⌊ ω ⌋) → 
+  cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ)) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
 
 postulate
-  ⟦TLLwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →
-    ⟦ T ⟧T κ η ≡ cast (⟦LLwk⟧L l κ ℓ) (⟦ TLLwk T ⟧T (ℓ , κ) η) 
+  ⟦TLwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →
+    ⟦ T ⟧T κ η ≡ cast (⟦Lwk⟧L l κ ℓ) (⟦ TLwk T ⟧T (ℓ , κ) η) 
   ⟦TTwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {A : Set (⟦ l′ ⟧L κ)} {η : ⟦ Δ ⟧Δ κ} → 
     ⟦ T ⟧T κ η ≡ ⟦ TTwk {l = l′} T ⟧T κ (A , η)
 
-  ⟦[]LT⟧T : {T : Type (∷l Δ) (LLwk l)} {l′ : Lvl δ fin} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →  
-    ⟦ T ⟧T (⟦ l′ ⟧L′ κ , κ) η ≡ cast (⟦[]LL⟧L (LLwk l) κ l′) (⟦ T [ l′ ]TL ⟧T κ η)
+  ⟦[]LT⟧T : {T : Type (∷l Δ) (Lwk l)} {l′ : Lvl δ fin} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →  
+    ⟦ T ⟧T (⟦ l′ ⟧L′ κ , κ) η ≡ cast (⟦[]L⟧L (Lwk l) κ l′) (⟦ T [ l′ ]TL ⟧T κ η)
   ⟦[]TT⟧T : {l′ : Lvl δ any} {T : Type (l′ ∷ Δ) l} {T′ : Type Δ l′} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} → 
     ⟦ T ⟧T κ (_∷η_ {l = l′} {Δ = Δ} {κ = κ} (⟦ T′ ⟧T κ η) η) ≡ ⟦ T [ T′ ]TT ⟧T κ η
     
@@ -167,7 +182,7 @@ data _∋_ : EEnv Δ → Type Δ l → Set where
   here  : (T ∷ Γ) ∋ T
   there : Γ ∋ T → (T′ ∷ Γ) ∋ T
   tskip : Γ ∋ T → (l ∷l Γ) ∋ TTwk T
-  lskip : Γ ∋ T → (∷l Γ) ∋ TLLwk T
+  lskip : Γ ∋ T → (∷l Γ) ∋ TLwk T
 
 ⨆Γ : ∀ {Δ : TEnv δ} → EEnv Δ → ⟦ δ ⟧δ → Level
 ⨆Γ []                κ = zero 
@@ -181,10 +196,10 @@ data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
   ‵suc  : Expr Γ Nat → Expr Γ Nat
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
-  Λℓ_   : {T : Type (∷l Δ) (LLwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
+  Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
   _·_   : Expr Γ (T ⇒ T′) → Expr Γ T → Expr Γ T′
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
-  _∙ℓ_  : {T : Type (∷l Δ) (LLwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
+  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
 
 ⟦_⟧Γ   : {Δ : TEnv δ} → (Γ : EEnv Δ) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set (⨆Γ Γ κ)
 ⟦ []     ⟧Γ κ η = ⊤
@@ -203,17 +218,19 @@ lookup-γ (_ , γ) (there x)  = lookup-γ γ x
 lookup-γ {Γ = _ ∷l Γ} {κ = κ} {η = A , η} γ (tskip {T = T} x) = 
   subst id ⟦TTwk⟧T (lookup-γ γ x)
 lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) = 
-  cast-elim _ (subst id ⟦TLLwk⟧T (lookup-γ {δ = δ} {κ = κ} γ x))
+  cast-elim _ (subst id ⟦TLwk⟧T (lookup-γ {δ = δ} {κ = κ} γ x))
 
 ⟦_⟧E : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} → 
   Expr Γ T → (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → ⟦ Γ ⟧Γ κ η → ⟦ T ⟧T κ η
 ⟦ ` x     ⟧E κ η γ = lookup-γ γ x
 ⟦ # n     ⟧E κ η γ = n
-⟦ ‵suc e  ⟧E κ η γ = sucℕ (⟦ e ⟧E κ η γ)
-⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) κ η γ = 
-  λ (x : ⟦ T₁ ⟧T κ η) → ⟦ e ⟧E κ η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
-⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ l ⇒ e) κ η γ = 
-  λ (A : Set (⟦ l ⟧L κ)) → ⟦ e ⟧E κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} A η) γ
+⟦ ‵suc e  ⟧E κ η γ = ℕ.suc (⟦ e ⟧E κ η γ)
+⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) κ η γ = λ (x : ⟦ T₁ ⟧T κ η) → 
+  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} x γ in
+  ⟦ e ⟧E κ η γ′
+⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ l ⇒ e) κ η γ = λ (A : Set (⟦ l ⟧L κ)) → 
+  let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
+  ⟦ e ⟧E κ η′ γ
 ⟦ Λℓ e ⟧E κ η γ = 
   λ (ℓ : BoundLevel ⌊ ω ⌋) → cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
 ⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)

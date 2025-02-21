@@ -23,7 +23,7 @@ coe-coe refl refl = refl
 open IRUniverse
 
 module _ where
-  open ℕ*ℕ-example public
+  open ℕ*ℕ public
   open IR-Universe lvl
 
   import Data.Nat as N
@@ -279,8 +279,6 @@ denv-wk-ext d x (`omg x₁) = refl
 coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ d ll ≡ Uᵈ (DEnv-ext d x) (wkₗ ll)
 coel d x ll = cong U (denv-wk-ext d x ll)
 
-
-
 Env* : DEnv δ → Env δ → Set
 Env* d Δ = All (Uᵈ d) Δ
 
@@ -300,7 +298,7 @@ encode d (` α) η = lookup η α
 encode d (`∀α_,_ {l′ = l′} l T) η
   =
   let ≤-witness = ⊔₁ (⟦ `suc l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d) in
-  Π' (U' {j = ⟦ l ⟧ℓ′ d} (<≤-trans ℕ*ℕ-example.<suc ≤-witness))
+  Π' (U' {j = ⟦ l ⟧ℓ′ d} (<≤-trans ℕ*ℕ.<suc ≤-witness))
      λ u → let r = encode d T (coe  (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧ℓ′ d} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) u ∷ η) in
          Lift≤ (⊔₂ (⟦ `suc l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d)) r
 encode d (`∀ℓ_ {l = l} T) η = Π' ℕ' (λ x → let r = coe (sym (coel d x l)) (encode (DEnv-ext d x) T (coe* d x η))

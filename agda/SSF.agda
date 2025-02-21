@@ -260,9 +260,11 @@ lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦
 ⟦ ` x     ⟧E η γ = lookup-γ γ x
 ⟦ # n     ⟧E η γ = n
 ⟦ ‵suc e  ⟧E η γ = sucℕ (⟦ e ⟧E η γ)
-⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ = λ (x : ⟦ T₁ ⟧T η) → ⟦ e ⟧E η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
+⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ = λ (x : ⟦ T₁ ⟧T η) → 
+  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} x γ in
+  ⟦ e ⟧E η γ′
 ⟦ Λ ℓ ⇒ e ⟧E η γ = λ (A : Set ℓ) → ⟦ e ⟧E (A ∷η η) γ
 ⟦ e₁ · e₂ ⟧E η γ = ⟦ e₁ ⟧E η γ (⟦ e₂ ⟧E η γ)
-⟦ _∙_ {T = T} e T′ ⟧E η γ = subst id 
-  (trans (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦Tidₛ⟧σ _))) (sym (⟦Tsub⟧T η _ T))) 
-  (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
+⟦ _∙_ {T = T} e T′ ⟧E η γ = 
+  let eq = (trans (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦Tidₛ⟧σ _))) (sym (⟦Tsub⟧T η _ T))) in -- TODO outsource 
+  subst id eq (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
