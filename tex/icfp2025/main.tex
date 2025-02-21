@@ -90,7 +90,7 @@
 %% article.
 \begin{abstract}
   The first draft of Martin-L\"{o}f's type theory proposed the
-  assumption Type:Type. Universe levels have been introduced to
+  assumption Type:Type. Subsequently, universe levels have been introduced to
   avoid the resulting inconsistencies by assuming
   Type$_i$:Type$_{i+1}$. 
   Proof assistants based on type theory support such universe levels
@@ -146,6 +146,131 @@ Contributions.
 
 Agda, Ordinals, IR-Universes
 
+\subsection{Ordinals}
+\label{sec:ordinals}
+
+Ordinal numbers are an important concept in mathematics and computer
+science. They are closely related to well-ordered sets as any
+well-ordered set is order-isomorphic to an ordinal. The significance
+to computer science is that such well-orders can be used for
+termination proofs.
+
+The best known construction of ordinals is a set-theoretic one due to
+von Neumann. It starts with the smallest ordinal $0$ represented by
+the empty set $\emptyset$. To construct the successor of an ordinal
+$\alpha$, we define $\alpha+1  := \alpha \cup \{ \alpha \}$. This way,
+we construct $1, 2, 3, \dots$. Then, we can scoop them all up into the
+smallest limit ordinal $\omega = \{ 0, 1, 2, 3, \dots \}$, which
+contains $0$ and all finite applications of the successor to it. We
+continue with $\omega + 1 = \omega \cup \{ \omega \}$ and carry on
+until we build the next limit ordinal $\omega \cdot 2$, then $\omega
+\cdot 3$, and so on. Constructing the limit at this level yields
+$\omega^\omega$ and continuing further leads to
+$\omega^{\omega^\omega}$, $\omega^{\omega^{\omega^\omega}}$, and so
+on. The limit of this sequence is $\varepsilon_0$ which is the
+smallest ordinal that fulfills the equation
+$\varepsilon_0 = \omega^{\varepsilon_0}$.
+
+In the context of this paper, we plan to use
+ordinals as universe levels where the well-ordering avoids collapsing
+levels. The construction of ordinals does not stop at $\varepsilon_0$,
+but we wish to  carve out a particular set of ordinals that fits
+well in an implementation context. Concretely, we consider ordinals
+less than $\varepsilon_0$ as they can be represented by binary trees.
+To see this, recall that every ordinal $\alpha$ can be written in
+Cantor normal form
+\begin{align*}
+  \alpha &= \omega^{\beta_1} + \omega^{\beta_2}  + \dots + \omega^{\beta_n}
+\end{align*}
+for some $n\ge0$ and ordinals $\beta_i$ such that
+$\beta_1\ge\beta_2\ge \dots \ge \beta_n$. If $\alpha < \varepsilon_0$,
+then it can be shown that each exponent satisfies $\beta_i < \alpha$.
+If we, again, write $\beta_i = \omega^{\gamma_1} + \dots +
+\omega^{\gamma_m}$ in Cantor normal form, then clearly $\gamma_j <
+\beta_i < \alpha$. As the ordering on ordinals is a well-order, we
+know this decreasing sequence must terminate and we obtain a finite
+representation for each ordinal less than $\varepsilon_0$.
+
+\citet{DBLP:conf/cpp/ForsbergXG20} developed Agda
+formalizations for three equivalent representations for precisely this
+set of ordinals. They define addition and multiplication of ordinals,
+prove the principle of transfinite induction, and use that to prove
+that the represented subset of ordinals is well-ordered.
+
+We build on one of their representations, called MutualOrd, define
+some additional operations, and prove some properties which are needed
+in the context of universe levels.\footnote{Technically, the
+  mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
+  cubical Agda \cite{XXX}. We back-ported the definitions for
+  MutualOrd to standard Agda, as cubical is not needed for this representation.}
+
+TODO: Insert
+\begin{itemize}
+\item Definition of MutualOrd
+\item Explanation
+\item Example(s)
+\item any additional properties that we had to prove
+\end{itemize}
+
+\subsection{Universes in Agda}
+\label{sec:universes-agda}
+
+TODO: typeset in Agda style
+
+Agda contains significant support for a universe hierarchy \cite{readthedoc?}. It
+provides an abstract datatype LEVEL of universe levels along with
+constants ZERO, SUC, and MAX that denote the base-level of the
+hierarchy, the successor, and the maximum of two levels.
+It provides a level-parametric type SET which obeys the typing
+SET i : SET (SUC i)
+Type formation handles the universe levels in the same way as finitely
+stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
+\begin{itemize}
+\item if $A_1 : Set~ i_1$ and $A_2 : Set~i_2$, then $A_1 \to A_2 : Set
+  (i_1 \sqcup i_2)$;
+\item  if  $\alpha : Set~i$ is a type variable and $A : Set~j$, then
+  $\forall \alpha. A : Set (suc~i \sqcup j)$.
+\end{itemize}
+
+To avoid inconsistencies, Agda does not allow pattern matching on the
+type LEVEL. However, quantification over LEVEL is allowed and results
+in a type at level $\omega$ (if the level-typed variable is used in a
+significant way). Unfortunately, levels $\omega$ and higher are
+\textbf{not} handled in a parametric way in Agda. Rather there are
+predefined type constants SET$_\omega$, SET$_{\omega1}$,
+SET$_{\omega2}$, and so on. This design can be inconvenient, as most
+notions in the standard library (e.g., the equality type) are in a
+level-parametric way, and thus they cannot be used with SET$_\omega$
+and higher universe levels. 
+
+\subsection{Encoding Universes}
+\label{sec:encoding-universes}
+
+
+
+\section{Running Example}
+\label{sec:running-example}
+
+As a running example for demonstrating various encodings, we consider
+different extensions of finitely stratified System F
+\cite{DBLP:journals/iandc/Leivant91}. More precisely, we start from an
+intrinsically typed encoding of types and expressions, then we
+construct denotational semantics for different encodings and discuss
+their respective merits.
+
+We choose this system as it is significant, presents non-trivial
+challenges, and it has been studied in the literature. Our encoding of
+syntax is inspired by \citet{DBLP:conf/mpc/ChapmanKNW19}, who develop
+the syntactic metatheory of System-F$\omega$ (without
+stratification). It has been  picked up by
+\citet{DBLP:conf/tyde/Saffrich0W24}, who give denotational and operational semantics
+for finitely stratified System-F and develop a logical relation for
+it. \citet{DBLP:journals/pacmpl/HubersM23} use a similar syntax
+representation for a finitely stratified version of System-F$\omega$
+extended with qualified types. They also develop a denotational
+semantics for their calculus. All these papers come with Agda
+formalizations. 
+
 \section{Constructions}
 \label{sec:constructions}
 
@@ -176,7 +301,7 @@ Cumulativity, Impact of impredicativity
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{../references}
+\bibliography{references}
 
 
 \end{document}
