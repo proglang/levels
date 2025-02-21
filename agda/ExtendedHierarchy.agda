@@ -1,3 +1,4 @@
+{-# OPTIONS --warn=noUserWarning #-}
 open import Relation.Binary.PropositionalEquality 
   using (_≡_; refl; cong; trans; subst)
 open import Level
@@ -7,6 +8,7 @@ open import Level
 infix 40 ω^_+_
 postulate
   ω^_+_ : (ℓ₁ ℓ₂ : Level) → Level
+{-# WARNING_ON_USAGE ω^_+_ "Safety: check that you do not hallucinate levels that violate the cantor normal form property" #-}
 
 -- with symbols for valid ordinals in cnf our hierarchy grows to ε₀
 Setε₀ = Setω
@@ -49,18 +51,17 @@ postulate
 cast : ∀ {ℓ₁ ℓ₂} → ℓ₁ ≡ ℓ₂ → Set ℓ₁ → Set ℓ₂ 
 cast refl A = A
 
-cast-push : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} → (eq : ℓ₁ ≡ ℓ₂) → A → cast eq A  
-cast-push refl a = a
+cast-intro : ∀ {ℓ₁ ℓ₂} {A : Set ℓ₁} → (eq : ℓ₁ ≡ ℓ₂) → A → cast eq A  
+cast-intro refl a = a
 
-cast-pop : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → cast eq A → A  
-cast-pop refl a = a
+cast-elim : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → cast eq A → A  
+cast-elim refl a = a
 
-cast-pop-push-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : A) → cast-pop eq (cast-push eq a) ≡ a  
-cast-pop-push-cancel refl a = refl
+cast-elim-intro-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : A) → cast-elim eq (cast-intro eq a) ≡ a  
+cast-elim-intro-cancel refl a = refl
 
-cast-push-pop-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : cast eq A) → cast-push eq (cast-pop eq a) ≡ a 
-
-cast-push-pop-cancel refl a = refl
+cast-intro-elim-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : cast eq A) → cast-intro eq (cast-elim eq a) ≡ a 
+cast-intro-elim-cancel refl a = refl
 
 -- Example MutualOrd Instanciations -------------------------------------------
 

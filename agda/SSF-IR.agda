@@ -1,4 +1,4 @@
-module SSF-UP-IR where
+module SSF-IR where
 
 open import Level using (zero)
 open import Data.Nat using ( ℕ; s≤s; z≤n; _<′_ ) renaming (_⊔_ to _⊔ℕ_; _+_ to _+ℕ_; _<_ to _<ℕ_ )

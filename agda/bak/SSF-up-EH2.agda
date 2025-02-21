@@ -11,7 +11,7 @@ open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; icong; subst)
 open import Function using (_∘_; id; flip; _$_)
-open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-push; cast-pop; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
+open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-intro; cast-elim; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
 open import BoundQuantification using (BoundLevel; BoundLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
 
 postulate
@@ -556,7 +556,7 @@ lookup-γ (_ , γ) (there x)  = lookup-γ γ x
 ⟦_⟧E {Δ = Δ} {T = (T₁ ⇒ T₂)} {Γ} (λx e) κ η γ = λ x → ⟦ e ⟧E κ η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
 ⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ_⇒_ {l′ = l′} l e) κ η γ = λ A → ⟦ e ⟧E κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} A η) {!   !}
 ⟦_⟧E {l = `ω `⊔ ⟨ l₁ ⟩} {T = ∀ℓ T} (Λℓ e) κ η γ = 
-  λ (ℓ : BoundLevel ⌊ ω ⌋) → cast-push _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) {!   !} {!   !}))
+  λ (ℓ : BoundLevel ⌊ ω ⌋) → cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) {!   !} {!   !}))
 ⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
 ⟦_⟧E {Δ = Δ} (_∙_ {T = T} e T′) κ η γ = subst id (trans 
   (cong (λ η′ → ⟦ T ⟧T κ ((⟦ T′ ⟧T κ η) , η′)) (sym (⟦⟧σ-Tidₛ {Δ = Δ} {κ = κ} η))) 

@@ -44,7 +44,7 @@ TRen : TEnv → TEnv → Set
 TRen Δ₁ Δ₂ = ∀ ℓ → ℓ ∈ Δ₁ → ℓ ∈ Δ₂
 
 variable 
-  ρ ρ₁ ρ₂ : TRen Δ₁ Δ₂
+  ρ ρ′ ρ₁ ρ₂ ρ₃ : TRen Δ₁ Δ₂
 
 Tidᵣ : TRen Δ Δ
 Tidᵣ _ = id
@@ -71,7 +71,6 @@ Twk = Tren (Twkᵣ Tidᵣ)
 TSub : TEnv → TEnv → Set
 TSub Δ₁ Δ₂ = ∀ ℓ → ℓ ∈ Δ₁ → Type Δ₂ ℓ
 
-
 Tidₛ : TSub Δ Δ
 Tidₛ _ = `_
 
@@ -83,7 +82,7 @@ Twkₛ σ _ x = Twk (σ _ x)
 
 Tliftₛ : TSub Δ₁ Δ₂ → ∀ ℓ → TSub (ℓ ∷ Δ₁) (ℓ ∷ Δ₂)  
 Tliftₛ σ _ _ (here refl) = ` (here refl)
-Tliftₛ σ _ _ (there x) = Twk (σ _ x)
+Tliftₛ σ _ _ (there x)   = Twk (σ _ x)
 
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ ℓ → Type Δ₂ ℓ
 Tsub σ Nat       = Nat
@@ -95,8 +94,8 @@ Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ ℓ → TSub (ℓ ∷ Δ₁) Δ₂
 Textₛ σ T′ _ (here refl) = T′
 Textₛ σ T′ _ (there x)   = σ _ x
 
-_[_]TT : Type (ℓ ∷ Δ) ℓ′ → Type Δ ℓ → Type Δ ℓ′
-_[_]TT T T′ = Tsub (Textₛ Tidₛ T′) T
+_[_]T : Type (ℓ ∷ Δ) ℓ′ → Type Δ ℓ → Type Δ ℓ′
+_[_]T T T′ = Tsub (Textₛ Tidₛ T′) T
     
 _T≫ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
 (ρ₁ T≫ᵣᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
@@ -111,6 +110,7 @@ _T≫ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 (σ₁ T≫ₛₛ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
 
 module FunctionTypeSemEnv where
+  -- example of using BoundQuantification to encode semantic environments as function that do not hit Setω
   open import BoundQuantification 
   
   ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : TEnv} → ℓ ∈ Δ → ℓ < (suc⨆Δ Δ)
@@ -123,82 +123,84 @@ module FunctionTypeSemEnv where
 ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
 ⟦  []   ⟧Δ = ⊤
 ⟦ ℓ ∷ Δ ⟧Δ = Set ℓ × ⟦ Δ ⟧Δ
-  
+
+variable 
+   η η′ η₁ η₂ η₃ : ⟦ Δ ⟧Δ
+
 []η : ⟦ [] ⟧Δ
 []η = _
   
-_∷η_ : ∀ {ℓ} {Δ : TEnv} → Set ℓ → ⟦ Δ ⟧Δ → ⟦ ℓ ∷ Δ ⟧Δ
+_∷η_ : Set ℓ → ⟦ Δ ⟧Δ → ⟦ ℓ ∷ Δ ⟧Δ
 _∷η_ = _,_
   
-lookup-η : ∀ {ℓ} {Δ : TEnv} → ⟦ Δ ⟧Δ → ℓ ∈ Δ → Set ℓ 
+lookup-η : ⟦ Δ ⟧Δ → ℓ ∈ Δ → Set ℓ 
 lookup-η (A , _) (here refl) = A
 lookup-η (_ , η) (there x)   = lookup-η η x
 
-drop-η : ∀ {ℓ} {Δ : TEnv} → ⟦ ℓ ∷ Δ ⟧Δ →  ⟦ Δ ⟧Δ
+drop-η : ⟦ ℓ ∷ Δ ⟧Δ →  ⟦ Δ ⟧Δ
 drop-η (_ , η) = η
 
-⟦_⟧T_ : ∀ {ℓ} {Δ : TEnv} → (T : Type Δ ℓ) → ⟦ Δ ⟧Δ → Set ℓ
+⟦_⟧T_ : (T : Type Δ ℓ) → ⟦ Δ ⟧Δ → Set ℓ
 ⟦ Nat     ⟧T η = ℕ
 ⟦ ` x     ⟧T η = lookup-η η x
 ⟦ T₁ ⇒ T₂ ⟧T η = ⟦ T₁ ⟧T η → ⟦ T₂ ⟧T η   
 ⟦ ∀α T    ⟧T η = ∀ A → ⟦ T ⟧T (A ∷η η)  
 
-⟦_⟧Tρ_ : TRen Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
-⟦_⟧Tρ_ {Δ₁ = []}    ρ η = []η
-⟦_⟧Tρ_ {Δ₁ = _ ∷ _} ρ η = (⟦ ` ρ _ (here refl) ⟧T η) ∷η (⟦ Tdropᵣ ρ ⟧Tρ η)
+⟦_⟧ρ_ : TRen Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
+⟦_⟧ρ_ {Δ₁ = []}    ρ η = []η
+⟦_⟧ρ_ {Δ₁ = _ ∷ _} ρ η = (⟦ ` ρ _ (here refl) ⟧T η) ∷η (⟦ Tdropᵣ ρ ⟧ρ η)
 
-⟦⟧ρ-Twkᵣ : (ρ : TRen Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
-  (⟦ ρ T≫ᵣᵣ Twkᵣ Tidᵣ ⟧Tρ (A ∷η η)) ≡ ⟦ ρ ⟧Tρ η
-⟦⟧ρ-Twkᵣ {[]} ρ η A    = refl
-⟦⟧ρ-Twkᵣ {ℓ ∷ Δ} ρ η A = cong ((lookup-η η (ρ _ (here refl))) ,_) (⟦⟧ρ-Twkᵣ (Tdropᵣ ρ) η A)
+⟦Twkᵣ⟧ρ : (ρ : TRen Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
+  (⟦ ρ T≫ᵣᵣ Twkᵣ Tidᵣ ⟧ρ (A ∷η η)) ≡ ⟦ ρ ⟧ρ η
+⟦Twkᵣ⟧ρ {[]} ρ η A    = refl
+⟦Twkᵣ⟧ρ {ℓ ∷ Δ} ρ η A = cong ((lookup-η η (ρ _ (here refl))) ,_) (⟦Twkᵣ⟧ρ (Tdropᵣ ρ) η A)
 
-⟦⟧ρ-Tidᵣ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidᵣ ⟧Tρ η) ≡ η
+⟦⟧ρ-Tidᵣ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidᵣ ⟧ρ η) ≡ η
 ⟦⟧ρ-Tidᵣ {[]}     η = refl
-⟦⟧ρ-Tidᵣ {_ ∷ Δ₂} (A , η) = cong (A ∷η_) (trans (⟦⟧ρ-Twkᵣ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η))
+⟦⟧ρ-Tidᵣ {_ ∷ Δ₂} (A , η) = cong (A ∷η_) (trans (⟦Twkᵣ⟧ρ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η))
 
-⟦⟧ρ-Tliftᵣ : ∀ {ℓ} (ρ : TRen Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) →
-   (⟦ Tliftᵣ ρ ℓ ⟧Tρ (A ∷η η)) ≡ (A ∷η (⟦ ρ ⟧Tρ η))
-⟦⟧ρ-Tliftᵣ ρ η A = cong (_ ∷η_) (⟦⟧ρ-Twkᵣ ρ η A)
+⟦Tliftᵣ⟧ρ : ∀ (ρ : TRen Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) →
+   (⟦ Tliftᵣ ρ ℓ ⟧ρ (A ∷η η)) ≡ (A ∷η (⟦ ρ ⟧ρ η))
+⟦Tliftᵣ⟧ρ ρ η A = cong (_ ∷η_) (⟦Twkᵣ⟧ρ ρ η A)
   
-⟦⟧T-Tren : (η : ⟦ Δ₂ ⟧Δ) (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ ℓ) → 
-  ⟦ Tren ρ T ⟧T η ≡ ⟦ T ⟧T (⟦ ρ ⟧Tρ η)
-⟦⟧T-Tren η ρ Nat       = refl
-⟦⟧T-Tren η ρ (` x)     = ⟦⟧Δ-lookup η ρ x
+⟦Tren⟧T : (η : ⟦ Δ₂ ⟧Δ) (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ ℓ) → 
+  ⟦ Tren ρ T ⟧T η ≡ ⟦ T ⟧T (⟦ ρ ⟧ρ η)
+⟦Tren⟧T η ρ Nat       = refl
+⟦Tren⟧T η ρ (` x)     = ⟦⟧Δ-lookup η ρ x
   where ⟦⟧Δ-lookup : ∀ {ℓ} (η : ⟦ Δ₂ ⟧Δ) (ρ : TRen Δ₁ Δ₂) (x : ℓ ∈ Δ₁) → 
-                        (⟦ ` ρ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ ρ ⟧Tρ η))
+                        (⟦ ` ρ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ ρ ⟧ρ η))
         ⟦⟧Δ-lookup η ρ (here refl) = refl
         ⟦⟧Δ-lookup η ρ (there x) rewrite ⟦⟧Δ-lookup η (Tdropᵣ ρ) x = refl
-⟦⟧T-Tren η ρ (T₁ ⇒ T₂) rewrite ⟦⟧T-Tren η ρ T₁ | ⟦⟧T-Tren η ρ T₂ = refl
-⟦⟧T-Tren η ρ (∀α {ℓ} T) = dep-ext λ A → 
-  trans (⟦⟧T-Tren (A ∷η η) (Tliftᵣ ρ ℓ) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦⟧ρ-Twkᵣ ρ η A))
+⟦Tren⟧T η ρ (T₁ ⇒ T₂) rewrite ⟦Tren⟧T η ρ T₁ | ⟦Tren⟧T η ρ T₂ = refl
+⟦Tren⟧T η ρ (∀α {ℓ} T) = dep-ext λ A → 
+  trans (⟦Tren⟧T (A ∷η η) (Tliftᵣ ρ ℓ) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦Twkᵣ⟧ρ ρ η A))
 
-⟦_⟧Tσ_ : TSub Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
-⟦_⟧Tσ_ {Δ₁ = []}    σ η = []η
-⟦_⟧Tσ_ {Δ₁ = _ ∷ _} σ η = (⟦ σ _ (here refl) ⟧T η) ∷η (⟦ Tdropₛ σ ⟧Tσ η)
+⟦_⟧σ_ : TSub Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
+⟦_⟧σ_ {Δ₁ = []}    σ η = []η
+⟦_⟧σ_ {Δ₁ = _ ∷ _} σ η = (⟦ σ _ (here refl) ⟧T η) ∷η (⟦ Tdropₛ σ ⟧σ η)
 
-⟦⟧Tσ-Twkᵣ : (σ : TSub Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
-  (⟦ σ T≫ₛᵣ Twkᵣ Tidᵣ ⟧Tσ (A ∷η η)) ≡ ⟦ σ ⟧Tσ η
-⟦⟧Tσ-Twkᵣ {[]} σ η A    = refl
-⟦⟧Tσ-Twkᵣ {ℓ ∷ Δ} σ η A = 
-  cong₂ _∷η_ (trans (⟦⟧T-Tren (A ∷η η) (Twkᵣ Tidᵣ) (σ ℓ (here refl))) 
-      (cong (λ η → ⟦ σ ℓ (here refl) ⟧T η) (trans (⟦⟧ρ-Twkᵣ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η)))) 
-  (⟦⟧Tσ-Twkᵣ (Tdropₛ σ) η A)
+⟦Twkᵣ⟧σ : (σ : TSub Δ₁ Δ₂) (η : ⟦ Δ₂ ⟧Δ) (A : Set ℓ) → 
+  (⟦ σ T≫ₛᵣ Twkᵣ Tidᵣ ⟧σ (A ∷η η)) ≡ ⟦ σ ⟧σ η
+⟦Twkᵣ⟧σ {[]} σ η A    = refl
+⟦Twkᵣ⟧σ {ℓ ∷ Δ} σ η A = cong₂ _∷η_ 
+  (trans (⟦Tren⟧T (A ∷η η) (Twkᵣ Tidᵣ) (σ ℓ (here refl))) (cong (λ η → ⟦ σ ℓ (here refl) ⟧T η) (trans (⟦Twkᵣ⟧ρ Tidᵣ η A) (⟦⟧ρ-Tidᵣ η)))) 
+  (⟦Twkᵣ⟧σ (Tdropₛ σ) η A)
 
-⟦⟧Tσ-Tidₛ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidₛ ⟧Tσ η) ≡ η
-⟦⟧Tσ-Tidₛ {[]}     η = refl
-⟦⟧Tσ-Tidₛ {x ∷ Δ₂} (A , γ) = cong (A ∷η_) (trans (⟦⟧Tσ-Twkᵣ Tidₛ γ A) (⟦⟧Tσ-Tidₛ γ))
+⟦Tidₛ⟧σ : (η : ⟦ Δ ⟧Δ) → (⟦ Tidₛ ⟧σ η) ≡ η
+⟦Tidₛ⟧σ {[]}     η       = refl
+⟦Tidₛ⟧σ {_ ∷ Δ₂} (A , η) = cong (A ∷η_) (trans (⟦Twkᵣ⟧σ Tidₛ η A) (⟦Tidₛ⟧σ η))
 
-⟦⟧T-Tsub : (η : ⟦ Δ₂ ⟧Δ) (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ ℓ) → 
-  ⟦ Tsub σ T ⟧T η ≡ ⟦ T ⟧T (⟦ σ ⟧Tσ η)
-⟦⟧T-Tsub η σ Nat       = refl
-⟦⟧T-Tsub η σ (` x)     = ⟦⟧Δ-lookup η σ x
+⟦Tsub⟧T : (η : ⟦ Δ₂ ⟧Δ) (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ ℓ) → 
+  ⟦ Tsub σ T ⟧T η ≡ ⟦ T ⟧T (⟦ σ ⟧σ η)
+⟦Tsub⟧T η σ Nat       = refl
+⟦Tsub⟧T η σ (` x)     = ⟦⟧Δ-lookup η σ x
   where ⟦⟧Δ-lookup : ∀ {ℓ} (η : ⟦ Δ₂ ⟧Δ) (σ : TSub Δ₁ Δ₂) (x : ℓ ∈ Δ₁) → 
-                          (⟦ σ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ σ ⟧Tσ η))
+                          (⟦ σ ℓ x ⟧T η) ≡ (⟦ ` x ⟧T (⟦ σ ⟧σ η))
         ⟦⟧Δ-lookup η σ (here refl) = refl
         ⟦⟧Δ-lookup η σ (there x) rewrite ⟦⟧Δ-lookup η (Tdropₛ σ) x = refl
-⟦⟧T-Tsub η σ (T₁ ⇒ T₂) rewrite ⟦⟧T-Tsub η σ T₁ | ⟦⟧T-Tsub η σ T₂ = refl
-⟦⟧T-Tsub η σ (∀α T)    = dep-ext λ A → 
-  trans (⟦⟧T-Tsub (A ∷η η) (Tliftₛ σ _) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦⟧Tσ-Twkᵣ σ η A))
+⟦Tsub⟧T η σ (T₁ ⇒ T₂) rewrite ⟦Tsub⟧T η σ T₁ | ⟦Tsub⟧T η σ T₂ = refl
+⟦Tsub⟧T η σ (∀α T)    = dep-ext λ A → 
+  trans (⟦Tsub⟧T (A ∷η η) (Tliftₛ σ _) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦Twkᵣ⟧σ σ η A))
   
 data EEnv : (Δ : TEnv) → Set where
   []   : EEnv Δ
@@ -214,64 +216,53 @@ data _∋_ : EEnv Δ → Type Δ ℓ → Set where
   tskip : Γ ∋ T → (ℓ ∷ℓ Γ) ∋ Twk T
 
 ⨆Γ : EEnv Δ → Level
-⨆Γ []                        = zero 
-⨆Γ (_∷_ {Δ = Δ} {ℓ = ℓ} T Γ) = ℓ ⊔ ⨆Γ  Γ 
-⨆Γ (_∷ℓ_ {Δ = Δ} ℓ Γ)        = ⨆Γ Γ 
+⨆Γ []                = zero 
+⨆Γ (_∷_ {ℓ = ℓ} T Γ) = ℓ ⊔ ⨆Γ Γ 
+⨆Γ (ℓ ∷ℓ Γ)          = ⨆Γ Γ 
 
-data Expr {Δ} (Γ : EEnv Δ) : Type Δ ℓ → Set where
+data Expr (Γ : EEnv Δ) : Type Δ ℓ → Set where
   `_   : Γ ∋ T → Expr Γ T
   #_   : ℕ → Expr Γ Nat
   ‵suc : Expr Γ Nat → Expr Γ Nat
   λx_  : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
-  Λ_⇒_ : ∀ ℓ {T : Type (ℓ ∷ Δ) ℓ′} → Expr (ℓ ∷ℓ Γ) T → Expr Γ (∀α T)
+  Λ_⇒_ : (ℓ : Level) {T : Type (ℓ ∷ Δ) ℓ′} → Expr (ℓ ∷ℓ Γ) T → Expr Γ (∀α T)
   _·_  : Expr Γ (T ⇒ T′) → Expr Γ T → Expr Γ T′
-  _∙_  : Expr Γ (∀α T) → (T′ : Type Δ ℓ) → Expr Γ (T [ T′ ]TT) 
+  _∙_  : Expr Γ (∀α T) → (T′ : Type Δ ℓ) → Expr Γ (T [ T′ ]T) 
 
 module FunctionExprSemEnv where
-  open import BoundQuantification 
+  -- also works for semantic expression environments
+  open import BoundQuantification as BQ
   
-  Γ∋T⇒Tℓ≤⨆Γ : ∀ {ℓ} {Δ : TEnv} {T : Type Δ ℓ} {Γ : EEnv Δ} → Γ ∋ T → ℓ ≤ (⨆Γ Γ)
+  Γ∋T⇒Tℓ≤⨆Γ : {T : Type Δ ℓ} {Γ : EEnv Δ} → Γ ∋ T → ℓ ≤ (⨆Γ Γ)
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ Γ} here = ≤-lub (⨆Γ Γ) (≤-id _)
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _∷_ {ℓ = ℓ} _ Γ} (there x) = ≤-lub ℓ (Γ∋T⇒Tℓ≤⨆Γ x)
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ℓ Γ} (tskip x) = Γ∋T⇒Tℓ≤⨆Γ x
   
-  ⟦_⟧Γ : ∀ {Δ} → (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
-  ⟦_⟧Γ {Δ} Γ η = ∀ (ℓ : BoundLevel (suc (⨆Γ Γ))) (T : Type Δ (BoundQuantification.# ℓ)) → (x : Γ ∋ T) → 
+  ⟦_⟧Γ : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
+  ⟦_⟧Γ Γ η = ∀ (ℓ : BoundLevel (suc (⨆Γ Γ))) (T : Type _ (BQ.# ℓ)) → (x : Γ ∋ T) → 
     BoundLift (Γ∋T⇒Tℓ≤⨆Γ x) ((⟦ T ⟧T η))
 
-⟦_⟧Γ_   : ∀ {Δ} → (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
+⟦_⟧Γ_   : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
 ⟦ []     ⟧Γ η = ⊤
 ⟦ T ∷ Γ  ⟧Γ η = ⟦ T ⟧T η × ⟦ Γ ⟧Γ η
 ⟦ ℓ ∷ℓ Γ ⟧Γ η = ⟦ Γ ⟧Γ (drop-η η) 
-
-[]γ    : ∀ {Δ} {η : ⟦ Δ ⟧Δ} → ⟦ [] ⟧Γ η
-[]γ = tt
    
-_∷γ_   : ∀ {ℓ} {Δ} {T : Type Δ ℓ} {Γ : EEnv Δ} {η : ⟦ Δ ⟧Δ} → 
-    ⟦ T ⟧T η → ⟦ Γ ⟧Γ η → ⟦ T ∷ Γ ⟧Γ η
+_∷γ_   : {η : ⟦ Δ ⟧Δ} → ⟦ T ⟧T η → ⟦ Γ ⟧Γ η → ⟦ T ∷ Γ ⟧Γ η
 _∷γ_ = _,_
-    
-_∷γℓ_   : ∀ {ℓ} {Δ} {Γ : EEnv Δ} {η : ⟦ Δ ⟧Δ} → 
-    (A : Set ℓ) → ⟦ Γ ⟧Γ η → ⟦ ℓ ∷ℓ Γ ⟧Γ (A ∷η η)
-_∷γℓ_ {Γ = Γ} A γ = γ
 
-lookup-γ : ∀ {ℓ} {Δ : TEnv} {Γ : EEnv Δ} {T : Type Δ ℓ} {η : ⟦ Δ ⟧Δ} → 
-    ⟦ Γ ⟧Γ η → Γ ∋ T → ⟦ T ⟧T η 
+lookup-γ : {η : ⟦ Δ ⟧Δ} → ⟦ Γ ⟧Γ η → Γ ∋ T → ⟦ T ⟧T η 
 lookup-γ (A , γ) here       = A
 lookup-γ (_ , γ) (there x)  = lookup-γ γ x
-lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦⟧T-Tren η (Twkᵣ Tidᵣ) T)) 
-  (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ η) (sym (trans (⟦⟧ρ-Twkᵣ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x)
+lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦Tren⟧T η (Twkᵣ Tidᵣ) T)) 
+  (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ η) (sym (trans (⟦Twkᵣ⟧ρ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x)
 
-⟦_⟧E : {Δ : TEnv} {T : Type Δ ℓ} {Γ : EEnv Δ} → 
-  Expr Γ T → (η : ⟦ Δ ⟧Δ) → ⟦ Γ ⟧Γ η → ⟦ T ⟧T η
+⟦_⟧E : {Γ : EEnv Δ} → Expr Γ T → (η : ⟦ Δ ⟧Δ) → ⟦ Γ ⟧Γ η → ⟦ T ⟧T η
 ⟦ ` x     ⟧E η γ = lookup-γ γ x
 ⟦ # n     ⟧E η γ = n
 ⟦ ‵suc e  ⟧E η γ = sucℕ (⟦ e ⟧E η γ)
-⟦_⟧E {_} {Δ} {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ    = λ x → ⟦ e ⟧E η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
-⟦_⟧E {_} {Δ} {T} {Γ}             (Λ ℓ ⇒ e) η γ = λ A → ⟦ e ⟧E (A ∷η η) (_∷γℓ_ {Γ = Γ} A γ)
+⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ = λ (x : ⟦ T₁ ⟧T η) → ⟦ e ⟧E η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
+⟦ Λ ℓ ⇒ e ⟧E η γ = λ (A : Set ℓ) → ⟦ e ⟧E (A ∷η η) γ
 ⟦ e₁ · e₂ ⟧E η γ = ⟦ e₁ ⟧E η γ (⟦ e₂ ⟧E η γ)
-⟦ _∙_ {T = T} e T′ ⟧E η γ = subst id (trans 
-  (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦⟧Tσ-Tidₛ η))) 
-  (sym (⟦⟧T-Tsub η (Textₛ Tidₛ T′) T))) (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
-  
-               
+⟦ _∙_ {T = T} e T′ ⟧E η γ = subst id 
+  (trans (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦Tidₛ⟧σ _))) (sym (⟦Tsub⟧T η _ T))) 
+  (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 

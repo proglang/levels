@@ -9,18 +9,20 @@
 
 ### External Code
 
-- `Ordinal.agda`: 
-- `Universe.agda`: 
+- `Ordinal.agda`: modified from "Three Equivalent Ordinal Notation Systems in Cubical Agda"[^1]
+- `Universe.agda`: modified from "Generalized Universe Hierarchies and First-Class Universe Levels"[^2]
+
+[^1]: https://arxiv.org/abs/1904.10759
+[^2]: https://arxiv.org/abs/2103.00223
 
 ### Library Code
 
-- `ExtendedHierarchy.agda`: 
-- `BoundQuantification.agda`: 
+- `ExtendedHierarchy.agda`: Extended Level Hierarchy with support for levels up to ε₀
+- `BoundQuantification.agda`: Bounded Level Quantification (with support for Extended Hierarchy) 
 
 ### Stratified System F Formalizations
 
-- `SSF.agda`: 
-- `SSF-UP.agda`:
+- `SSF.agda`: Denotational Semantics for Stratified System F
 - `SSF-UP-IR.agda`:
 - `SSF-UP-EH.agda`:
 
@@ -29,39 +31,35 @@
 ##### Glossary 
 
 | Code | Description |
-|-----|--------------------------|
-| SSF | Stratified System F      |
-| UP  | Universe Polymorphism    |
-| EH  | Extended Level Hierarchy |
-| IR  | Induction Recursion      |
+|-----|---------------------|
+| SSF | Stratified System F |
+| EH  | Extended Hierarchy  |
+| IR  | Induction Recursion |
 
 ##### Object Language
 
-| Name       | Universe Hierarchy | Universe Polymorphism |
-|------------|--------------------|-----------------------|
-| SSF        | yes                | no                    |
-| SSF-UP     | yes                | yes                   |
-| SSF-UP-EH  | yes                | yes                   |
-| SSF-UP-IR  | yes                | yes                   |
+| Name    | Universe Hierarchy | Universe Polymorphism |
+|---------|--------------------|-----------------------|
+| SSF     | yes                | no                    |
+| SSF-EH  | yes                | yes                   |
+| SSF-IR  | yes                | yes                   |
 
 ##### Formalization Methods
 
-| Name       | Level Magic | Induction Recursion | Extended Level Hierarchy |
-|------------|-------------|---------------------|--------------------------|
-| SSF        | yes         | no                  | no                       |
-| SSF-UP     | no          | no                  | no                       |
-| SSF-UP-EH  | yes (*)     | no                  | yes                      | 
-| SSF-UP-IR  | no          | yes                 | no                       |
+| Name    | Level Magic | Induction Recursion | Extended Hierarchy |
+|---------|-------------|---------------------|--------------------|
+| SSF     | yes         | no                  | no                 |
+| SSF-EH  | yes (*)     | no                  | yes                | 
+| SSF-IR  | no          | yes                 | no                 |
 
 
 ##### Problems 
 
-| Name       | Suffers Subst Hell Unnecessarily | Hits Hierarchy Limit |
-|------------|--------------------|----------------------|
-| SSF        | no                 | no                   |
-| SSF-UP     | yes                | yes                  |
-| SSF-UP-EH  | no (*)             | no                   |
-| SSF-UP-IR  | yes                | no                   |
+| Name    | Suffers Subst Hell Unnecessarily | Hits Hierarchy Limit |
+|---------|----------------------------------|----------------------|
+| SSF     | no                               | no                   |
+| SSF-EH  | no (*)                           | no                   |
+| SSF-IR  | yes                              | no                   |
 
 ## Solver Laws
 
@@ -77,9 +75,8 @@ private variable
   ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level
   
 postulate 
-  β-suc-zero     : suc zero ≡ ω^ zero + zero                                     -- by definition 
-  β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂                             -- by definition      
-  distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂                      -- ω^_+_ distributes _⊔_
-  subsumption₁   : ℓ ⊔ ω^ ℓ₁ + ℓ′ ≡ ω^ ℓ₁ + ℓ′              -- if ℓ occurs in ℓ′ -- _⊔_ subsumes ω^_+_ additive component
-  subsumption₂   : ℓ ⊔ ω^ ℓ′ + ℓ₁ ≡ ω^ ℓ′ + ℓ₁              -- if ℓ occurs in ℓ′ -- _⊔_ subsumes ω^_+_ exponentiation component
+  β-suc-zero     : suc zero ≡ ω^ zero + zero                                           -- by definition 
+  β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂                                   -- by definition   
+  distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂                            -- ω^_+_ distributes _⊔_
+  subsumption    : ℓ ⊔ ω^ ℓ₁ + ℓ₂ ≡ ω^ ℓ₁ + ℓ₂              -- if ℓ occurs in ℓ₁ or ℓ₂ -- _⊔_ subsumes ω^_+_
 ```
