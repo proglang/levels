@@ -93,14 +93,14 @@ module Properties where
     rewrite cast-pop-push-cancel (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a
 
-  lift-unlift-cancel : ∀ (ℓ≤Λ : ℓ ≤ Λ) {A : Set ℓ} → (a : BoundLift ℓ≤Λ A) → 
-    bound-lift ℓ≤Λ (bound-unlift ℓ≤Λ a) ≡ a 
-  lift-unlift-cancel (≤-id ℓ)      a        = refl             
-  lift-unlift-cancel (≤-suc ℓ≤Λ)   (lift a) = cong lift (lift-unlift-cancel ℓ≤Λ a)
-  lift-unlift-cancel (≤-lub _ ℓ≤Λ) (lift a) = cong lift (lift-unlift-cancel ℓ≤Λ a)
-  lift-unlift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A} a with lift-unlift-cancel ℓ≤Λ (lower (cast-pop _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A)} a))
-  ... | ih = {! cong lift ih  !}
-  lift-unlift-cancel (≤-exp _ ℓ≤Λ) a  =  {!   !}
+  -- lift-unlift-cancel : ∀ (ℓ≤Λ : ℓ ≤ Λ) {A : Set ℓ} → (a : BoundLift ℓ≤Λ A) → 
+  --   bound-lift ℓ≤Λ (bound-unlift ℓ≤Λ a) ≡ a 
+  -- lift-unlift-cancel (≤-id ℓ)      a        = refl             
+  -- lift-unlift-cancel (≤-suc ℓ≤Λ)   (lift a) = cong lift (lift-unlift-cancel ℓ≤Λ a)
+  -- lift-unlift-cancel (≤-lub _ ℓ≤Λ) (lift a) = cong lift (lift-unlift-cancel ℓ≤Λ a)
+  -- lift-unlift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A} a with lift-unlift-cancel ℓ≤Λ (lower (cast-pop _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A)} a))
+  -- ... | ih = {! cong lift ih    !}
+  -- lift-unlift-cancel (≤-exp _ ℓ≤Λ) a  =  {!   !}
 
 -- Proving the postulates on the MutualOrd Representation ---------------------
 

@@ -240,6 +240,14 @@ variable
 -- Δliftᵣ ρ []      = refl
 -- Δliftᵣ ρ (l ∷ Δ) = cong₂ _∷_ {!   !} (Δliftᵣ ρ Δ)
 
+Δsub : LSub δ₁ δ₂ → TEnv δ₁ → TEnv δ₂
+Δsub σ []      = []
+Δsub σ (l ∷ Δ) = Lsub σ l ∷ Δsub σ Δ
+
+-- Δliftₛ : ∀ (σ : LSub δ₁ δ₂) (Δ : TEnv δ₁) → Δsub (Lliftₛ σ) (Δwk Δ) ≡ Δwk (Δsub σ Δ) 
+-- Δliftₛ σ []      = refl
+-- Δliftₛ σ (l ∷ Δ) = cong₂ _∷_ {!   !} (Δliftₛ σ Δ)
+
 suc⨆Δ :  {δ : LEnv} → ⟦ δ ⟧δ → TEnv δ → Level
 suc⨆Δ κ []      = zero
 suc⨆Δ κ (l ∷ Δ) = suc (⟦ l ⟧L κ) ⊔ suc⨆Δ κ Δ  
@@ -262,9 +270,13 @@ data _∍_ : TEnv δ → Lvl δ μ → Set where
 ∍wk⁻¹ : (Δwk Δ) ∍ l′ → ∃[ l ] l′ ≡ Lwk l × Δ ∍ l
 ∍wk⁻¹ = ∍ren⁻¹ (Lwkᵣ Lidᵣ)
 
-∍sub : ∀ (σ : LSub δ₁ δ₂) → Δ ∍ l → Δren ρ Δ ∍ Lren ρ l
+∍sub : ∀ (σ : LSub δ₁ δ₂) → Δ ∍ l → Δsub σ Δ ∍ Lsub σ l
 ∍sub σ here = here
 ∍sub σ (there x) = there (∍sub σ x)
+
+∍sub⁻¹ : ∀ (σ : LSub δ₁ δ₂) → Δsub σ Δ ∍ l′ → ∃[ l ] l′ ≡ Lsub σ l × Δ ∍ l
+∍sub⁻¹ {Δ = l ∷ _} σ here      = l , refl , here
+∍sub⁻¹ {Δ = _ ∷ _} σ (there y) = let l , eq , x = ∍sub⁻¹ σ y in l , eq , there x
 
 data Type {δ : LEnv} (Δ : TEnv δ) : Lvl δ μ → Set where
   Nat   : Type Δ `zero
@@ -340,7 +352,7 @@ TTliftₛ σ _ _ _ here = ` here
 TTliftₛ σ _ _ _ (there x) = TTwk (σ _ _ x)
 
 TLliftₛ : TSub Δ₁ Δ₂ → TSub (Δwk Δ₁) (Δwk Δ₂)  
-TLliftₛ σ _ _ x = {!   !} --TLwk (σ _ _ x)
+TLliftₛ σ _ _ x with l , refl , x ← ∍wk⁻¹ x = {! σ _ _ x  !}
 
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 Tsub σ Nat       = Nat
@@ -359,14 +371,14 @@ Tsub σ (∀ℓ T)    = ∀ℓ (Tsub (TLliftₛ σ) T)
 --     Type Δ₁ l → Type (Δsub σ Δ₁) (Lsub σ l) 
     
 Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
-Textₛ σ T′ _ _ here = T′
-Textₛ σ T′ _ _ (there x)   = σ _ _ x
+Textₛ σ T′ _ _ here      = T′
+Textₛ σ T′ _ _ (there x) = σ _ _ x
 
 _[_]TT : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 T [ T′ ]TT = Tsub (Textₛ Tidₛ T′) T
 
-_[_]TL : ∀ {Δ : TEnv δ} {l : Lvl δ μ} →
-    Type (Δwk Δ) (Lwk l) → Lvl δ <ω → Type Δ l
+_[_]TL : ∀ {Δ : TEnv δ} {l : Lvl (tt ∷ δ) μ} →
+    Type (Δwk Δ) l → (l′ : Lvl δ <ω) → Type Δ (l [ l′ ]LL)
 T [ l′ ]TL = {! T  !}
 
 _T≫ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
@@ -551,4 +563,4 @@ lookup-γ (_ , γ) (there x)  = lookup-γ γ x
   (sym {! (⟦⟧T-sub η (Textₛ Tidₛ T′) T)  !})) (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 
 ⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ {- rewrite ⟦⟧L-Lwk-∷κ l κ (⟦ l′ ⟧L′ κ) -} = {! ⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)  !} --(⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))
     
-                             
+                              
