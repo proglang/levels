@@ -5,6 +5,8 @@
 *.fdb_latexmk
 *.fls
 *.log
+*.out
+*.cut
 *.run.xml
 *.agdai
 latex/
