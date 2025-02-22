@@ -4,6 +4,8 @@ module BoundQuantification where
 open import Level
 open import ExtendedHierarchy renaming (_≤_ to _≤ᵒ_; _<_ to _<ᵒ_; _>_ to _>ᵒ_)
 
+--! BQ >
+
 private variable
   ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level
   Λ Λ′ Λ₁ Λ₂ Λ₃ Λ₄ : Level
@@ -36,6 +38,7 @@ postulate
   -- unification fails
   -- no injectivity of suc / ω^_+_ on postulates!
   -- proven on MutualOrd representation below
+  -- propose to add injectivity? does this lead to inconsistency?
 
 -- Bounded Quantification -----------------------------------------------------
 record BoundLevel (Λ : Level) : Set where

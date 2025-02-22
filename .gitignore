@@ -7,3 +7,5 @@
 *.log
 *.run.xml
 *.agdai
+latex/
+.agdatex-hashes.json

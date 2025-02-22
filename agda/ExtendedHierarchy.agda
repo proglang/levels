@@ -3,6 +3,8 @@ open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; cong; trans; subst)
 open import Level
 
+--! L >
+
 -- Extended hierarchy ---------------------------------------------------------
 
 infix 40 ω^_+_

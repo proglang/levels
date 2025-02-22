@@ -14,6 +14,11 @@ open import Function using (_∘_; id; flip; _$_)
 open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-intro; cast-elim; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
 open import BoundQuantification using (BoundLevel; BoundLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
 
+--! IR >
+
+coe : ∀ {ℓ}{A B : Set ℓ} → A ≡ B → A → B
+coe = subst id
+
 LEnv = List ⊤
 
 variable
@@ -197,7 +202,7 @@ data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
   Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
-  _·_   : Expr Γ (T ⇒ T′) → Expr Γ T → Expr Γ T′
+  _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
   _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
 
@@ -216,9 +221,9 @@ lookup-γ : {Δ : TEnv δ} {Γ : EEnv Δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {�
 lookup-γ (A , γ) here       = A
 lookup-γ (_ , γ) (there x)  = lookup-γ γ x
 lookup-γ {Γ = _ ∷l Γ} {κ = κ} {η = A , η} γ (tskip {T = T} x) = 
-  subst id ⟦TTwk⟧T (lookup-γ γ x)
+  coe ⟦TTwk⟧T (lookup-γ γ x)
 lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) = 
-  cast-elim _ (subst id ⟦TLwk⟧T (lookup-γ {δ = δ} {κ = κ} γ x))
+  cast-elim _ (coe ⟦TLwk⟧T (lookup-γ {δ = δ} {κ = κ} γ x))
 
 ⟦_⟧E : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} → 
   Expr Γ T → (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → ⟦ Γ ⟧Γ κ η → ⟦ T ⟧T κ η
@@ -231,11 +236,11 @@ lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) =
 ⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ l ⇒ e) κ η γ = λ (A : Set (⟦ l ⟧L κ)) → 
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
   ⟦ e ⟧E κ η′ γ
-⟦ Λℓ e ⟧E κ η γ = 
-  λ (ℓ : BoundLevel ⌊ ω ⌋) → cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
+⟦ Λℓ e ⟧E κ η γ = λ (ℓ : BoundLevel ⌊ ω ⌋) → 
+  cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
 ⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
-⟦ e ∙ T′ ⟧E κ η γ = subst id ⟦[]TT⟧T (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 
+⟦ e ∙ T′ ⟧E κ η γ = coe ⟦[]TT⟧T (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 
 ⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ = 
-  cast-elim _ (subst id ⟦[]LT⟧T (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)))))
+  cast-elim _ (coe ⟦[]LT⟧T (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)))))
       
                                 

@@ -1,29 +1,32 @@
+{-# OPTIONS --warn=noUserWarning #-}
 module SSF-IR where
 
 open import Level using (zero)
-open import Data.Nat using ( ℕ; s≤s; z≤n; _<′_ ) renaming (_⊔_ to _⊔ℕ_; _+_ to _+ℕ_; _<_ to _<ℕ_ )
-open import Data.Nat.Properties using (+-identityʳ; +-suc; <-trans; <⇒<′; ⊔-idem; m≤n⇒m⊔n≡n; m≥n⇒m⊔n≡m; <⇒≤; <-irrefl; ≡-irrelevant; <-asym)
+open import Data.Nat using (ℕ; s≤s; z≤n; _<′_ ) renaming (_⊔_ to _⊔ℕ_; _+_ to _+ℕ_; _<_ to _<ℕ_ )
+open import Data.Nat.Properties using (<-trans; <-irrefl; ≡-irrelevant; <-asym)
 open import Data.Vec using (Vec)
-open import Data.List using (List; []; _∷_; length)
+open import Data.List using (List; []; _∷_)
 open import Data.List.Membership.Propositional
-open import Data.List.Relation.Unary.All using (All; []; _∷_; lookup; lookupAny)
 open import Data.List.Relation.Unary.Any using (here; there)
-open import Data.Product.Properties using (×-≡,≡→≡ ; ×-≡,≡←≡; ×-≡,≡↔≡)
-open import Function  using (id; _∘_)
-open import Relation.Binary.PropositionalEquality using ()
-open Relation.Binary.PropositionalEquality.≡-Reasoning
+open import Data.Product.Properties using (×-≡,≡←≡)
+open import Function using (id)
+open import Relation.Binary.PropositionalEquality using (module ≡-Reasoning)
+open ≡-Reasoning
 
 open import Universe using (module Lib; module IRUniverse)
 open Lib
 
-coe-coe : ∀{a}{A B : Set a} (x≡y : A ≡ B) (y≡x : B ≡ A) {p : A}
-  → (coe y≡x (coe x≡y p)) ≡ p
-coe-coe refl refl = refl
+--! IR >
+
+module _ where
+  coe-coe : ∀{ℓ}{A B : Set ℓ} (a≡b : A ≡ B) (b≡a : B ≡ A) {a : A} → 
+    (coe b≡a (coe a≡b a)) ≡ a
+  coe-coe refl refl = refl
 
 open IRUniverse
 
 module _ where
-  open ℕ*ℕ public
+  open ℕ*ℕ hiding (#_) public
   open IR-Universe lvl
 
   import Data.Nat as N
@@ -33,13 +36,13 @@ module _ where
 
   _<ℕ*ℕ_ : ℕ × ℕ → ℕ × ℕ → Set
   _<ℕ*ℕ_ = Lexicographic._<_ _<ℕ_ (λ _ → _<ℕ_)
-
-
+  
   <-irrefl-ℕ*ℕ : Irreflexive _≡_ _<ℕ*ℕ_
   <-irrefl-ℕ*ℕ refl (Lexicographic.left x₁<x₂) = <-irrefl refl x₁<x₂
   <-irrefl-ℕ*ℕ refl (Lexicographic.right y₁<y₂) = <-irrefl refl y₁<y₂
 
-  ≡-decompose : ∀ {x y : ℕ × ℕ} → (p : x ≡ y) → Σ (₁ x ≡ ₁ y) (λ p₁ → (Σ (₂ x ≡ ₂ y) (λ p₂ → p ≡ cong₂ _,_ p₁ p₂)))
+  ≡-decompose : ∀ {x y : ℕ × ℕ} → (p : x ≡ y) → 
+    Σ (₁ x ≡ ₁ y) (λ p₁ → (Σ (₂ x ≡ ₂ y) (λ p₂ → p ≡ cong₂ _,_ p₁ p₂)))
   ≡-decompose p
     with ×-≡,≡←≡ p
   ≡-decompose refl | refl , refl = refl , refl , refl
@@ -83,8 +86,7 @@ module _ where
   ... | inj₁ x = ⊥-elim (<-irrefl refl (Σ.proj₂ (f i) x))
   ... | inj₂ (inj₁ x) = ⊥-elim (<-irrefl refl (Σ.proj₁ (f j) x))
   ... | inj₂ (inj₂ refl) = refl
-
-
+  
   <-ext-ℕ*ℕ : ∀ {i j : ℕ × ℕ} →
       ((k : ℕ × ℕ) → (k <ℕ*ℕ i → k <ℕ*ℕ j) × (k <ℕ*ℕ j → k <ℕ*ℕ i)) →
       i ≡ j
@@ -103,325 +105,267 @@ module _ where
   ordinal-ℕ*ℕ : Ordinal lvl
   ordinal-ℕ*ℕ = record { cmp = cmp-ℕ*ℕ ; <-ext = <-ext-ℕ*ℕ }
 
-  Lvl-suc : Lvl → Lvl
-  Lvl-suc (fst , snd) = fst , ℕ.suc snd
+  sucL : Lvl → Lvl
+  sucL (fst , snd) = fst , ℕ.suc snd
 
-  Lvl-suc-mon : ∀ {x}{y} → x <ℕ*ℕ y → Lvl-suc x <ℕ*ℕ Lvl-suc y
-  Lvl-suc-mon (Lexicographic.left x₁<x₂) = Lexicographic.left x₁<x₂
-  Lvl-suc-mon (Lexicographic.right y₁<y₂) = Lexicographic.right (s≤s y₁<y₂)
+open IR-Univ-Ordinal ordinal-ℕ*ℕ renaming (Lvl to OrdLvl)
 
-open IR-Univ-Ordinal ordinal-ℕ*ℕ
+variable 
+  n n′ n₁ n₂ n₃ : ℕ
+  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : OrdLvl
+  
+module _ where
+  ≤-trans : ∀ {i} {j} {k} → i ≤ j → j ≤ k → i ≤ k
+  ≤-trans (inj₁ i<j) (inj₁ j<k) = inj₁ (<-trans-ℕ*ℕ i<j j<k)
+  ≤-trans (inj₁ i<j) (inj₂ refl) = inj₁ i<j
+  ≤-trans (inj₂ refl) j≤k = j≤k
+  
+  <≤-trans : ∀ {i} {j} {k} → i <ℕ*ℕ j → j ≤ k → i <ℕ*ℕ k
+  <≤-trans i<j (inj₁ j<k) = <-trans-ℕ*ℕ i<j j<k
+  <≤-trans i<j (inj₂ refl) = i<j
 
-variable ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : Lvl
-
-<-asym-ℕ*ℕ : Asymmetric _<_
-<-asym-ℕ*ℕ (Lexicographic.left x₁<x₂) (Lexicographic.left x₂<x₁) = <-asym x₁<x₂ x₂<x₁
-<-asym-ℕ*ℕ (Lexicographic.left x₁<x₂) (Lexicographic.right y₁<y₂) = <-irrefl refl x₁<x₂
-<-asym-ℕ*ℕ (Lexicographic.right y₁<y₂) (Lexicographic.left x₁<x₂) = <-irrefl refl x₁<x₂ 
-<-asym-ℕ*ℕ (Lexicographic.right y₁<y₂) (Lexicographic.right y₂<y₁) = <-asym y₁<y₂ y₂<y₁
-
-≤-antisym : Antisymmetric _≡_ _≤_
-≤-antisym (inj₁ x) (inj₁ y) = ⊥-elim (<-asym-ℕ*ℕ x y)
-≤-antisym (inj₁ x) (inj₂ refl) = refl
-≤-antisym (inj₂ refl) (inj₁ x) = refl
-≤-antisym (inj₂ refl) (inj₂ refl) = refl
-
-
-Lvl-suc-⊔ : ∀ ℓ₁ ℓ₂ → Lvl-suc (ℓ₁ ⊔ ℓ₂) ≡ Lvl-suc ℓ₁ ⊔ Lvl-suc ℓ₂
-Lvl-suc-⊔ ℓ₁ ℓ₂
-  with cmp ℓ₁ ℓ₂ | cmp (Lvl-suc ℓ₁) (Lvl-suc ℓ₂)
-... | inj₁ x | inj₁ x₁ = refl
-... | inj₁ x | inj₂ (inj₁ x₁) = ≤-antisym (inj₁ x₁) (inj₁ (Lvl-suc-mon x))
-... | inj₁ x | inj₂ (inj₂ refl) = refl
-... | inj₂ (inj₁ x₁) | inj₁ x = ⊥-elim (<-asym-ℕ*ℕ x (Lvl-suc-mon x₁))
-... | inj₂ (inj₂ refl) | inj₁ x = refl
-... | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = refl
-... | inj₂ (inj₁ x) | inj₂ (inj₂ refl) = refl
-... | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = refl
-... | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) = refl
-
---! TF >
-
-≤-trans : ∀ {i} {j} {k} → i ≤ j → j ≤ k → i ≤ k
-≤-trans (inj₁ i<j) (inj₁ j<k) = inj₁ (<-trans-ℕ*ℕ i<j j<k)
-≤-trans (inj₁ i<j) (inj₂ refl) = inj₁ i<j
-≤-trans (inj₂ refl) j≤k = j≤k
-
-
-<≤-trans : ∀ {i} {j} {k} → i <ℕ*ℕ j → j ≤ k → i <ℕ*ℕ k
-<≤-trans i<j (inj₁ j<k) = <-trans-ℕ*ℕ i<j j<k
-<≤-trans i<j (inj₂ refl) = i<j
-
-≤-irrel : ∀ {i} {j} → (p q : i ≤ j) → p ≡ q
-≤-irrel (inj₁ x) (inj₁ y) = cong inj₁ (<-irr _ _)
-≤-irrel (inj₁ x) (inj₂ y) = ⊥-elim (<-irrefl-ℕ*ℕ y x)
-≤-irrel (inj₂ y) (inj₁ x) = ⊥-elim (<-irrefl-ℕ*ℕ y x)
-≤-irrel (inj₂ y) (inj₂ x) = cong inj₂ (≡-irrelevant-ℕ*ℕ y x)
-
--- level variable environments
-
-LvlEnv = List ⊤
+LEnv = List ⊤
 
 variable
-      δ δ′ δ₁ δ₂ δ₃ : LvlEnv
+  δ δ′ δ₁ δ₂ δ₃ : LEnv
 
 data Mode : Set where
-  <ω ≤ω : Mode
-
-variable μ : Mode
-
-module _ (δ : LvlEnv) where
-
-  data MLvl : Mode → Set where
-    `zero : MLvl <ω
-    `suc  : MLvl μ → MLvl μ
-    _`⊔_  : MLvl μ → MLvl μ → MLvl μ
-    `_    : tt ∈ δ → MLvl <ω
-    `fin  : MLvl <ω → MLvl ≤ω
-    `omg  : ℕ → MLvl ≤ω
-    
-  FinLvl = MLvl <ω
-  LimLvl = MLvl ≤ω
-
-wkₗ  : MLvl δ μ → MLvl (tt ∷ δ) μ
-wkₗ `zero      = `zero
-wkₗ (`suc l)   = `suc (wkₗ l)
-wkₗ (` x)      = ` (there x)
-wkₗ (l₁ `⊔ l₂) = wkₗ l₁ `⊔ wkₗ l₂
-wkₗ (`fin x) = `fin (wkₗ x)
-wkₗ (`omg x) = `omg x
-
-module these-hold-definitionally where
-  wkₗ-⊔ : (l₁ l₂ : LimLvl δ) → wkₗ (l₁ `⊔ l₂) ≡ wkₗ l₁ `⊔ wkₗ l₂
-  wkₗ-⊔ l₁ l₂ = refl
-
-  wkₗ-suc : (l : LimLvl δ) → wkₗ (`suc l) ≡ `suc (wkₗ l)
-  wkₗ-suc x = refl
-
--- semantics of finite levels
-FLvl = ℕ
-
-DEnv : LvlEnv → Set
-DEnv δ = tt ∈ δ → FLvl
-
-⟦_⟧ℓ : FinLvl δ → DEnv δ → FLvl
-⟦ `zero ⟧ℓ d = ℕ.zero
-⟦ `suc l ⟧ℓ d = ℕ.suc (⟦ l ⟧ℓ d)
-⟦ l₁ `⊔ l₂ ⟧ℓ d = ⟦ l₁ ⟧ℓ d ⊔ℕ ⟦ l₂ ⟧ℓ d
-⟦ ` x ⟧ℓ d = d x
-
-⟦_⟧ℓ′ : LimLvl δ → DEnv δ → Lvl
-⟦ `fin x ⟧ℓ′ d = ℕ.zero , ⟦ x ⟧ℓ d
-⟦ x `⊔ y ⟧ℓ′ d = ⟦ x ⟧ℓ′ d ⊔ ⟦ y ⟧ℓ′ d
-⟦ `suc x ⟧ℓ′ d = Lvl-suc (⟦ x ⟧ℓ′ d)
-⟦ `omg k ⟧ℓ′ d = ω + (0 , k)
-
-DEnv-ext : DEnv δ → FLvl → DEnv (tt ∷ δ)
-DEnv-ext d ℓ (here refl) = ℓ
-DEnv-ext d ℓ (there x) = d x
-
-Lvl-fin : Lvl → Set
-Lvl-fin (fst , snd) = fst ≡ ℕ.zero
-
-variable l l′ l″ l₁ l₂ l₃ : LimLvl δ
-
--- level environments
-
---! Env
-Env : LvlEnv → Set
-Env δ = List (LimLvl δ)
-
-wkₗₑ : Env δ → Env (tt ∷ δ)
-wkₗₑ []      = []
-wkₗₑ (l ∷ Δ) = wkₗ l ∷ wkₗₑ Δ
-
-
-variable Δ Δ₁ Δ₂ Δ₃ : Env δ
-
-
---! Type
-
-data Type δ (Δ : Env δ) : LimLvl δ → Set where
-
-  `ℕ      : Type δ Δ (`fin `zero)
-  _`⇒_    : (T₁ : Type δ Δ l₁) (T₂ : Type δ Δ l₂) → Type δ Δ (l₁ `⊔ l₂)
-  `_      : (α : l ∈ Δ) → Type δ Δ l
-  `∀α_,_  : (l : LimLvl δ) (T : Type δ (l ∷ Δ) l′) → Type δ Δ (`suc l `⊔ l′)
-  `∀ℓ_    : (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)) → Type δ Δ (`omg ℕ.zero `⊔ l)
-
-Lᵈ : DEnv δ → LimLvl δ → Lvl
-Lᵈ d l = ⟦ l ⟧ℓ′ d
-
-Uᵈ : DEnv δ → LimLvl δ → Set
-Uᵈ d l = U (Lᵈ d l)
-
-⟦⟧ℓ-`⊔ : (d : DEnv δ) (l₁ l₂ : LimLvl δ) → ⟦ l₁ `⊔ l₂ ⟧ℓ′ d ≡ ⟦ l₁ ⟧ℓ′ d ⊔ ⟦ l₂ ⟧ℓ′ d
-⟦⟧ℓ-`⊔ d l₁ l₂ = refl
-
-⟦⟧ℓ-suc : (d : DEnv δ) (l : LimLvl δ) → ⟦ `suc l ⟧ℓ′ d ≡ Lvl-suc (⟦ l ⟧ℓ′ d)
-⟦⟧ℓ-suc d x = refl
-
-Lᵈ-⊔ : (d : DEnv δ) (l₁ : LimLvl δ) (l₂ : LimLvl δ) → Lᵈ d l₁ ⊔ Lᵈ d l₂ ≡ Lᵈ d (l₁ `⊔ l₂)
-Lᵈ-⊔ d l₁ l₂ = refl
-
-coef :  (d : DEnv δ) (x : FLvl) (fl : FinLvl δ) → ⟦ fl ⟧ℓ d ≡ ⟦ wkₗ fl ⟧ℓ  (DEnv-ext d x)
-coef d x `zero = refl
-coef d x (`suc fl) = cong ℕ.suc (coef d x fl)
-coef d x (fl₁ `⊔ fl₂) = cong₂ _⊔ℕ_ (coef d x fl₁) (coef d x fl₂)
-coef d x (` z) = refl
-
-denv-wk-ext : (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → ⟦ ll ⟧ℓ′ d ≡ ⟦ wkₗ ll ⟧ℓ′ (DEnv-ext d x)
-denv-wk-ext d x (`fin fl) = cong (ℕ.zero ,_) (coef d x fl)
-denv-wk-ext d x (ll₁ `⊔ ll₂) = cong₂ _⊔_ (denv-wk-ext d x ll₁) (denv-wk-ext d x ll₂)
-denv-wk-ext d x (`suc ll) = cong Lvl-suc (denv-wk-ext d x ll)
-denv-wk-ext d x (`omg x₁) = refl
-
-coel :  (d : DEnv δ) (x : FLvl) (ll : LimLvl δ) → Uᵈ d ll ≡ Uᵈ (DEnv-ext d x) (wkₗ ll)
-coel d x ll = cong U (denv-wk-ext d x ll)
-
-Env* : DEnv δ → Env δ → Set
-Env* d Δ = All (Uᵈ d) Δ
-
-coe* : {Δ : Env δ} (d : DEnv δ) (x : FLvl) → Env* d Δ → Env* (DEnv-ext d x) (wkₗₑ Δ)
-coe* d x [] = []
-coe* {Δ = ll ∷ _} d x (u ∷ η) = coe (coel d x ll) u ∷ coe* d x η
-
-
-
-encode : (d : DEnv δ) (T : Type δ Δ l) (η : Env* d Δ) → Uᵈ d l
-encode d `ℕ η = ℕ'
-encode d (_`⇒_ {l₁ = l₁} {l₂ = l₂} T₁ T₂) η
-  = (Lift≤ (⊔₁ (Lᵈ d l₁) (Lᵈ d l₂)) (encode d T₁ η))
-    ⇒'
-    (Lift≤ (⊔₂ (Lᵈ d l₁) (Lᵈ d l₂)) (encode d T₂ η))
-encode d (` α) η = lookup η α
-encode d (`∀α_,_ {l′ = l′} l T) η
-  =
-  let ≤-witness = ⊔₁ (⟦ `suc l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d) in
-  Π' (U' {j = ⟦ l ⟧ℓ′ d} (<≤-trans ℕ*ℕ.<suc ≤-witness))
-     λ u → let r = encode d T (coe  (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧ℓ′ d} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) u ∷ η) in
-         Lift≤ (⊔₂ (⟦ `suc l ⟧ℓ′ d) (⟦ l′ ⟧ℓ′ d)) r
-encode d (`∀ℓ_ {l = l} T) η = Π' ℕ' (λ x → let r = coe (sym (coel d x l)) (encode (DEnv-ext d x) T (coe* d x η))
-                                            in  Lift≤ (⊔₂ ω (Lᵈ d l)) r)
-
-
-⟦_⟧ᵀ : (T : Type δ Δ l) (d : DEnv δ) → (η : Env* d Δ) → Set
-⟦ T ⟧ᵀ d η = El (encode d T η)
-
-
--- type environments
-data Ctx : ∀ {δ} → Env δ → Set where
-  ∅     : Ctx {δ} []
-  _◁_   : Type δ Δ l → Ctx Δ → Ctx Δ
-  _◁*_  : (l : LimLvl δ) → Ctx Δ → Ctx (l ∷ Δ)
-  ◁ℓ_   : Ctx Δ → Ctx (wkₗₑ Δ)
+  fin : Mode 
+  any : Mode
 
 variable
-  Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : Ctx {δ} Δ
-  T T′ : Type δ Δ l
+  μ μ′ μ₁ μ₂ μ₃ : Mode
+
+data Lvl (δ : LEnv) : Mode → Set where 
+  `zero : Lvl δ fin
+  `suc  : Lvl δ μ → Lvl δ μ
+  `_    : tt ∈ δ → Lvl δ fin
+  _`⊔_  : Lvl δ μ → Lvl δ μ → Lvl δ μ
+  ⟨_⟩   : Lvl δ fin → Lvl δ any
+  `ω    : Lvl δ any
+
+variable 
+  l l′ l₁ l₂ l₃ : Lvl δ any
+
+Lwk  : Lvl δ μ → Lvl (tt ∷ δ) μ
+Lwk `zero      = `zero
+Lwk (`suc l)   = `suc (Lwk l)
+Lwk (` x)      = ` (there x)
+Lwk (l₁ `⊔ l₂) = Lwk l₁ `⊔ Lwk l₂
+Lwk ⟨ l ⟩      = ⟨ Lwk l ⟩
+Lwk `ω         = `ω
+
+_[_]L : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
+`zero         [ l′ ]L = `zero
+`suc l        [ l′ ]L = `suc (l [ l′ ]L)
+(` here refl) [ l′ ]L = l′
+(` there x)   [ l′ ]L = ` x
+(l₁ `⊔ l₂)    [ l′ ]L = (l₁ [ l′ ]L) `⊔ (l₂ [ l′ ]L)
+⟨ l ⟩         [ l′ ]L = ⟨ l [ l′ ]L ⟩
+`ω            [ l′ ]L = `ω 
+
+⟦_⟧δ : LEnv → Set
+⟦ [] ⟧δ = ⊤
+⟦ _ ∷ δ ⟧δ = ℕ × ⟦ δ ⟧δ
+
+variable
+  κ κ′ κ₁ κ₂ κ₃ : ⟦ δ ⟧δ
+
+_∷κ_ : ℕ → ⟦ δ ⟧δ → ⟦ tt ∷ δ ⟧δ
+_∷κ_ = _,_
+
+lookup-κ : ⟦ δ ⟧δ → tt ∈ δ → ℕ
+lookup-κ {_ ∷ δ} (ℓ , κ) (here refl) = ℓ
+lookup-κ {_ ∷ δ} (ℓ , κ) (there x)   = lookup-κ κ x
+
+drop-κ : ⟦ tt ∷ δ ⟧δ → ⟦ δ ⟧δ
+drop-κ (_ , κ) = κ
+
+⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → ℕ
+⟦ `zero    ⟧L′ κ = ℕ.zero
+⟦ `suc l   ⟧L′ κ = ℕ.suc (⟦ l ⟧L′ κ)
+⟦ ` x      ⟧L′ κ = lookup-κ κ x
+⟦ l₁ `⊔ l₂ ⟧L′ κ = ⟦ l₁ ⟧L′ κ ⊔ℕ ⟦ l₂ ⟧L′ κ
+
+⟦_⟧L : (l : Lvl δ any) → ⟦ δ ⟧δ → OrdLvl
+⟦ `suc l    ⟧L κ = sucL (⟦ l ⟧L κ)
+⟦ l₁ `⊔ l₂  ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
+⟦ ⟨ l ⟩     ⟧L κ = ℕ.zero , ⟦ l ⟧L′ κ
+⟦ `ω        ⟧L κ = ω 
 
 postulate
-  Twk : Type δ Δ l → Type δ (l′ ∷ Δ) l
-  _[_]T : Type δ (l′ ∷ Δ) l → Type δ Δ l′ → Type δ Δ l
-  _[_]ℓℓ : LimLvl (tt ∷ δ) → FinLvl δ → LimLvl δ
-  _[_]ℓ : ∀ {l : LimLvl (tt ∷ δ)} → Type (tt ∷ δ) (wkₗₑ Δ) l → (newl : FinLvl δ) → Type δ Δ (l [ newl ]ℓℓ)
+  ⟦Lwk⟧L : ∀ (l : Lvl δ any) (κ : ⟦ δ ⟧δ) ℓ → 
+    ⟦ Lwk l ⟧L (ℓ ∷κ κ) ≡ ⟦ l ⟧L κ
+  ⟦[]L⟧L : ∀ (l : Lvl (tt ∷ δ) any) (κ : ⟦ δ ⟧δ) l′ → 
+    ⟦ l [ l′ ]L ⟧L κ ≡ ⟦ l ⟧L (⟦ l′ ⟧L′ κ , κ)
 
-  wkₗₜ : Type δ Δ l → Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)
+data TEnv : LEnv → Set where
+  []   : TEnv δ
+  _∷_  : Lvl δ any → TEnv δ → TEnv δ 
+  ∷l_  : TEnv δ → TEnv (tt ∷ δ) 
 
---! inn
-data inn : Type δ Δ l → Ctx Δ → Set where
-  here   : inn T (T ◁ Γ)
-  there  : inn T Γ → inn T (T′ ◁ Γ)
-  tskip  : inn T Γ → inn (Twk T) (l ◁* Γ)
-  lskip  : inn T Γ → inn (wkₗₜ T) (◁ℓ Γ)
+variable
+  Δ Δ′ Δ₁ Δ₂ Δ₃ : TEnv δ
 
+data _∍_ : TEnv δ → Lvl δ any → Set where
+  here  : (l ∷ Δ) ∍ l
+  there : Δ ∍ l → (l′ ∷ Δ) ∍ l
+  lskip : Δ ∍ l → (∷l Δ) ∍ Lwk l
 
-data Expr {δ} {Δ : Env δ} (Γ : Ctx Δ) : Type δ Δ l → Set where
-  ##_    : (n : ℕ) → Expr Γ `ℕ
-  `suc  : Expr Γ `ℕ → Expr Γ `ℕ
-  `_    : ∀ {T : Type δ Δ l} → inn T Γ → Expr Γ T
-  ƛ_    : ∀ {T : Type δ Δ l} {T′ : Type δ Δ l′} → Expr (T ◁ Γ) T′ → Expr Γ (T `⇒ T′)
-  _·_   : ∀ {T : Type δ Δ l} {T′ : Type δ Δ l′} → Expr Γ (T `⇒ T′) → Expr Γ T → Expr Γ T′
-  Λ_⇒_  : ∀ (l : LimLvl δ) → {T : Type δ (l ∷ Δ) l′} → Expr (l ◁* Γ) T → Expr Γ (`∀α l , T)
-  _∙_    : ∀ {T : Type δ (l ∷ Δ) l′} → Expr Γ (`∀α l , T) → (T′ : Type δ Δ l) → Expr Γ (T [ T′ ]T)
-  Λℓ_   : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)} → Expr (◁ℓ Γ) T → Expr Γ (`∀ℓ T)
-  _·ℓ_  : ∀ {T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)} → Expr Γ (`∀ℓ T) → (newl : FinLvl δ) → Expr Γ (T [ newl ]ℓ)
+data Type (Δ : TEnv δ) : Lvl δ any → Set where
+  Nat   : Type Δ ⟨ `zero ⟩
+  `_    : Δ ∍ l → Type Δ l
+  _⇒_   : Type Δ l₁ → Type Δ l₂ → Type Δ (l₁ `⊔ l₂) 
+  ∀α    : Type (l ∷ Δ) l′ → Type Δ (`suc l `⊔ l′) 
+  ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ l)
 
-variable e e₁ e₂ e₃ : Expr Γ T
-variable n : ℕ
-
--- value environments
-
-VEnv : {Δ : Env δ} → (d : DEnv δ) → Ctx Δ → Env* d Δ → Set
-VEnv {δ} {Δ} d Γ η = ∀ l (T : Type δ Δ l) → (x : inn T Γ) → ⟦ T ⟧ᵀ d η
-
-extend : ∀ {d : DEnv δ} {T : Type δ Δ l}{Γ : Ctx Δ}{η : Env* d Δ}
-  → VEnv d Γ η → ⟦ T ⟧ᵀ d η → VEnv d (T ◁ Γ) η
-extend γ v _ _ here = v
-extend γ v _ _ (there x) = γ _ _ x
+variable
+  T T′ T₁ T₂ T₃ : Type Δ l
 
 postulate
-  extend-tskip : ∀ {d : DEnv δ} {Δ : Env δ} {Γ : Ctx Δ} {η : Env* d Δ} {⟦α⟧ : Uᵈ d l} →
-    VEnv d Γ η → VEnv d (l ◁* Γ) (⟦α⟧ ∷ η)
+  TTwk : Type Δ l′ → Type (l ∷ Δ) l′
+  TLwk : Type Δ l → Type (∷l Δ) (Lwk l)
+  _[_]TT : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
+  _[_]TL : Type (∷l Δ) l → (l′ : Lvl δ fin) → Type Δ (l [ l′ ]L)
 
-  subst-env : ∀ {d : DEnv δ} (T : Type δ (l′ ∷ Δ) l) (T′ : Type δ Δ l′) (η : Env* d Δ) → ⟦ T ⟧ᵀ d (encode d T′ η ∷ η) ≡ ⟦ T [ T′ ]T ⟧ᵀ d η
+⟦_⟧Δ_ : (Δ : TEnv δ) → (κ : ⟦ δ ⟧δ) → Set 
+⟦  []   ⟧Δ κ = ⊤
+⟦ l ∷ Δ ⟧Δ κ = U (⟦ l ⟧L κ) × ⟦ Δ ⟧Δ κ
+⟦ ∷l Δ  ⟧Δ κ = ⟦ Δ ⟧Δ drop-κ κ
 
-  T-wk-ext : ∀ (d   : DEnv δ) (η   : Env* d Δ) (lev : FLvl) (T   : Type δ Δ l) → ⟦ T ⟧ᵀ d η ≡ ⟦ wkₗₜ T ⟧ᵀ (DEnv-ext d lev) (coe* d lev η)
+_∷η_ : {κ : ⟦ δ ⟧δ} →  U (⟦ l ⟧L κ) → ⟦ Δ ⟧Δ κ → ⟦ l ∷ Δ ⟧Δ κ
+_∷η_ = _,_
 
+lookup-η : {κ : ⟦ δ ⟧δ} → ⟦ Δ ⟧Δ κ → Δ ∍ l → U (⟦ l ⟧L κ)
+lookup-η (A , _) here                    = A
+lookup-η (_ , η) (there x)               = lookup-η η x
+lookup-η {κ = ℓ , κ} η (lskip {l = l} x) = coe (cong U (sym (⟦Lwk⟧L l κ ℓ))) (lookup-η η x)
+
+drop-η : {κ : ⟦ δ ⟧δ} → ⟦ l ∷ Δ ⟧Δ κ → ⟦ Δ ⟧Δ κ 
+drop-η (_ , η) = η
+
+encode : {Δ : TEnv δ} → (T : Type Δ l) → (κ : ⟦ δ ⟧δ) → (η : ⟦ Δ ⟧Δ κ) → U (⟦ l ⟧L κ)
+encode Nat       κ η = ℕ'
+encode (` x)     κ η = lookup-η η x
+encode (T₁ ⇒ T₂) κ η =  Lift≤ (⊔₁ _ _) (encode T₁ κ η) ⇒' Lift≤ (⊔₂ _ _) (encode T₂ κ η)
+encode {Δ = Δ} (∀α {l = l} {l′ = l′} T) κ η = Π' (U' (<≤-trans ℕ*ℕ.<suc (⊔₁ _ _))) λ A → 
+    let eq =  (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
+    let T = encode T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η) in 
+    Lift≤ (⊔₂ _ _) T
+encode (∀ℓ {l = l} T) κ η = Π' ℕ' λ ℓ → 
+    let T = coe ((cong U (⟦Lwk⟧L l κ ℓ))) (encode T (ℓ ∷κ κ) η) in 
+    Lift≤ (⊔₂ ω _) T
+
+⟦_⟧T : {Δ : TEnv δ} → (T : Type Δ l) (κ : ⟦ δ ⟧δ) → (η : ⟦ Δ ⟧Δ κ) → Set
+⟦ T ⟧T κ η = El (encode T κ η)
 
 postulate
-  subst-lev-env : (newl : FinLvl δ) (d    : DEnv δ) (η    : Env* d Δ) (T    : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l))
-    → ⟦ T ⟧ᵀ (DEnv-ext d (⟦ newl ⟧ℓ d)) (coe* d (⟦ newl ⟧ℓ d) η) ≡ ⟦ T [ newl ]ℓ ⟧ᵀ d η
+  ⟦TLwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →
+    ⟦ T ⟧T κ η ≡ ⟦ TLwk T ⟧T (n , κ) η 
+  ⟦TTwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {A : U (⟦ l′ ⟧L κ)} {η : ⟦ Δ ⟧Δ κ} → 
+    ⟦ T ⟧T κ η ≡ ⟦ TTwk {l = l′} T ⟧T κ (A , η)
+  -- interesting: does not lead to subst hell. in constrast, working with `Set ℓ` for the semantic of types
+  -- leads to it (see SSF-EH). there we need to use a cast to write this expression.
 
+  ⟦[]LT⟧T : {Δ : TEnv δ} {T : Type (∷l Δ) (Lwk l)} {l′ : Lvl δ fin} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →  
+    ⟦ T ⟧T (⟦ l′ ⟧L′ κ , κ) η ≡ ⟦ T [ l′ ]TL ⟧T κ η
+  ⟦[]TT⟧T : {l′ : Lvl δ any} {T : Type (l′ ∷ Δ) l} {T′ : Type Δ l′} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} → 
+    ⟦ T ⟧T κ (_∷η_ {l = l′} {Δ = Δ} {κ = κ} (encode T′ κ η) η) ≡ ⟦ T [ T′ ]TT ⟧T κ η
 
-crucial-equation : (l : LimLvl δ) (T : Type (tt ∷ δ) (wkₗₑ Δ) (wkₗ l)) (d : DEnv δ) (η : Env* d Δ) (x : FLvl)
-  (code : Uᵈ (DEnv-ext d x) (wkₗ l))
-    → El {Lᵈ d l} (coe (coel d x l ⁻¹) code)
-    ≡ El {Lᵈ (DEnv-ext d x) (wkₗ l)} code
-crucial-equation l T d η x code rewrite denv-wk-ext d x l = refl
+data EEnv : (Δ : TEnv δ) → Set where
+  []   : EEnv Δ
+  _∷_  : Type Δ l → EEnv Δ → EEnv Δ
+  _∷l_ : (l : Lvl δ any) → EEnv Δ → EEnv (l ∷ Δ)
+  ∷l_ : EEnv Δ → EEnv (∷l Δ)
 
+variable
+  Γ Γ′ Γ₁ Γ₂ Γ₃ : EEnv Δ
 
-coe** : {Γ : Ctx Δ} (d : DEnv δ) (η : Env* d Δ) (lev : FLvl) → VEnv d Γ η → VEnv (DEnv-ext d lev) (◁ℓ Γ) (coe* d lev η)
-coe** d η lev γ .(wkₗ _) .(wkₗₜ T) (lskip{T = T} x) = coe (T-wk-ext d η lev T) (γ _ T x)
+data _∋_ : EEnv Δ → Type Δ l → Set where
+  here  : (T ∷ Γ) ∋ T
+  there : Γ ∋ T → (T′ ∷ Γ) ∋ T
+  tskip : Γ ∋ T → (l ∷l Γ) ∋ TTwk T
+  lskip : Γ ∋ T → (∷l Γ) ∋ TLwk T
 
--- expression semantics
+data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
+  `_    : Γ ∋ T → Expr Γ T
+  #_    : ℕ → Expr Γ Nat
+  ‵suc  : Expr Γ Nat → Expr Γ Nat
+  λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
+  Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
+  Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
+  _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
+  _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
+  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
 
-E⟦_⟧ : ∀ {T : Type δ Δ l}{Γ : Ctx Δ} → (e : Expr Γ T) (d : DEnv δ) (η : Env* d Δ) → (γ : VEnv d Γ η) → ⟦ T ⟧ᵀ d η
-E⟦ ## n ⟧ d η γ = n
-E⟦ `suc x ⟧ d η γ = ℕ.suc (E⟦ x ⟧ d η γ)
-E⟦ ` x ⟧ d η γ = γ _ _ x
-E⟦ ƛ_ {l = l₁}{l′ = l₂}{T = T₁}{T′ = T₂} M ⟧ d η γ
-  = λ x → let r = E⟦ M ⟧ d η (extend γ (coe (ElLift≤ (⊔₁ (Lᵈ d l₁) (Lᵈ d l₂)) (encode d T₁ η)) x))
-          in coe (sym (ElLift≤ (⊔₂ (Lᵈ d l₁) (Lᵈ d l₂)) (encode d T₂ η))) r
-E⟦ _·_ {l = l}{l′ = l′}{T = T}{T′ = T′} M N ⟧ d η γ =
-  let f = E⟦ M ⟧ d η γ ; a = E⟦ N ⟧ d η γ in
-  coe (ElLift≤ (⊔₂ (Lᵈ d l) (Lᵈ d l′)) (encode d T′ η)) (f (coe (sym (ElLift≤ (⊔₁ (Lᵈ d l) (Lᵈ d l′)) (encode d T η))) a))
--- E⟦ M ⟧ η γ (E⟦ N ⟧ η γ)
-E⟦ Λ_⇒_ {l′ = l′} l {T} M ⟧ d η γ = λ α →
-  let η′ = coe (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {Lᵈ d l} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) α ∷ η in
-  let r = E⟦ M ⟧ d η′ (extend-tskip γ) in
-  coe (sym (ElLift≤ (⊔₂ (Lᵈ d (`suc l)) (Lᵈ d l′)) (encode d T η′))) r
--- E⟦ M ⟧ (α ∷ η) (extend-tskip γ)
-E⟦ _∙_ {l = l} {l′ = l′}{T = T} M T′ ⟧ d η γ =
-  let F = E⟦ M ⟧ d η γ in
-  let u′ = encode d T′ η in
-  let eq1 = (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {Lᵈ d l} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
-  let eq2 = Uⁱʳ & (ext (λ j → ext (λ p → trans (U<-compute {Lᵈ d l} {wf} {j} {p}) (sym U<-compute)))) in
-  let r = F (coe eq2 u′) in
-  coe (trans (trans (cong (λ □ → Elⁱʳ (Lift≤ (⊔₂ (Lᵈ d (`suc l)) (Lᵈ d l′)) (encode d T (□ ∷ η)))) (coe-coe eq2 eq1 {u′}))
-                    (ElLift≤ (⊔₂ (Lᵈ d (`suc l)) (Lᵈ d l′)) (encode d T (u′ ∷ η)))) (subst-env T T′ η)) r
+⟦_⟧Γ   : {Δ : TEnv δ} → (Γ : EEnv Δ) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set
+⟦ []     ⟧Γ κ η = ⊤
+⟦ T ∷ Γ  ⟧Γ κ η = ⟦ T ⟧T κ η × ⟦ Γ ⟧Γ κ η
+⟦_⟧Γ {Δ = l ∷ Δ} (l ∷l Γ) κ η = ⟦ Γ ⟧Γ κ (drop-η {l = l} {Δ = Δ} {κ = κ} η) 
+⟦ ∷l Γ   ⟧Γ κ η = ⟦ Γ ⟧Γ (drop-κ κ) η 
+   
+_∷γ_ : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} → 
+    ⟦ T ⟧T κ η → ⟦ Γ ⟧Γ κ η → ⟦ T ∷ Γ ⟧Γ κ η
+_∷γ_ = _,_
 
-E⟦ Λℓ_ {l = l}{T = T} M ⟧ d η γ =
-  λ x → let r = E⟦ M ⟧ (DEnv-ext d x) (coe* d x η) (coe** d η x γ) in
-        coe (sym (trans
-                    (ElLift≤ (⊔₂ ω (Lᵈ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-                    (crucial-equation l T d η x (encode (DEnv-ext d x) T (coe* d x η)))
-                    )) r
+lookup-γ : {Δ : TEnv δ} {Γ : EEnv Δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} → 
+    ⟦ Γ ⟧Γ κ η → Γ ∋ T → ⟦ T ⟧T κ η 
+lookup-γ (A , γ) here       = A
+lookup-γ (_ , γ) (there x)  = lookup-γ γ x
+lookup-γ γ (tskip x) = coe ⟦TTwk⟧T (lookup-γ γ x)
+lookup-γ γ (lskip x) = coe ⟦TLwk⟧T (lookup-γ γ x)
 
-E⟦ _·ℓ_ {l = l}{T = T} M newl ⟧ d η γ =
-  let r = E⟦ M ⟧ d η γ in
-  let x = ⟦ newl ⟧ℓ d in
-  coe (trans
-         (ElLift≤ (⊔₂ ω (Lᵈ d l)) (coe (coel d x l ⁻¹) (encode (DEnv-ext d x) T (coe* d x η))))
-         (trans (crucial-equation l T d η x (encode (DEnv-ext d x) T (coe* d x η)))
-                (subst-lev-env newl d η T))) (r x)
+lemma : ∀ (I : Set) (R : I → I → Set) {i₁ i₂ : I} → 
+  i₁ ≡ i₂ → 
+  (∀ j → R j i₁ → Set) ≡ (∀ j → R j i₂ → Set)
+lemma I R refl = refl
+
+special :  (ℓ₁ ℓ₂ : OrdLvl)  →
+  (code : U ℓ₁) →
+  (eq : ℓ₁ ≡ ℓ₂) →
+  Elⁱʳ {ℓ₂} {U< {ℓ₂}} (coe (cong U eq) code) ≡ Elⁱʳ {ℓ₁} {U< {ℓ₁}} code
+special _ _ _ refl = refl
+
+crucial : ∀ {κ : ⟦ δ ⟧δ} (l : Lvl δ any) ℓ (code : U (⟦ Lwk l ⟧L (ℓ ∷κ κ)))  → 
+          Elⁱʳ {⟦ l ⟧L κ} {U< {⟦ l ⟧L κ}} (coe (cong U (⟦Lwk⟧L l κ ℓ)) code) ≡ 
+          Elⁱʳ {⟦ Lwk l ⟧L (ℓ ∷κ κ)} {U< {⟦ Lwk l ⟧L (ℓ ∷κ κ)}} code
+crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
+  where generalized : (ℓ₁ ℓ₂ : OrdLvl) (code : U ℓ₁) (eq : ℓ₁ ≡ ℓ₂) →
+                      Elⁱʳ {ℓ₂} {U< {ℓ₂}} (coe (cong U eq) code) ≡ Elⁱʳ {ℓ₁} {U< {ℓ₁}} code
+        generalized _ _ _ refl = refl
+
+⟦_⟧E : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} → 
+  Expr Γ T → (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → ⟦ Γ ⟧Γ κ η → ⟦ T ⟧T κ η
+⟦ ` x     ⟧E κ η γ = lookup-γ γ x
+⟦ # n     ⟧E κ η γ = n
+⟦ ‵suc e  ⟧E κ η γ = ℕ.suc (⟦ e ⟧E κ η γ)
+⟦_⟧E {T = (_⇒_ {l₁ = l₁} {l₂ = l₂} T₁ T₂)} {Γ} (λx e) κ η γ = λ x → 
+  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} (coe (ElLift≤ (⊔₁ _ _) (encode T₁ κ η)) x) γ in
+  let eq = sym (ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₂ κ η)) in 
+  coe eq (⟦ e ⟧E κ η γ′)
+⟦_⟧E {Δ = Δ} {T = ∀α {l′ = l′} T} (Λ l ⇒ e) κ η γ = λ A → 
+  let eq = (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
+  let η′ =  _∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η in
+  let eq = sym (ElLift≤ (⊔₂ (⟦ `suc l ⟧L κ) (⟦ l′ ⟧L κ)) (encode T κ η′)) in 
+  coe eq (⟦ e ⟧E κ η′ γ)
+⟦_⟧E {T = ∀ℓ {l = l} T} (Λℓ e) κ η γ = λ ℓ → 
+  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (cong U (⟦Lwk⟧L l κ ℓ)) (encode T (ℓ ∷κ κ) η)) in
+  let eq₂ = crucial l ℓ (encode T (ℓ ∷κ κ) η) in
+  coe (sym (trans eq₁ eq₂)) (⟦ e ⟧E (ℓ ∷κ κ) η γ)
+⟦ _·_ {l₁} {T₁ = T₁} {l₂} {T₂ = T₂} e₁  e₂ ⟧E  κ η γ = 
+  let eq₁ = sym (ElLift≤ (⊔₁ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₁ κ η)) in
+  let eq₂ = ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₂ κ η) in
+  coe eq₂ (⟦ e₁ ⟧E κ η γ (coe eq₁ (⟦ e₂ ⟧E κ η γ)))
+⟦_⟧E {Δ = Δ} (_∙_ {l′} {l = l} {T = T} e T′) κ η γ = 
+  let eq₁ = Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf))) in
+  let eq₂ = Uⁱʳ & (ext (λ j → ext (λ p → trans (U<-compute {⟦ l ⟧L κ} {wf} {j} {p}) (sym U<-compute)))) in
+  let eq₃ = cong (λ A → let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
+            Elⁱʳ (Lift≤ (⊔₂ (⟦ `suc l ⟧L κ) _) (encode T κ η′))) (coe-coe eq₂ eq₁) in
+  let eq₄ = let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} (encode T′ κ η) η in 
+            ElLift≤ (⊔₂ (⟦ `suc l ⟧L κ) _) (encode T κ η′) in
+  let eq₅ = trans (trans eq₃ eq₄) ⟦[]TT⟧T in
+  coe eq₅ (⟦ e ⟧E κ η γ (coe eq₂ (encode T′ κ η)))
+⟦ _∙ℓ_ {l = l} {T = T} e l′ ⟧E κ η γ = 
+  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (U & ⟦Lwk⟧L l κ (⟦ l′ ⟧L′ κ)) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) in
+  let eq₂ = trans eq₁ (trans (crucial l (⟦ l′ ⟧L′ κ) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) ⟦[]LT⟧T) in 
+  coe eq₂ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))          

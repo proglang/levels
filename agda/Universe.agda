@@ -1,6 +1,9 @@
 -- ####################################
 -- ## BEGIN CODE FROM UNIVERSE PAPER ##
 -- ####################################
+
+--! U >
+
 module Universe where
 
 module Lib where
@@ -34,7 +37,7 @@ module Lib where
   -- function extensionality
   postulate
     ext : ∀{i j}{A : Set i}{B : A → Set j}{f g : (x : A) → B x}
-          → ((x : A) → f x  ≡ g x) → f ≡ g
+          → ((x : A) → f x ≡ g x) → f ≡ g
   
     exti : ∀{i j}{A : Set i}{B : A → Set j}{f g : ∀ {x} → B x}
             → ((x : A) → f {x} ≡ g {x}) → (λ {x} → f {x}) ≡ g
@@ -97,7 +100,7 @@ module IRUniverse where
     infix 4 _<'_
     infixr 1 _⊎'_
 
-    data Uⁱʳ {i}(l : ∀ j → j < i → Set) : Set
+    data Uⁱʳ {i}(l : ∀ (j : Lvl) → j < i → Set) : Set
     Elⁱʳ : ∀ {i l} → Uⁱʳ {i} l → Set
 
     data Uⁱʳ {i} l where

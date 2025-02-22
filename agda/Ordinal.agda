@@ -2,6 +2,8 @@
 -- ## BEGIN CODE FROM ORDINAL PAPER ##
 -- ###################################
 
+--! O >
+
 module Ordinal where
 
 open import Data.Sum using (_⊎_; inj₁; inj₂) 
@@ -14,10 +16,11 @@ open import Level using(Level)
 private variable
   ℓ : Level
 
+infix 30 _<_ _≤_ _>_ _≥_
+
 data MutualOrd : Set
 fst : MutualOrd → MutualOrd
 
-infix 30 _<_ _≤_ _>_ _≥_
 data _<_ : MutualOrd → MutualOrd → Set
 _>_ _≥_ _≤_ : MutualOrd → MutualOrd → Set
 a > b = b < a

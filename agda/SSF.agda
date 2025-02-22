@@ -12,6 +12,11 @@ open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst)
 open import Function using (_∘_; id; flip; _$_)
 
+--! SF >
+
+coe : ∀ {ℓ}{A B : Set ℓ} → A ≡ B → A → B
+coe = subst id
+
 variable
   ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : Level
 
@@ -226,7 +231,7 @@ data Expr (Γ : EEnv Δ) : Type Δ ℓ → Set where
   ‵suc : Expr Γ Nat → Expr Γ Nat
   λx_  : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_ : (ℓ : Level) {T : Type (ℓ ∷ Δ) ℓ′} → Expr (ℓ ∷ℓ Γ) T → Expr Γ (∀α T)
-  _·_  : Expr Γ (T ⇒ T′) → Expr Γ T → Expr Γ T′
+  _·_  : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
   _∙_  : Expr Γ (∀α T) → (T′ : Type Δ ℓ) → Expr Γ (T [ T′ ]T) 
 
 module FunctionExprSemEnv where
@@ -253,7 +258,7 @@ _∷γ_ = _,_
 lookup-γ : {η : ⟦ Δ ⟧Δ} → ⟦ Γ ⟧Γ η → Γ ∋ T → ⟦ T ⟧T η 
 lookup-γ (A , γ) here       = A
 lookup-γ (_ , γ) (there x)  = lookup-γ γ x
-lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦Tren⟧T η (Twkᵣ Tidᵣ) T)) 
+lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = coe (sym (⟦Tren⟧T η (Twkᵣ Tidᵣ) T)) 
   (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ η) (sym (trans (⟦Twkᵣ⟧ρ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x)
 
 ⟦_⟧E : {Γ : EEnv Δ} → Expr Γ T → (η : ⟦ Δ ⟧Δ) → ⟦ Γ ⟧Γ η → ⟦ T ⟧T η
@@ -267,4 +272,4 @@ lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = subst id (sym (⟦
 ⟦ e₁ · e₂ ⟧E η γ = ⟦ e₁ ⟧E η γ (⟦ e₂ ⟧E η γ)
 ⟦ _∙_ {T = T} e T′ ⟧E η γ = 
   let eq = (trans (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦Tidₛ⟧σ _))) (sym (⟦Tsub⟧T η _ T))) in -- TODO outsource 
-  subst id eq (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
+  coe eq (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
