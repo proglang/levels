@@ -320,12 +320,6 @@ lemma : ∀ (I : Set) (R : I → I → Set) {i₁ i₂ : I} →
   (∀ j → R j i₁ → Set) ≡ (∀ j → R j i₂ → Set)
 lemma I R refl = refl
 
-special :  (ℓ₁ ℓ₂ : OrdLvl)  →
-  (code : U ℓ₁) →
-  (eq : ℓ₁ ≡ ℓ₂) →
-  Elⁱʳ {ℓ₂} {U< {ℓ₂}} (coe (cong U eq) code) ≡ Elⁱʳ {ℓ₁} {U< {ℓ₁}} code
-special _ _ _ refl = refl
-
 crucial : ∀ {κ : ⟦ δ ⟧δ} (l : Lvl δ any) ℓ (code : U (⟦ Lwk l ⟧L (ℓ ∷κ κ)))  → 
           Elⁱʳ {⟦ l ⟧L κ} {U< {⟦ l ⟧L κ}} (coe (cong U (⟦Lwk⟧L l κ ℓ)) code) ≡ 
           Elⁱʳ {⟦ Lwk l ⟧L (ℓ ∷κ κ)} {U< {⟦ Lwk l ⟧L (ℓ ∷κ κ)}} code
