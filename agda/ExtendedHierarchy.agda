@@ -15,7 +15,7 @@ postulate
 -- with symbols for valid ordinals in cnf our hierarchy grows to ε₀
 Setε₀ = Setω
 
--- safe interface for constructing ordinals that fulfill the cnf property
+-- safe interface for constructing infinite levels that fulfill the cnf property
 open import Ordinal public
 ⌊_⌋ : MutualOrd → Level
 ⌊ 𝟎 ⌋                = zero
@@ -26,21 +26,25 @@ private variable
   
 postulate
   -- compiler laws to solve level (in-)equalities
-  -- the laws are in addition to the already given intrinsic level properties 
-  -- from the agda stdlib: 
-  --  https://agda.readthedocs.io/en/latest/language/universe-levels.html#intrinsic-level-properties
-  -- the laws are proven blow at the end of the file 
+  -- the laws are proven blow for the mutual ord representation
   β-suc-zero     : suc zero ≡ ω^ zero + zero         -- by definition 
   β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- by definition      
   distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂ 
   subsumption-add₁₀ : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
   subsumption-exp₁₀ : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
   -- in reality the Agda compiler would apply an infinite set of equations:
-  -- subsumption-addₙₘ for all n, m ∈ ℕ
-  -- subsumption-expₙₘ for all n, m ∈ ℕ
+  --   subsumption-addₙₘ for all n, m ∈ ℕ
+  --   subsumption-expₙₘ for all n, m ∈ ℕ
+  -- or more specifically:
+  --   subsumption : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ₂ if ℓ occurs in ℓ₁ or ℓ₂
+  --
   -- note on solving strategy:
-  -- - using β-suc-zero and β-suc-ω, suc is always pushed inside the ordinal 
-  -- - then the distributivity and the subsumption laws can be applied
+  --   using β-suc-zero and β-suc-ω, suc is always pushed inside the ordinal 
+  --   then the distributivity and the subsumption laws can be applied
+  --   otherwise the already existing laws in Agda's compiler will reduce further:
+  ---    https://agda.readthedocs.io/en/latest/language/universe-levels.html#intrinsic-level-properties
+  --
+  -- conjecture: this rewriting system is complete, confluent and terminating
 
 -- Casting Set Levels ---------------------------------------------------------
 
