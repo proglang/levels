@@ -112,20 +112,6 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 <-suc-lim′ a b (<₂ a<b) limb = <₂ a<b
 <-suc-lim′ a b (<₃ refl a<b) (add′ _ _ _ limb) = <₃ refl (<-suc-lim′ _ _ a<b limb) 
 
-⊔ₒ-idem : ∀ a → (a ⊔ₒ a) ≡ a
-⊔ₒ-idem 𝟎 = refl
-⊔ₒ-idem ω^ a + b [ r ] with <-tri a a 
-... | inj₁ a<a = ⊥-elim (<-irrefl a<a)
-... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
-... | inj₂ (inj₂ refl) with <-tri b b 
-... | inj₁ a<a = ⊥-elim (<-irrefl a<a)
-... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
-... | inj₂ (inj₂ refl) = refl
-
-⊔ₒ-right-id  : ∀ a → (a ⊔ₒ 𝟎) ≡ a
-⊔ₒ-right-id  𝟎 = refl
-⊔ₒ-right-id  ω^ a + a₁ [ x ] = refl
-
 <ᵒ-⊔ₒ-left : ∀ a b → b <ᵒ a → (a ⊔ₒ b) ≡ a
 <ᵒ-⊔ₒ-left a b <₁            = refl
 <ᵒ-⊔ₒ-left ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₂ x) with <-tri aa ba 
@@ -162,7 +148,7 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 
 <-lublub′ : ∀ a b c → a <ᵒ c → b <ᵒ c → (a ⊔ₒ b) <ᵒ c
 <-lublub′ a b c <₁ b<c = b<c
-<-lublub′ a b c a<c <₁ = subst (_<ᵒ _) (sym (⊔ₒ-right-id  _)) a<c
+<-lublub′ a b c a<c <₁ = subst (_<ᵒ _) (sym (right-id′  _)) a<c
 <-lublub′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] ω^ ca + cb [ t ] (<₂ a<c) (<₂ b<c) with <-tri aa ba
 ... | inj₁ x = <₂ b<c
 ... | inj₂ (inj₁ x) = <₂ a<c
@@ -196,4 +182,4 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 ≤-lublub′ a b c (inj₁ x) (inj₁ y) = inj₁ (<-lublub′ _ _ _ x y) 
 ≤-lublub′ a b c (inj₁ x) (inj₂ refl) = inj₂ (sym (<ᵒ-⊔ₒ-right _ _ x))
 ≤-lublub′ a b c (inj₂ refl) (inj₁ x) = inj₂ (sym (<ᵒ-⊔ₒ-left _ _ x))       
-≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite ⊔ₒ-idem a = inj₂ refl     
+≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl     

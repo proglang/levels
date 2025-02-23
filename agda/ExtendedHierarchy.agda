@@ -138,6 +138,7 @@ fst[ℕ→MutualOrd]≡0 (ℕ.suc n) =
 -- Properties for Successor and Maximum Operation ------------------------------
 
 open import Data.Empty using (⊥; ⊥-elim)
+open import Relation.Nullary using (¬_)
 
 distributivity′ : ∀ (a b c : MutualOrd) 
                   (r : a ≥ fst (b ⊔ₒ c)) (s : a ≥ fst b) (t : a ≥ fst c) → 
@@ -157,7 +158,19 @@ distributivity′ a ω^ ba + bb [ br ] ω^ ca + cb [ ct ] r s t | inj₂ (inj₂
 ... | inj₂ (inj₁ _) = MutualOrd⁼ refl refl
 ... | inj₂ (inj₂ _) = MutualOrd⁼ refl refl
 
-open import Relation.Nullary using (¬_)
+right-id′  : ∀ a → (a ⊔ₒ 𝟎) ≡ a
+right-id′  𝟎 = refl
+right-id′  ω^ a + a₁ [ x ] = refl
+
+idem′ : ∀ a → (a ⊔ₒ a) ≡ a
+idem′ 𝟎 = refl
+idem′ ω^ a + b [ r ] with <-tri a a 
+... | inj₁ a<a = ⊥-elim (<-irrefl a<a)
+... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
+... | inj₂ (inj₂ refl) with <-tri b b 
+... | inj₁ a<a = ⊥-elim (<-irrefl a<a)
+... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
+... | inj₂ (inj₂ refl) = refl
 
 ¬ω^a+b<b : ∀ {a b : MutualOrd} {r : a ≥ fst b} → ¬ (ω^ a + b [ r ] < b)
 ¬ω^a+b<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
@@ -213,6 +226,6 @@ ord : Ordinal lvl
 ord = record { 
     cmp   = <-tri 
   ; <-ext = <-extensional 
-  } 
-    
-open IR-Univ-Ordinal ord      
+  }  
+       
+open IR-Univ-Ordinal ord           
