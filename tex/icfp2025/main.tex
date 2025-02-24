@@ -1,5 +1,7 @@
 \documentclass[manuscript,screen,review,anonymous]{acmart}
 %%
+\usepackage{agda}
+
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
@@ -52,6 +54,10 @@
 %% the next command will enable that style.
 %%\citestyle{acmauthoryear}
 
+
+\input{agda-generated}
+\input{agdamacros}
+\input{unicodeletters}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -146,6 +152,64 @@ Contributions.
 
 Agda, Ordinals, IR-Universes
 
+
+\subsection{Universes in Agda}
+\label{sec:universes-agda}
+
+TODO: typeset in Agda style
+
+Agda contains significant support for an infinite  hierarchy of universes \cite{team25:_agda_languag_refer}. It
+provides an abstract datatype LEVEL of universe levels along with
+constants ZERO, SUC, and MAX that denote the base-level of the
+hierarchy, the successor, and the maximum of two levels.
+The level-parametric type $Set~i$ stands for the universe at level $i$
+and it obeys the typing
+SET i : SET (SUC i)
+Base types inhabit the universe $Set~zero$.
+Type formation handles universe levels in the same way as finitely
+stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
+\begin{itemize}
+\item if $A_1 : Set~ i_1$ and $A_2 : Set~i_2$, then $A_1 \to A_2 : Set
+  (i_1 \sqcup i_2)$;
+\item  if  $\alpha : Set~i$ is a type variable and $A : Set~j$, then
+  $\forall \alpha. A : Set (suc~i \sqcup j)$.
+\end{itemize}
+
+To avoid inconsistencies, Agda does not allow pattern matching on the
+type LEVEL. However, quantification over LEVEL is allowed and results
+in a type at level $\omega$ (if the level-typed variable is used in a
+significant way). Unfortunately, levels $\omega$ and higher are
+\textbf{not} handled in a parametric way in Agda. Rather there are
+predefined types $Set_\omega$, $Set_{\omega1}$,
+$Set_{\omega2}$, and so on, for the levels $\omega$, $\omega+1$,
+$\omega+2$. This design has some limitations, as most 
+notions in the standard library (prominently the equality type
+and its supporting infrastructure, but also parameteric
+types like sums, pairs, lists, and so on) are defined in a level-parametric
+way, and thus they cannot be used with SET$_\omega$ 
+and higher universe levels.
+
+For convenience, Agda's unification algorithm has special treatment
+for the LEVEL datatype and its operators
+\cite{team25:_agda_languag_refer}:
+\begin{itemize}
+\item Idempotence: $a \sqcup a \equiv  a$.
+\item 
+Associativity: $(a \sqcup b) \sqcup c$ is the same as $a \sqcup (b \sqcup c)$.
+\item 
+Commutativity: $a \sqcup b$ is the same as $b \sqcup a$.
+\item 
+Distributivity of SUC over MAX: $suc (a \sqcup b)$ is the same as $suc~ a \sqcup suc~ b$.
+\item 
+Neutrality of ZERO: $a \sqcup zero$ is the same as $a$.
+\item 
+Subsumption: $a \sqcup suc~ a$ is the same as $suc~ a$. 
+\end{itemize}
+In other words, the level structure is a join-semilattice with an
+inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
+
+TODO: Cumulativity
+
 \subsection{Ordinals}
 \label{sec:ordinals}
 
@@ -203,6 +267,8 @@ in the context of universe levels.\footnote{Technically, the
   mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
   cubical Agda \cite{XXX}. We back-ported the definitions for
   MutualOrd to standard Agda, as cubical is not needed for this representation.}
+In particular, we prove the laws of a join-semilattice with an
+inflationary endomorphism.
 
 TODO: Insert
 \begin{itemize}
@@ -212,41 +278,39 @@ TODO: Insert
 \item any additional properties that we had to prove
 \end{itemize}
 
-\subsection{Universes in Agda}
-\label{sec:universes-agda}
-
-TODO: typeset in Agda style
-
-Agda contains significant support for a universe hierarchy \cite{readthedoc?}. It
-provides an abstract datatype LEVEL of universe levels along with
-constants ZERO, SUC, and MAX that denote the base-level of the
-hierarchy, the successor, and the maximum of two levels.
-It provides a level-parametric type SET which obeys the typing
-SET i : SET (SUC i)
-Type formation handles the universe levels in the same way as finitely
-stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
-\begin{itemize}
-\item if $A_1 : Set~ i_1$ and $A_2 : Set~i_2$, then $A_1 \to A_2 : Set
-  (i_1 \sqcup i_2)$;
-\item  if  $\alpha : Set~i$ is a type variable and $A : Set~j$, then
-  $\forall \alpha. A : Set (suc~i \sqcup j)$.
-\end{itemize}
-
-To avoid inconsistencies, Agda does not allow pattern matching on the
-type LEVEL. However, quantification over LEVEL is allowed and results
-in a type at level $\omega$ (if the level-typed variable is used in a
-significant way). Unfortunately, levels $\omega$ and higher are
-\textbf{not} handled in a parametric way in Agda. Rather there are
-predefined type constants SET$_\omega$, SET$_{\omega1}$,
-SET$_{\omega2}$, and so on. This design can be inconvenient, as most
-notions in the standard library (e.g., the equality type) are in a
-level-parametric way, and thus they cannot be used with SET$_\omega$
-and higher universe levels. 
-
 \subsection{Encoding Universes}
 \label{sec:encoding-universes}
 
+While Agda has built-in support for universes, it is possible to
+``compress'' very general universe hierarchies into
+$Set$. \citet{DBLP:conf/csl/Kovacs22} constructs a very general model
+of cumulative universe hierarchies, which situated entirely in $Set_0$
+and $Set_1$. The construction requires induction-recursion
+\cite{DBLP:conf/tlca/DybjerS99}, so that the model can be constructed
+in Agda along with its consistency proof.
 
+Kovacs's construction is implemented in Agda along the lines of
+\citet{mcbride15:_datat_datat}'s universe construction. Here we just
+recall the most important definitions of his construction of TTDL
+(type theory with dependent levels).
+
+A \emph{level structure} provides a set $\ALvl$ of levels, a strict
+linear order $<$, evidence that this order is propositional, and a
+composition operator that embodies transitivity of the order.
+
+\ULvlStruct
+
+The inductive type $U^{ir}$ of universe codes is defined mutually
+recursively with its interpretation $El^{ir}$ in $\ASet$.
+
+\begin{minipage}{0.45\linewidth}
+\UUirSpec
+\UUir  
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+\UElirSpec
+\UElir
+\end{minipage}
 
 \section{Running Example}
 \label{sec:running-example}

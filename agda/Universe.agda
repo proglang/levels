@@ -82,10 +82,12 @@ module IRUniverse where
     infix 4 _<_
     infixr 5 _∘_
     field
+--! LvlStruct {
       Lvl         : Set
       _<_         : Lvl → Lvl → Set
-      <-prop      : ∀ {i j}{p q : i < j} → p ≡ q
+      <-prop      : ∀ {i j} {p q : i < j} → p ≡ q
       _∘_         : ∀ {i j k} → j < k → i < j → i < k
+--! }
       instance wf : ∀ {i} → Acc _<_ i
 
     acyclic : ∀ {i} → i < i → ⊥
@@ -100,30 +102,38 @@ module IRUniverse where
     infix 4 _<'_
     infixr 1 _⊎'_
 
+--! UirSpec {
     data Uⁱʳ {i}(l : ∀ (j : Lvl) → j < i → Set) : Set
+--! }
+--! ElirSpec {
     Elⁱʳ : ∀ {i l} → Uⁱʳ {i} l → Set
+--! }
 
     data Uⁱʳ {i} l where
-      U'       : ∀ {j} → j < i → Uⁱʳ l
-      ℕ' ⊤' ⊥' : Uⁱʳ l
-      _⊎'_     : Uⁱʳ l → Uⁱʳ l → Uⁱʳ l
-      Π' Σ' W' : (a : Uⁱʳ l) → (Elⁱʳ a → Uⁱʳ l) → Uⁱʳ l
-
+--! Uir {
+      U'     : ∀ {j} → j < i → Uⁱʳ l
+      ℕ'     : Uⁱʳ l
+      ⊤'     : Uⁱʳ l
+      Π'     : (a : Uⁱʳ l) → (Elⁱʳ a → Uⁱʳ l) → Uⁱʳ l
+      Lvl'   : Uⁱʳ l
+      _<'_   : Lvl → Lvl → Uⁱʳ l
+--! }
+      ⊥'     : Uⁱʳ l
+      _⊎'_   : Uⁱʳ l → Uⁱʳ l → Uⁱʳ l
+      Σ' W'  : (a : Uⁱʳ l) → (Elⁱʳ a → Uⁱʳ l) → Uⁱʳ l
       -- codes for levels and morphisms, only used in level-polymorphic code examples
-      Lvl'  : Uⁱʳ l
-      _<'_  : Lvl → Lvl → Uⁱʳ l
-
+--! Elir {
     Elⁱʳ {_}{l}(U' p) = l _ p
     Elⁱʳ ℕ'           = ℕ
     Elⁱʳ ⊤'           = ⊤
-    Elⁱʳ ⊥'           = ⊥
+    Elⁱʳ (Π' a b)     = ∀ x → Elⁱʳ (b x)
     Elⁱʳ Lvl'         = Lvl
     Elⁱʳ (i <' j)     = i < j
+--! }
+    Elⁱʳ ⊥'           = ⊥
     Elⁱʳ (a ⊎' b)     = Elⁱʳ a ⊎ Elⁱʳ b
-    Elⁱʳ (Π' a b)     = ∀ x → Elⁱʳ (b x)
     Elⁱʳ (Σ' a b)     = ∃ λ x → Elⁱʳ (b x)
     Elⁱʳ (W' a b)     = W (Elⁱʳ a) (λ x → Elⁱʳ (b x))
-
 
     -- Interpreting levels & lifts
     --------------------------------------------------------------------------------
