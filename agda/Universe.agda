@@ -138,12 +138,15 @@ module IRUniverse where
     -- Interpreting levels & lifts
     --------------------------------------------------------------------------------
 
+--! Uless
     U< : ∀ {i} {{_ : Acc _<_ i}} j → j < i → Set
     U< {i} {{acc f}} j p = Uⁱʳ {j} (U< {j}{{f p}})
 
+--! U
     U : Lvl → Set   -- semantic universe
     U i = Uⁱʳ {i} (U< {i} {{wf}})
 
+--! El
     El : ∀ {i} → U i → Set
     El {i} = Elⁱʳ {i}{U< {i}{{wf}}}
 
@@ -364,15 +367,20 @@ module IRUniverse where
     open IR-Universe lvl public
 
     -- non-strict lifts
+--! LiftLe {
     Lift≤ : ∀ {i j} → i ≤ j → U i → U j
+--! }
     Lift≤ (inj₁ p)    a = Lift p a
     Lift≤ (inj₂ refl) a = a
 
+--! ElLiftLe {
     ElLift≤ : ∀ {i j} p a → El (Lift≤ {i}{j} p a) ≡ El a
+--! }
     ElLift≤ (inj₁ p)    a = ElLift p a
     ElLift≤ (inj₂ refl) a = refl
 
     -- alternative Π type formation with _⊔_ and Lift.
+--! AltPi
     Π'' : ∀ {i j}(a : U i) → (El a → U j) → U (i ⊔ j)
     Π'' {i}{j} a b = Π' (Lift≤ (⊔₁ i j) a) λ x → Lift≤ (⊔₂ i j) (b (coe (ElLift≤ (⊔₁ i j) a) x))
 
