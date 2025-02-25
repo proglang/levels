@@ -1,7 +1,7 @@
 module SSF where
 
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
-open import Level using (Level; zero; suc; _⊔_)
+open import Level
 open import Data.Unit using (⊤; tt)
 open import Data.Product using (_×_; _,_; proj₁; proj₂)
 open import Data.Nat using (ℕ) renaming (zero to zeroℕ; suc to sucℕ) 
@@ -27,20 +27,26 @@ dep-ext : {A : Set ℓ₁} {F G : (a : A) → Set ℓ₂} →
   ((a : A) → F a ≡ G a) → ((a : A) → F a) ≡ ((a : A) → G a) 
 dep-ext = ∀-extensionality fun-ext _ _
 
+--! TEnv
 TEnv = List Level
 
 variable
   Δ Δ′ Δ₁ Δ₂ Δ₃ : TEnv
 
+--! TEnvLub
 suc⨆Δ_ : TEnv → Level
 suc⨆Δ []       = zero
 suc⨆Δ (ℓ ∷ ℓs) = suc ℓ ⊔ suc⨆Δ ℓs
    
+--! Type
 data Type (Δ : TEnv) : Level → Set where
-  Nat : Type Δ zero
-  `_  : ℓ ∈ Δ → Type Δ ℓ
-  _⇒_ : Type Δ ℓ₁ → Type Δ ℓ₂ → Type Δ (ℓ₁ ⊔ ℓ₂)
-  ∀α  : Type (ℓ ∷ Δ) ℓ′ → Type Δ (suc ℓ ⊔ ℓ′)
+  Nat  : Type Δ zero
+  _⇒_  : Type Δ ℓ₁ → Type Δ ℓ₂ → Type Δ (ℓ₁ ⊔ ℓ₂)
+  `_   : ℓ ∈ Δ → Type Δ ℓ
+  ∀α   : Type (ℓ ∷ Δ) ℓ′ → Type Δ (suc ℓ ⊔ ℓ′)
+
+lvlOf : Type Δ ℓ → Level
+lvlOf {Δ} {ℓ} _ = ℓ
 
 variable
   T T′ T₁ T₂ T₃ : Type Δ ℓ
@@ -114,6 +120,17 @@ _T≫ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
 _T≫ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 (σ₁ T≫ₛₛ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
 
+module FunctionTypeSemEnvOmega where
+--! FTSEOmega
+  ⟦_⟧Δ : (Δ : TEnv) → Setω
+  ⟦ Δ ⟧Δ = ∀ ℓ → ℓ ∈ Δ → Set ℓ
+
+module FunctionTypeSemEnvInductive where
+--! FTSEInductive
+  data ⟦_⟧Δ : (Δ : TEnv) → Setω where
+    []η   : ⟦ [] ⟧Δ
+    _∷η_  : Set ℓ → ⟦ Δ ⟧Δ → ⟦ ℓ ∷ Δ ⟧Δ
+
 module FunctionTypeSemEnv where
   -- example of using BoundQuantification to encode semantic environments as function that do not hit Setω
   open import BoundQuantification 
@@ -124,7 +141,8 @@ module FunctionTypeSemEnv where
   
   ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
   ⟦ Δ ⟧Δ = ∀ (ℓ : BoundLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundLift (#<Λ ℓ) (Set (# ℓ))
-        
+
+--! FTSEAsFunction
 ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
 ⟦  []   ⟧Δ = ⊤
 ⟦ ℓ ∷ Δ ⟧Δ = Set ℓ × ⟦ Δ ⟧Δ
@@ -145,11 +163,12 @@ lookup-η (_ , η) (there x)   = lookup-η η x
 drop-η : ⟦ ℓ ∷ Δ ⟧Δ →  ⟦ Δ ⟧Δ
 drop-η (_ , η) = η
 
-⟦_⟧T_ : (T : Type Δ ℓ) → ⟦ Δ ⟧Δ → Set ℓ
-⟦ Nat     ⟧T η = ℕ
-⟦ ` x     ⟧T η = lookup-η η x
-⟦ T₁ ⇒ T₂ ⟧T η = ⟦ T₁ ⟧T η → ⟦ T₂ ⟧T η   
-⟦ ∀α T    ⟧T η = ∀ A → ⟦ T ⟧T (A ∷η η)  
+--! TypeSem
+⟦_⟧T : (T : Type Δ ℓ) → ⟦ Δ ⟧Δ → Set ℓ
+⟦ Nat     ⟧T η  = ℕ
+⟦ ` x     ⟧T η  = lookup-η η x
+⟦ T₁ ⇒ T₂ ⟧T η  = ⟦ T₁ ⟧T η → ⟦ T₂ ⟧T η   
+⟦ ∀α T    ⟧T η  = ∀ A → ⟦ T ⟧T (A ∷η η)  
 
 ⟦_⟧ρ_ : TRen Δ₁ Δ₂ → ⟦ Δ₂ ⟧Δ → ⟦ Δ₁ ⟧Δ
 ⟦_⟧ρ_ {Δ₁ = []}    ρ η = []η
@@ -207,32 +226,36 @@ drop-η (_ , η) = η
 ⟦Tsub⟧T η σ (∀α T)    = dep-ext λ A → 
   trans (⟦Tsub⟧T (A ∷η η) (Tliftₛ σ _) T) (cong (λ η → ⟦ T ⟧T (A , η)) (⟦Twkᵣ⟧σ σ η A))
   
+--! EEnv
 data EEnv : (Δ : TEnv) → Set where
-  []   : EEnv Δ
-  _∷_  : Type Δ ℓ → EEnv Δ → EEnv Δ
-  _∷ℓ_ : (ℓ : Level) → EEnv Δ → EEnv (ℓ ∷ Δ)
+  []    : EEnv Δ
+  _∷_   : Type Δ ℓ → EEnv Δ → EEnv Δ
+  _∷ℓ_  : (ℓ : Level) → EEnv Δ → EEnv (ℓ ∷ Δ)
 
 variable
   Γ Γ′ Γ₁ Γ₂ Γ₃ : EEnv Δ
 
+--! EEnvNi
 data _∋_ : EEnv Δ → Type Δ ℓ → Set where
-  here  : (T ∷ Γ) ∋ T
-  there : Γ ∋ T → (T′ ∷ Γ) ∋ T
-  tskip : Γ ∋ T → (ℓ ∷ℓ Γ) ∋ Twk T
+  here   : (T ∷ Γ) ∋ T
+  there  : Γ ∋ T → (T′ ∷ Γ) ∋ T
+  tskip  : Γ ∋ T → (ℓ ∷ℓ Γ) ∋ Twk T
 
+--! EEnvLub
 ⨆Γ : EEnv Δ → Level
-⨆Γ []                = zero 
-⨆Γ (_∷_ {ℓ = ℓ} T Γ) = ℓ ⊔ ⨆Γ Γ 
-⨆Γ (ℓ ∷ℓ Γ)          = ⨆Γ Γ 
+⨆Γ []        = zero 
+⨆Γ (T ∷ Γ)   = lvlOf T ⊔ ⨆Γ Γ 
+⨆Γ (ℓ ∷ℓ Γ)  = ⨆Γ Γ 
 
+--! Expr
 data Expr (Γ : EEnv Δ) : Type Δ ℓ → Set where
-  `_   : Γ ∋ T → Expr Γ T
-  #_   : ℕ → Expr Γ Nat
-  ‵suc : Expr Γ Nat → Expr Γ Nat
-  λx_  : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
-  Λ_⇒_ : (ℓ : Level) {T : Type (ℓ ∷ Δ) ℓ′} → Expr (ℓ ∷ℓ Γ) T → Expr Γ (∀α T)
-  _·_  : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
-  _∙_  : Expr Γ (∀α T) → (T′ : Type Δ ℓ) → Expr Γ (T [ T′ ]T) 
+  #_    : ℕ → Expr Γ Nat
+  ‵suc  : Expr Γ Nat → Expr Γ Nat
+  `_    : Γ ∋ T → Expr Γ T
+  λx_   : Expr (T₁ ∷ Γ) T₂ → Expr Γ (T₁ ⇒ T₂)
+  _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
+  Λ_⇒_  : (ℓ : Level) {T : Type (ℓ ∷ Δ) ℓ′} → Expr (ℓ ∷ℓ Γ) T → Expr Γ (∀α T)
+  _∙_   : Expr Γ (∀α T) → (T′ : Type Δ ℓ) → Expr Γ (T [ T′ ]T) 
 
 module FunctionExprSemEnv where
   -- also works for semantic expression environments
@@ -247,10 +270,11 @@ module FunctionExprSemEnv where
   ⟦_⟧Γ Γ η = ∀ (ℓ : BoundLevel (suc (⨆Γ Γ))) (T : Type _ (BQ.# ℓ)) → (x : Γ ∋ T) → 
     BoundLift (Γ∋T⇒Tℓ≤⨆Γ x) ((⟦ T ⟧T η))
 
-⟦_⟧Γ_   : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
-⟦ []     ⟧Γ η = ⊤
-⟦ T ∷ Γ  ⟧Γ η = ⟦ T ⟧T η × ⟦ Γ ⟧Γ η
-⟦ ℓ ∷ℓ Γ ⟧Γ η = ⟦ Γ ⟧Γ (drop-η η) 
+--! FESEAsFunction
+⟦_⟧Γ   : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
+⟦ []     ⟧Γ η  = ⊤
+⟦ T ∷ Γ  ⟧Γ η  = ⟦ T ⟧T η × ⟦ Γ ⟧Γ η
+⟦ ℓ ∷ℓ Γ ⟧Γ η  = ⟦ Γ ⟧Γ (drop-η η) 
    
 _∷γ_   : {η : ⟦ Δ ⟧Δ} → ⟦ T ⟧T η → ⟦ Γ ⟧Γ η → ⟦ T ∷ Γ ⟧Γ η
 _∷γ_ = _,_
@@ -259,17 +283,19 @@ lookup-γ : {η : ⟦ Δ ⟧Δ} → ⟦ Γ ⟧Γ η → Γ ∋ T → ⟦ T ⟧T 
 lookup-γ (A , γ) here       = A
 lookup-γ (_ , γ) (there x)  = lookup-γ γ x
 lookup-γ {Γ = _ ∷ℓ Γ} {η = η} γ (tskip {T = T} x) = coe (sym (⟦Tren⟧T η (Twkᵣ Tidᵣ) T)) 
-  (lookup-γ (subst (λ η → ⟦ Γ ⟧Γ η) (sym (trans (⟦Twkᵣ⟧ρ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x)
+  (lookup-γ (subst (⟦ Γ ⟧Γ) (sym (trans (⟦Twkᵣ⟧ρ Tidᵣ (proj₂ η) (proj₁ η)) (⟦⟧ρ-Tidᵣ (proj₂ η)))) γ) x)
 
-⟦_⟧E : {Γ : EEnv Δ} → Expr Γ T → (η : ⟦ Δ ⟧Δ) → ⟦ Γ ⟧Γ η → ⟦ T ⟧T η
-⟦ ` x     ⟧E η γ = lookup-γ γ x
+--! ESem
+⟦_⟧E : {Γ : EEnv Δ} (e : Expr Γ T) (η : ⟦ Δ ⟧Δ) (γ : ⟦ Γ ⟧Γ η) → ⟦ T ⟧T η
 ⟦ # n     ⟧E η γ = n
 ⟦ ‵suc e  ⟧E η γ = sucℕ (⟦ e ⟧E η γ)
-⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ = λ (x : ⟦ T₁ ⟧T η) → 
-  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} x γ in
-  ⟦ e ⟧E η γ′
-⟦ Λ ℓ ⇒ e ⟧E η γ = λ (A : Set ℓ) → ⟦ e ⟧E (A ∷η η) γ
+⟦ ` x     ⟧E η γ = lookup-γ γ x
+⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) η γ = λ x → ⟦ e ⟧E η (_∷γ_ {T = T₁} {Γ = Γ} x γ)
 ⟦ e₁ · e₂ ⟧E η γ = ⟦ e₁ ⟧E η γ (⟦ e₂ ⟧E η γ)
-⟦ _∙_ {T = T} e T′ ⟧E η γ = 
-  let eq = (trans (cong (λ η′ → ⟦ T ⟧T ((⟦ T′ ⟧T η) , η′)) (sym (⟦Tidₛ⟧σ _))) (sym (⟦Tsub⟧T η _ T))) in -- TODO outsource 
-  coe eq (⟦ e ⟧E η γ (⟦ T′ ⟧T η)) 
+⟦ Λ ℓ ⇒ e ⟧E η γ = λ (A : Set ℓ) → ⟦ e ⟧E (A ∷η η) γ
+⟦ _∙_ {T = T} e T′ ⟧E η γ = coe eq (⟦ e ⟧E η γ (⟦ T′ ⟧T η))
+  where eq : ⟦ T ⟧T (⟦ T′ ⟧T η ∷η η) ≡ ⟦ T [ T′ ]T ⟧T η
+        eq = trans (cong (λ η′ → ⟦ T ⟧T (⟦ T′ ⟧T η ∷η η′)) (sym (⟦Tidₛ⟧σ _)))
+                   (sym (⟦Tsub⟧T η _ T))
+
+ -- TODO outsource 
