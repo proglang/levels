@@ -6,8 +6,11 @@
 *.fls
 *.log
 *.out
+*.ptb
 *.cut
 *.run.xml
+*.synctex.gz
 *.agdai
+auto/
 latex/
 .agdatex-hashes.json
