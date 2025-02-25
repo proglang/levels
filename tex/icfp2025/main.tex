@@ -1,4 +1,5 @@
 \documentclass[manuscript,screen,review,anonymous]{acmart}
+\usepackage{cleveref}
 %%
 \usepackage{agda}
 
@@ -282,14 +283,14 @@ TODO: Insert
 \label{sec:encoding-universes}
 
 While Agda has built-in support for universes, it is possible to
-``compress'' very general universe hierarchies into
-$Set$. \citet{DBLP:conf/csl/Kovacs22} constructs a very general model
-of cumulative universe hierarchies, which situated entirely in $Set_0$
-and $Set_1$. The construction requires induction-recursion
+``compress'' certain universe hierarchies into
+$\ASet$. \citet{DBLP:conf/csl/Kovacs22} constructs a very general model
+of cumulative universe hierarchies, which situated entirely in $\ASeti{0}$
+and $\ASeti{1}$. The construction requires induction-recursion
 \cite{DBLP:conf/tlca/DybjerS99}, so that the model can be constructed
 in Agda along with its consistency proof.
 
-Kovacs's construction is implemented in Agda along the lines of
+Kov\'{a}cs's implementation in Agda is along the lines of
 \citet{mcbride15:_datat_datat}'s universe construction. Here we just
 recall the most important definitions of his construction of TTDL
 (type theory with dependent levels).
@@ -311,6 +312,42 @@ recursively with its interpretation $El^{ir}$ in $\ASet$.
 \UElirSpec
 \UElir
 \end{minipage}
+
+The actual universes are defined by induction on the accessibility of
+levels.
+\UUless
+With that we define the semantic hierarchy and its decoding function.
+
+\begin{minipage}{0.45\linewidth}
+  \UU
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \UEl
+\end{minipage}
+
+To fit in with the way that stratified System~F (as well as Agda)
+handles levels, we need a non-strict lift operator on universes and
+proof that lifting does not change the semantic representation.
+
+\begin{minipage}{0.45\linewidth}
+  \ULiftLe
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \UElLiftLe
+\end{minipage}
+
+With these operators, Kov\'{a}cs defines an alternative $\Pi$-type encoding that fits perfectly
+with the requirements of stratified System~F.
+\UAltPi
+
+Here, $\sqcup_1$ and $\sqcup_2$ are proofs that the first (second)
+argument of $\sqcup$ is less than or equal to their maximum. The
+function {\Acoe} transforms a type by applying an equality to it.
+
+\citet{DBLP:conf/csl/Kovacs22} also provides a worked example of a
+level structure for ordinals up to $\omega+\omega$, corresponding to
+the current version of Agda, as well as some infrastructure for
+using type-theoretic ordinals as levels.
 
 \section{Running Example}
 \label{sec:running-example}
@@ -335,11 +372,218 @@ extended with qualified types. They also develop a denotational
 semantics for their calculus. All these papers come with Agda
 formalizations. 
 
-\section{Constructions}
-\label{sec:constructions}
+The following subsections gives some excerpts from our Agda
+formalization which is available as supplemental material. We
+generally omit definitions for renamings and substitutions in the
+paper as they closely follow the abovementioned references. While the
+definitions are available in the supplemental material, some
+scaffolding lemmas (e.g., about composition of substitutions) are only
+postulated as their proofs can either be found in the abovementioned
+references or their proofs are very similar to proofs found there. 
+
+\subsection{Types}
+\label{sec:syntax-types}
+
+We start with an intrinsically-typed encoding of types and expressions
+of finitely stratified System~F. Like
+\citet{DBLP:conf/tyde/Saffrich0W24} and
+\citet{DBLP:journals/pacmpl/HubersM23}, we rely on Agda's $\ALevel$
+type to represent levels syntactically. This choice has the advantage
+that Agda's special treatment applies to syntactic levels (see
+\ref{sec:universes-agda}). The representation of a type variable
+context is thus.
+\SFTEnv
+Types take a type variable context as a parameter and a level
+index. The variables $\ell$, $\ell_1$, \dots{} range over
+$\ALevel$. The construction is standard. Base types live at level
+$\Azero$; function types live at the maximum level of argument and
+return types; type variables are
+represented by their position in the type variable context, i.e.,
+as de Bruijn indices; and
+universal quantification introduces a new type variable at level $\ell$.
+\SFType
+Variable contexts are indexed by a type variable context. They
+are either empty, bind a variable to a type, or bind a type variable
+to a level. Correspondingly, variable access $\_\ni\_$ has two ways to
+skip over a binding. Accessing a variable across a type variable
+binding (in \Atskip) requires weakening the type found before the type
+binding.\footnote{{\ATwk} is a standard renaming on types that
+  performs weakening.}
+
+\begin{minipage}{0.45\linewidth}
+  \SFEEnv
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \SFEEnvNi
+\end{minipage}
+
+\subsection{Expressions}
+\label{sec:syntax-expressions}
+
+
+Expressions take a variable context as a parameter and are indexed
+by a type, as usual. The first five cases are standard as for
+simply-typed lambda calculus. The type-lambda takes the level of the
+new type variable and a body expression that is typed in a
+level-extended variable context to construct an expression of type
+$\forall\alpha T$. Type application takes such an expression and a
+type of suitable level to construct an expression of type $T[T']$,
+that is, substituting the first variable in $T$ by $T'$.
+
+\SFExpr
+
+\section{Native Agda Semantics}
+\label{sec:semantics}
+
+Each denotational semantics consists of two parts: the semantics of
+types and the semantics of expressions.
+
+The native semantics maps a type at level
+$\ell$ to $\ASeti\ell$. Due to the presence of type variables, the
+semantics needs a type variable environment that maps a type variable
+to its denotation. There are several options in defining this
+environment.
+
+\begin{enumerate}
+\item We may define it as a function as follows:
+  \SFFTSEOmega
+  This definition lives in Agda's (fixed) $\ASeto$, so
+  that equational reasoning at the type becomes inconvenient.
+\item We may also define it as an inductive datatype
+  \SFFTSEInductive
+  Again, this definition lives in $\ASeto$, although we might think of
+  defining a function that computes the level of the environment from
+  the type variable context:
+  \SFTEnvLub
+  However, Agda does not let us to define an inductive datatype where
+  the level depends on an index type.
+\item Finally, we define it as a function by induction:
+  \SFFTSEAsFunction
+\end{enumerate}
+We adopt the last alternative to define the type semantics:
+A type at level $\ell$ is interpreted as an element of $\ASeti\ell$.
+\SFTypeSem
+
+The key to make this semantics readable lies in our choice of the
+$\ALevel$ datatype for syntactic levels. If we chose other
+numbers, e.g., natural numbers, for syntactic levels, the definitions
+for function types and universal types would become cluttered with
+transport lemmas (see \ref{xxx-example-transport}).
+
+For the expression semantics, we also need a variable environment.
+We define it analogously to the type variable environment, with a
+function to compute the maximum level in the environment and another
+to build the environment structure. The latter is not surprising:
+nested pairs of values.
+
+\begin{minipage}{0.45\linewidth}
+  \SFEEnvLub
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \SFFESEAsFunction
+\end{minipage}
+
+The first five cases of the expression semantics correspond again to
+the analogous construction for the simply-typed lambda calculus. The
+interpretation of a type-lambda at level $\ell$ is a function that
+takes an element $A : \ASeti\ell$ and stores it in the type variable
+environment. The interpretation of a type application is essentially
+the interpretation of its underlying expression $e$, but the type has
+to be adjusted according to the type substitution. The type of the
+required equality $\Aeq$ shows that we trade the type interpretation
+of $T'$ in the type variable environment for the substitution of $T'$
+into $T$. The lemmas involved are straightforward substitution
+lemmas. 
+
+\SFESem
+
+To wrap up, the construction of a native Agda semantics for stratified
+System~F is not too hard. One crucial point is choosing a good
+definition for the type variable environment. Because we chose a
+definition that does \emph{not} require $\ASeto$, all equalities (in
+particular $\Aeq$ in the interpretation of type application) live in a
+suitable level-indexed universe and can be handled homogeneously by
+library definitions.
+
+The transport equality $\Aeq$ appears to be unavoidable. So is another
+equality (not shown) in the definition of $lookup-\gamma$.
+
+The interpretation of types requires no transports because of Agda's
+special treatment for the normalization and unification of the
+$\ALevel$ type.
+
+\section{Level Quantification}
+\label{sec:level-quantification}
+
+As a new twist, we add level quantification (as in Agda) to the source
+language. To this end, we need a new syntactic category: level
+expressions. They take a level variable context {\IRLEnv} (ranged over
+by $\delta$) as a parameter and are
+indexed by a $\AMode$, ranged over by $\mu$. The former determines the
+level variables that may appear and the latter determines whether a level
+expression denotes a finite level, less than $\omega$, ($\Afin$) or if
+it is unrestricted ($\Aany$).
+
+\IRLvl
+
+From the indices we can see that level variables range over finite
+levels, the successor and maximum operators can be used with finite
+and unrestricted levels, and any expression containing $\omega$ is not
+finite. From the structure of level expressions, we can see that all
+denoted levels must be smaller than $\omega + \omega$. 
+
+Consequently, there are two interpretations of level expressions, a
+finite one and a general one. We map finite expressions to natural
+numbers and general expressions to pairs of natural numbers $(i, j)$
+representing the ordinal $\omega\cdot i + j$. 
+Both are relative to an interpretation of the level variables as
+finite levels, that is, natural numbers.
+
+\IRLEnvSem
+
+\begin{minipage}{0.45\linewidth}
+  \IRLSemFin
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \IRLSemAny
+\end{minipage}
+
+
+\begin{minipage}{0.45\linewidth}
+  \IRTEnv
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \IRTEnvNi
+\end{minipage}
+
+\IRType
+
+\IRFTSEAsFunction
+
+\IRencode
+
+\IRTSem
+
+\begin{minipage}{0.45\linewidth}
+  \IREEnv
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \IREEnvNi
+\end{minipage}
+
+\IRExpr
+
+\IRTEnvSem
+
+\IRESem
 
 
 
+While the semantics of level quantification can be expressed
+``natively'' within Agda, it is cumbersome and not fully general.
+For that reason, we turn to a semantics using an inductive-recursively
+defined universe. More precisely, we instantiate Kov\'acs's
+construction suitably.
 
 \section{Related Work}
 \label{sec:related-work}
