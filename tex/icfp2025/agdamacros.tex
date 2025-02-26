@@ -2,9 +2,6 @@
 \newcommand\Att{\AgdaInductiveConstructor{tt}}
 \newcommand\Ado{\AgdaKeyword{do}}
 \newcommand\AZ{\AgdaDatatype{ℤ}}
-\newcommand\Asuc{\AgdaInductiveConstructor{suc}}
-\newcommand\Azero{\AgdaInductiveConstructor{zero}}
-\newcommand\Anat{\AgdaInductiveConstructor{nat}}
 \newcommand\Aint{\AgdaInductiveConstructor{int}}
 \newcommand\Abool{\AgdaInductiveConstructor{bool}}
 \newcommand\Atend{\AgdaInductiveConstructor{end}}
@@ -35,7 +32,6 @@
 \newcommand\ASplit{\AgdaDatatype{Split}}
 \newcommand\AMSession{\AgdaDatatype{MSession}}
 \newcommand\ASetOne{\AgdaDatatype{Set$_1$}}
-\newcommand\Aunaryp{\AgdaFunction{unaryp}}
 \newcommand\ACheck{\AgdaFunction{Check}}
 \newcommand\ACausality{\AgdaFunction{Causality}}
 \newcommand\ACheckDual{\AgdaFunction{CheckDual0}}
@@ -87,7 +83,6 @@
 \newcommand\Ainn{\AgdaDatatype{inn}}
 \newcommand\ADEnv{\AgdaDatatype{Env\ensuremath{^*}}}
 \newcommand\AapplyEnv{\AgdaFunction{apply-env}}
-\newcommand\Alookup{\AgdaFunction{lookup}}
 \newcommand\AREL{\AgdaFunction{REL}}
 \newcommand\ARelEnv{\AgdaFunction{RelEnv}}
 \newcommand{\AV}{\AgdaFunction{𝓥}}
@@ -136,17 +131,34 @@
 
 \newcommand\ALvl{\AgdaDatatype{Lvl}}
 \newcommand\ASet{\AgdaDatatype{Set}}
-\newcommand\ASeti[1]{\AgdaDatatype{Set\ensuremath{_{#1}}}}
+\newcommand\ASeti[1]{\AgdaDatatype{Set\ensuremath{\,{#1}}}}
 \newcommand\ASeto{\AgdaDatatype{Setω}}
 \newcommand\Acoe{\AgdaFunction{coe}}
 \newcommand\ALevel{\AgdaFunction{Level}}
 \newcommand\Atskip{\AgdaInductiveConstructor{tskip}}
+\newcommand\Alskip{\AgdaInductiveConstructor{lskip}}
 \newcommand{\ATwk}{\AgdaFunction{Twk}}
 \newcommand\Aeq{\AgdaFunction{eq}}
 \newcommand\AMode{\AgdaDatatype{Mode}}
 \newcommand\Afin{\AgdaInductiveConstructor{fin}}
 \newcommand\Aany{\AgdaInductiveConstructor{any}}
-
+\newcommand\Asuc{\AgdaInductiveConstructor{suc}}
+\newcommand\Azero{\AgdaInductiveConstructor{zero}}
+\newcommand\AMutualOrd{\AgdaDatatype{MutualOrd}}
+\newcommand\AAcc{\AgdaDatatype{Acc}}
+\newcommand\Aacc{\AgdaInductiveConstructor{acc}}
+\newcommand\Alookup{\AgdaFunction{lookup}}
+\newcommand\ALwk{\AgdaFunction{Lwk}}
+\newcommand\ANat{\AgdaInductiveConstructor{Nat}}
+\newcommand\AElir{\AgdaInductiveConstructor{El\ensuremath{^{ir}}}}
+\newcommand\AUp{\AgdaInductiveConstructor{U'}}
+\newcommand\APi{\AgdaInductiveConstructor{\ensuremath{\Pi}'}}
+\newcommand\ANatp{\AgdaInductiveConstructor{ℕ'}}
+\newcommand\ATL{\AgdaFunction{TL}}
+\newcommand\AElLiftLe{\AgdaFunction{ElLift\ensuremath{\le}}}
+\newcommand\ATTT{\AgdaFunction{⟦[]TT⟧T}}
+\newcommand\ALTT{\AgdaFunction{⟦[]LT⟧T}}
+\newcommand\Acrucial{\AgdaFunction{crucial}}
 
 
 

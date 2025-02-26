@@ -160,38 +160,38 @@ Agda, Ordinals, IR-Universes
 TODO: typeset in Agda style
 
 Agda contains significant support for an infinite  hierarchy of universes \cite{team25:_agda_languag_refer}. It
-provides an abstract datatype LEVEL of universe levels along with
-constants ZERO, SUC, and MAX that denote the base-level of the
+provides an abstract datatype $\ALevel$ of universe levels along with
+constants $\Azero$, $\Asuc$, and $\_\sqcup\_$ that denote the base-level of the
 hierarchy, the successor, and the maximum of two levels.
-The level-parametric type $Set~i$ stands for the universe at level $i$
+The level-parametric type $\ASeti i$ stands for the universe at level $i$
 and it obeys the typing
-SET i : SET (SUC i)
-Base types inhabit the universe $Set~zero$.
+$\ASeti i : ASeti{\Asuc~ i}$.
+Base types inhabit the universe $\ASeti{\Azero}$.
 Type formation handles universe levels in the same way as finitely
 stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
 \begin{itemize}
-\item if $A_1 : Set~ i_1$ and $A_2 : Set~i_2$, then $A_1 \to A_2 : Set
-  (i_1 \sqcup i_2)$;
-\item  if  $\alpha : Set~i$ is a type variable and $A : Set~j$, then
-  $\forall \alpha. A : Set (suc~i \sqcup j)$.
+\item if $A_1 : \ASeti{ i_1}$ and $A_2 : \ASeti{i_2}$, then $A_1 \to A_2 : \ASeti{
+  (i_1 \sqcup i_2)}$;
+\item  if  $\alpha : \ASeti i$ is a type variable and $A : \ASeti j$, then
+  $\forall \alpha. A : \ASeti{ (suc~i \sqcup j)}$.
 \end{itemize}
 
 To avoid inconsistencies, Agda does not allow pattern matching on the
-type LEVEL. However, quantification over LEVEL is allowed and results
+type $\ALevel$. However, quantification over $\ALevel$ is allowed and results
 in a type at level $\omega$ (if the level-typed variable is used in a
 significant way). Unfortunately, levels $\omega$ and higher are
 \textbf{not} handled in a parametric way in Agda. Rather there are
-predefined types $Set_\omega$, $Set_{\omega1}$,
-$Set_{\omega2}$, and so on, for the levels $\omega$, $\omega+1$,
+predefined types $\ASet_\omega$, $\ASet_{\omega1}$,
+$\ASet_{\omega2}$, and so on, for the levels $\omega$, $\omega+1$,
 $\omega+2$. This design has some limitations, as most 
 notions in the standard library (prominently the equality type
 and its supporting infrastructure, but also parameteric
 types like sums, pairs, lists, and so on) are defined in a level-parametric
-way, and thus they cannot be used with SET$_\omega$ 
+way, and thus they cannot be used with $\ASet_\omega$ 
 and higher universe levels.
 
 For convenience, Agda's unification algorithm has special treatment
-for the LEVEL datatype and its operators
+for the $\ALevel$ datatype and its operators
 \cite{team25:_agda_languag_refer}:
 \begin{itemize}
 \item Idempotence: $a \sqcup a \equiv  a$.
@@ -200,11 +200,11 @@ Associativity: $(a \sqcup b) \sqcup c$ is the same as $a \sqcup (b \sqcup c)$.
 \item 
 Commutativity: $a \sqcup b$ is the same as $b \sqcup a$.
 \item 
-Distributivity of SUC over MAX: $suc (a \sqcup b)$ is the same as $suc~ a \sqcup suc~ b$.
+Distributivity of $\Asuc$ over $\sqcup$: $\Asuc (a \sqcup b)$ is the same as $\Asuc~ a \sqcup \Asuc~ b$.
 \item 
-Neutrality of ZERO: $a \sqcup zero$ is the same as $a$.
+Neutrality of $\Azero$: $a \sqcup \Azero$ is the same as $a$.
 \item 
-Subsumption: $a \sqcup suc~ a$ is the same as $suc~ a$. 
+Subsumption: $a \sqcup \Asuc~ a$ is the same as $\Asuc~ a$. 
 \end{itemize}
 In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
@@ -262,7 +262,7 @@ set of ordinals. They define addition and multiplication of ordinals,
 prove the principle of transfinite induction, and use that to prove
 that the represented subset of ordinals is well-ordered.
 
-We build on one of their representations, called MutualOrd, define
+We build on one of their representations, called {\AMutualOrd}, define
 some additional operations, and prove some properties which are needed
 in the context of universe levels.\footnote{Technically, the
   mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
@@ -273,7 +273,7 @@ inflationary endomorphism.
 
 TODO: Insert
 \begin{itemize}
-\item Definition of MutualOrd
+\item Definition of \AMutualOrd
 \item Explanation
 \item Example(s)
 \item any additional properties that we had to prove
@@ -297,7 +297,11 @@ recall the most important definitions of his construction of TTDL
 
 A \emph{level structure} provides a set $\ALvl$ of levels, a strict
 linear order $<$, evidence that this order is propositional, and a
-composition operator that embodies transitivity of the order.
+composition operator that embodies transitivity of the
+order. Universes can be indexed by any level structure, for example,
+natural numbers for ordinals less than $\omega$, pairs of natural
+numbers for ordinals less than $\omega+\omega$, and in fact any
+type-theoretic ordinal.
 
 \ULvlStruct
 
@@ -314,7 +318,8 @@ recursively with its interpretation $El^{ir}$ in $\ASet$.
 \end{minipage}
 
 The actual universes are defined by induction on the accessibility of
-levels.
+levels. Accessibility is formalized in the standard way by the type
+$\AAcc$ with single constructor $\Aacc$.
 \UUless
 With that we define the semantic hierarchy and its decoding function.
 
@@ -337,12 +342,17 @@ proof that lifting does not change the semantic representation.
 \end{minipage}
 
 With these operators, Kov\'{a}cs defines an alternative $\Pi$-type encoding that fits perfectly
-with the requirements of stratified System~F.
+with the requirements of stratified System~F, namely that the level of
+a function type is the maximum of the levels of argument and return types.
 \UAltPi
 
 Here, $\sqcup_1$ and $\sqcup_2$ are proofs that the first (second)
 argument of $\sqcup$ is less than or equal to their maximum. The
 function {\Acoe} transforms a type by applying an equality to it.
+
+There is also a definition of a non-dependent function code.
+
+\UFun
 
 \citet{DBLP:conf/csl/Kovacs22} also provides a worked example of a
 level structure for ordinals up to $\omega+\omega$, corresponding to
@@ -391,9 +401,9 @@ of finitely stratified System~F. Like
 type to represent levels syntactically. This choice has the advantage
 that Agda's special treatment applies to syntactic levels (see
 \ref{sec:universes-agda}). The representation of a type variable
-context is thus.
-\SFTEnv
-Types take a type variable context as a parameter and a level
+context is {\SFTEnv} ranged over by $\Delta$.
+
+Types $T$ take a type variable context $\Delta$ as a parameter and a level
 index. The variables $\ell$, $\ell_1$, \dots{} range over
 $\ALevel$. The construction is standard. Base types live at level
 $\Azero$; function types live at the maximum level of argument and
@@ -402,7 +412,7 @@ represented by their position in the type variable context, i.e.,
 as de Bruijn indices; and
 universal quantification introduces a new type variable at level $\ell$.
 \SFType
-Variable contexts are indexed by a type variable context. They
+Variable contexts $\Gamma$ are indexed by a type variable context. They
 are either empty, bind a variable to a type, or bind a type variable
 to a level. Correspondingly, variable access $\_\ni\_$ has two ways to
 skip over a binding. Accessing a variable across a type variable
@@ -421,7 +431,7 @@ binding.\footnote{{\ATwk} is a standard renaming on types that
 \label{sec:syntax-expressions}
 
 
-Expressions take a variable context as a parameter and are indexed
+Expressions $e$ take a variable context $\Gamma$ as a parameter and are indexed
 by a type, as usual. The first five cases are standard as for
 simply-typed lambda calculus. The type-lambda takes the level of the
 new type variable and a body expression that is typed in a
@@ -452,12 +462,13 @@ environment.
 \item We may also define it as an inductive datatype
   \SFFTSEInductive
   Again, this definition lives in $\ASeto$, although we might think of
-  defining a function that computes the level of the environment from
-  the type variable context:
+  defining a function that computes the level of the defined type from
+  the levels of the type variable context:
   \SFTEnvLub
-  However, Agda does not let us to define an inductive datatype where
-  the level depends on an index type.
-\item Finally, we define it as a function by induction:
+  However, we cannot use this function as an argument to $\ASeti\_$
+  because Agda does not let us to define an inductive datatype where
+  the level depends on an index type. 
+\item Finally, we define the environment by induction:
   \SFFTSEAsFunction
 \end{enumerate}
 We adopt the last alternative to define the type semantics:
@@ -465,8 +476,7 @@ A type at level $\ell$ is interpreted as an element of $\ASeti\ell$.
 \SFTypeSem
 
 The key to make this semantics readable lies in our choice of the
-$\ALevel$ datatype for syntactic levels. If we chose other
-numbers, e.g., natural numbers, for syntactic levels, the definitions
+$\ALevel$ datatype for syntactic levels. If we chose, e.g., natural numbers for syntactic levels, the definitions
 for function types and universal types would become cluttered with
 transport lemmas (see \ref{xxx-example-transport}).
 
@@ -497,6 +507,9 @@ lemmas.
 
 \SFESem
 
+\subsection{Discussion}
+\label{sec:discussion-1}
+
 To wrap up, the construction of a native Agda semantics for stratified
 System~F is not too hard. One crucial point is choosing a good
 definition for the type variable environment. Because we chose a
@@ -505,11 +518,12 @@ particular $\Aeq$ in the interpretation of type application) live in a
 suitable level-indexed universe and can be handled homogeneously by
 library definitions.
 
-The transport equality $\Aeq$ appears to be unavoidable. So is another
-equality (not shown) in the definition of $lookup-\gamma$.
+The transport equality $\Aeq$ in the
+interpretation of expressions  appears to be unavoidable. So is another
+equality (not shown) in the definition of $\Alookup\textit{-}\gamma$.
 
 The interpretation of types requires no transports because of Agda's
-special treatment for the normalization and unification of the
+special treatment for the normalization and unification in the
 $\ALevel$ type.
 
 \section{Level Quantification}
@@ -548,6 +562,13 @@ finite levels, that is, natural numbers.
   \IRLSemAny
 \end{minipage}
 
+\subsection{Types}
+\label{sec:types}
+
+The definition of a type variable context and indexing into it is
+analogous to the construction of \emph{expression} variable contexts
+and indexing in Section~\ref{sec:syntax-expressions}.  We use $\Alskip$ to skip
+over level bindings and $\ALwk$ for weakening of level expressions.
 
 \begin{minipage}{0.45\linewidth}
   \IRTEnv
@@ -556,13 +577,84 @@ finite levels, that is, natural numbers.
   \IRTEnvNi
 \end{minipage}
 
+The syntax of types is also very similar to the one from
+Section~\ref{sec:syntax-types}, with the following differences:
+\begin{enumerate}
+\item The type variable context is indexed by level context $\delta$.
+\item The index of type $\ALevel$ is replaced by an unrestricted level
+  expression. It is unrestricted because the type of an expression can
+  have level $\omega$ or higher due to the presence of level
+  quantification.
+\item Level quantification $\forall\ell$ pushes a new level variable on
+  the level context. It conservatively assumes that the new variable
+  is used in a non-trivial way in the body of this abstraction. Hence,
+  the level of this type is at least $\omega$.
+\end{enumerate}
+This structure models the provisions of Agda: There is level
+quantification over finite levels and this quantification may push
+levels to $\omega$ and higher, but all levels stay below $\omega+\omega$.
+
 \IRType
+
+Starting with the semantics of a type variable context, we draw from
+the inductive-recursive universe construction. Our interpretation of
+types takes two steps. The first encoding step interprets types as
+codes; the second step interprets these codes. Hence, a type variable
+context is interpreted as a vector of codes where a type variable at
+level $l$ is mapped to a code for universe level $l$. (Recall that $l$
+is a level expression that has to be interpreted first.)
 
 \IRFTSEAsFunction
 
+The encoding of the $\ANat$ type is obvious.  Type variables are
+looked up in their environment. Function types are mapped to a
+non-dependent function code after lifting argument and result codes to
+their maximum level.
+
+The encoding of universal quantification $\forall
+\alpha: l. T$ (with $T$ at level $l'$) involves a $\Pi$-type. The
+argument of this $\APi$-code is a type at some level 
+$l$, so we have to give a universe code $\AUp$ with an argument $pu$ that selects the correct
+level with a proof that it is strictly before the current one in the
+ordering. The current level is prescribed by type formation: $(\Asuc~
+l) \sqcup l'$. Now we reason $l < \Asuc~l \le (\Asuc~ l) \sqcup l'$,
+which is precisely the type of $pu$.
+
+The second argument of $\APi$ takes some $\AElir~(\AUp~pu)$, which---by our
+construction---happens to be a universe of level $l$, so we can extend
+the environment $\eta$ with it. However, we can only do so after
+fixing the accessibility proof in its type with the transport equality
+$eq$. We finish by constructing the encoding of type $T$ in the
+extended environment and lift the resulting code at level $l'$ to
+$(\Asuc~ l) \sqcup l'$. 
+
+For the encoding of level quantification, we have to remember that
+quantification ranges over finite levels, i.e., natural numbers. Hence
+the code is a function $\APi$ with first argument $\ANatp$. The second
+argument takes some $\AElir~\ANatp$, that is a natural number
+$\ell$. It remains to encode $T$ in the extended level variable
+environment, eliminate the weakening from $T$'s level with a transport
+equality and lift the resulting code to a level $\ge \omega$ to
+compensate for the level quantification.
+
 \IRencode
 
+The semantics of a type is then a set obtained by interpretation of
+the code.
+
 \IRTSem
+
+\subsection{Expressions}
+\label{sec:expressions}
+
+For expressions, we follow the same schema as before in
+Section~\ref{sec:syntax-expressions}. However, the expression context
+(ranged over by $\Gamma$)
+now registers \emph{three} different kinds of bindings: types of
+variables, levels of type variables, and level variables.
+Correspondingly, the indexing machinery for variables also has
+additional constructors $\Atskip$ and $\Alskip$ to skip over type
+variable and level variable bindings.
 
 \begin{minipage}{0.45\linewidth}
   \IREEnv
@@ -571,19 +663,83 @@ finite levels, that is, natural numbers.
   \IREEnvNi
 \end{minipage}
 
+We shall not repeat the cases for numbers, variables, lambda, etc as
+they are essentially identical to what we have seen before in
+Section~\ref{sec:syntax-expressions}. It remains to discuss the new
+expression formers, level abstraction and level application.
+Level abstraction $\Lambda\ell$ pushes a new level variable on the
+expression context and the type variable context. Level application
+$\bullet\ell$ takes a level abstraction and applies it to a finite
+level. The resulting expression substitutes the level expression for
+the level variable in the body of the level abstraction.
+
+The implication of having level abstraction and level application is
+that our framework has to support substitution of level expressions in
+level expressions and types.  Level application uses $T [ l' ]\ATL$
+for substituting level expression $l'$ for the first level variable in $T$.
+
 \IRExpr
 
-\IRTEnvSem
+We skip the definition of variable environments
+\IRTEnvSemDisplay. They are defined by 
+induction on expression variable contexts as a nested pair of the
+semantics of the respective types. The construction skips over
+non-value bindings $\Atskip$ and $\Alskip$.
+% \IRTEnvSem
+
+Moving to the expression semantics, the cases for variables and
+numbers are straightforward. But then things go south.
+The level liftings that are part of the encoding of the function type
+have to be reflected as transport equalities in the cases for
+abstraction and application. Without going into details, in each case, we have to lift the
+argument up to the common maximum level and then the result down to
+its expected level. This requirement is particularly annoying as the
+representations of the types are the essentially same on all levels
+(as evidenced by the equality \AElLiftLe).
+
+Similarly, the liftings from the  encoding of the universal type have
+to be reflected as transport equalities. For type application, we
+still have to deal with the same phenomenon as in
+Section~\ref{sec:semantics}, where we had to trade type substitution
+for type environment extension. This important detail gets lost in the
+noise: the ``unavoidable'' proof step is in $eq_5$ hiding in the lemma
+$\ATTT$.
+
+Finally, the cases for level abstraction and application suffer from
+the same problems. However, besides compensating for the level
+lifting, there are two unavoidable transfers involved, one is proved
+as the lemma $\Acrucial$ and the other as $\ALTT$. $\Acrucial$
+accounts for the fact that interpreting a weakened level expression in
+an extended level environment yields the same results as just
+interpreting the level expression in the original level
+environment. $\ALTT$ trades a level substitution (into a type) for a
+level environment extension.
 
 \IRESem
 
+\subsection{Discussion}
+\label{sec:discussion}
 
+The construction of universe levels by induction-recursion is very
+elegant and allows us to stay firmly within $\ASet$ (and $\ASetOne$).
+However, using such an encoding for interesting examples turns out to
+be painful, because the encoding has to account explicitly for level
+subsumption aka lifting. The presence of lifting aggravates the
+inherent problems with transfer lemmas that arise naturally in the
+elimination forms for universal types and level quantification.
 
-While the semantics of level quantification can be expressed
-``natively'' within Agda, it is cumbersome and not fully general.
-For that reason, we turn to a semantics using an inductive-recursively
-defined universe. More precisely, we instantiate Kov\'acs's
-construction suitably.
+Admittedly, the definitions in this section do not tap into the full
+power of the encoding. While we restrict level quantification to
+finite levels, Kov\'acs's framework can easily deal with more. Due to
+the choice of example, we do not venture into dependent types and we
+do not make  use of a $\ASet$-like type, all of which would be
+possible with the framework.
+
+On a final note, it is possible to express the semantics of level quantification
+``natively'' within Agda, it is cumbersome and not fully general
+(i.e., restricted to universes up to $\ASeto$).
+For that reason, we only discuss a semantics using Kov\'acs's
+construction.
 
 \section{Related Work}
 \label{sec:related-work}

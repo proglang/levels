@@ -258,16 +258,22 @@ encode : {Δ : TEnv δ} → (T : Type Δ l) → (κ : ⟦ δ ⟧δ) → (η : �
 encode Nat       κ η  = ℕ'
 encode (` x)     κ η  = lookup-η η x
 encode (T₁ ⇒ T₂) κ η  =  Lift≤ (⊔₁ _ _) (encode T₁ κ η) ⇒' Lift≤ (⊔₂ _ _) (encode T₂ κ η)
-encode {Δ = Δ} (∀α {l = l} {l′ = l′} T) κ η = Π' (U' (<≤-trans ℕ*ℕ.<suc (⊔₁ _ _))) λ A → 
-    let eq =  (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
-    let T = encode T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η) in 
-    Lift≤ (⊔₂ _ _) T
+encode {Δ = Δ} (∀α {l = l} T) κ η =
+    let pu = <≤-trans ℕ*ℕ.<suc (⊔₁ _ _) in
+    Π' (U' pu) λ A → 
+    let eq = Uⁱʳ & ext (λ j → ext (λ p → (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) & (Acc-prop _ wf))) in
+    let S = encode T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η) in 
+    Lift≤ (⊔₂ _ _) S
 encode (∀ℓ {l = l} T) κ η = Π' ℕ' λ ℓ → 
-    let T = coe ((cong U (⟦Lwk⟧L l κ ℓ))) (encode T (ℓ ∷κ κ) η) in 
-    Lift≤ (⊔₂ ω _) T
+    let S = coe (U & ⟦Lwk⟧L l κ ℓ) (encode T (ℓ ∷κ κ) η) in 
+    Lift≤ (⊔₂ ω _) S
+
+-- alternative
+-- encode (T₁ ⇒ T₂) κ η  =  Π'' (encode T₁ κ η) (λ _ → encode T₂ κ η)
+
 
 --! TSem
-⟦_⟧T : {Δ : TEnv δ} → (T : Type Δ l) (κ : ⟦ δ ⟧δ) → (η : ⟦ Δ ⟧Δ κ) → Set
+⟦_⟧T : {Δ : TEnv δ} (T : Type Δ l) (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → Set
 ⟦ T ⟧T κ η  = El (encode T κ η)
 
 postulate
@@ -302,15 +308,23 @@ data _∋_ : EEnv Δ → Type Δ l → Set where
 
 --! Expr
 data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
+  Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
+  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
+
   `_    : Γ ∋ T → Expr Γ T
   #_    : ℕ → Expr Γ Nat
   ‵suc  : Expr Γ Nat → Expr Γ Nat
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
-  Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
   _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
-  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
+
+module TEnvSemDisplay where
+  postulate
+--!! TEnvSemDisplay
+     ⟦_⟧Γ
+
+          : ℕ → ℕ
 
 --! TEnvSem
 ⟦_⟧Γ   : {Δ : TEnv δ} → (Γ : EEnv Δ) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set
@@ -345,27 +359,24 @@ crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
 
 --! ESem
 ⟦_⟧E : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} → 
-  Expr Γ T → (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → ⟦ Γ ⟧Γ κ η → ⟦ T ⟧T κ η
+  (e : Expr Γ T) (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) (γ : ⟦ Γ ⟧Γ κ η) → ⟦ T ⟧T κ η
 ⟦ ` x     ⟧E κ η γ = lookup-γ γ x
 ⟦ # n     ⟧E κ η γ = n
 ⟦ ‵suc e  ⟧E κ η γ = ℕ.suc (⟦ e ⟧E κ η γ)
 ⟦_⟧E {T = (_⇒_ {l₁ = l₁} {l₂ = l₂} T₁ T₂)} {Γ} (λx e) κ η γ = λ x → 
-  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} (coe (ElLift≤ (⊔₁ _ _) (encode T₁ κ η)) x) γ in
-  let eq = sym (ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₂ κ η)) in 
-  coe eq (⟦ e ⟧E κ η γ′)
+  let eq₁ = ElLift≤ (⊔₁ _ _) (encode T₁ κ η) in
+  let γ′ = _∷γ_ {T = T₁} {Γ = Γ} (coe eq₁ x) γ in
+  let eq₂ = sym (ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) _) (encode T₂ κ η)) in 
+  coe eq₂ (⟦ e ⟧E κ η γ′)
+⟦ _·_ {l₁} {T₁ = T₁} {l₂} {T₂ = T₂} e₁  e₂ ⟧E  κ η γ = 
+  let eq₁ = sym (ElLift≤ (⊔₁ _ (⟦ l₂ ⟧L κ)) (encode T₁ κ η)) in
+  let eq₂ = ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) _) (encode T₂ κ η) in
+  coe eq₂ (⟦ e₁ ⟧E κ η γ (coe eq₁ (⟦ e₂ ⟧E κ η γ)))
 ⟦_⟧E {Δ = Δ} {T = ∀α {l′ = l′} T} (Λ l ⇒ e) κ η γ = λ A → 
   let eq = (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
   let η′ =  _∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η in
   let eq = sym (ElLift≤ (⊔₂ (⟦ `suc l ⟧L κ) (⟦ l′ ⟧L κ)) (encode T κ η′)) in 
   coe eq (⟦ e ⟧E κ η′ γ)
-⟦_⟧E {T = ∀ℓ {l = l} T} (Λℓ e) κ η γ = λ ℓ → 
-  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (cong U (⟦Lwk⟧L l κ ℓ)) (encode T (ℓ ∷κ κ) η)) in
-  let eq₂ = crucial l ℓ (encode T (ℓ ∷κ κ) η) in
-  coe (sym (trans eq₁ eq₂)) (⟦ e ⟧E (ℓ ∷κ κ) η γ)
-⟦ _·_ {l₁} {T₁ = T₁} {l₂} {T₂ = T₂} e₁  e₂ ⟧E  κ η γ = 
-  let eq₁ = sym (ElLift≤ (⊔₁ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₁ κ η)) in
-  let eq₂ = ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) (⟦ l₂ ⟧L κ)) (encode T₂ κ η) in
-  coe eq₂ (⟦ e₁ ⟧E κ η γ (coe eq₁ (⟦ e₂ ⟧E κ η γ)))
 ⟦_⟧E {Δ = Δ} (_∙_ {l′} {l = l} {T = T} e T′) κ η γ = 
   let eq₁ = Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf))) in
   let eq₂ = Uⁱʳ & (ext (λ j → ext (λ p → trans (U<-compute {⟦ l ⟧L κ} {wf} {j} {p}) (sym U<-compute)))) in
@@ -375,6 +386,10 @@ crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
             ElLift≤ (⊔₂ (⟦ `suc l ⟧L κ) _) (encode T κ η′) in
   let eq₅ = trans (trans eq₃ eq₄) ⟦[]TT⟧T in
   coe eq₅ (⟦ e ⟧E κ η γ (coe eq₂ (encode T′ κ η)))
+⟦_⟧E {T = ∀ℓ {l = l} T} (Λℓ e) κ η γ = λ ℓ → 
+  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (cong U (⟦Lwk⟧L l κ ℓ)) (encode T (ℓ ∷κ κ) η)) in
+  let eq₂ = crucial l ℓ (encode T (ℓ ∷κ κ) η) in
+  coe (sym (trans eq₁ eq₂)) (⟦ e ⟧E (ℓ ∷κ κ) η γ)
 ⟦ _∙ℓ_ {l = l} {T = T} e l′ ⟧E κ η γ = 
   let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (U & ⟦Lwk⟧L l κ (⟦ l′ ⟧L′ κ)) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) in
   let eq₂ = trans eq₁ (trans (crucial l (⟦ l′ ⟧L′ κ) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) ⟦[]LT⟧T) in 

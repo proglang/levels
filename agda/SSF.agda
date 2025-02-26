@@ -27,7 +27,7 @@ dep-ext : {A : Set ℓ₁} {F G : (a : A) → Set ℓ₂} →
   ((a : A) → F a ≡ G a) → ((a : A) → F a) ≡ ((a : A) → G a) 
 dep-ext = ∀-extensionality fun-ext _ _
 
---! TEnv
+--!! TEnv
 TEnv = List Level
 
 variable
@@ -122,8 +122,8 @@ _T≫ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 
 module FunctionTypeSemEnvOmega where
 --! FTSEOmega
-  ⟦_⟧Δ : (Δ : TEnv) → Setω
-  ⟦ Δ ⟧Δ = ∀ ℓ → ℓ ∈ Δ → Set ℓ
+  ⟦_⟧Δ    : (Δ : TEnv) → Setω
+  ⟦ Δ ⟧Δ  = ∀ ℓ → ℓ ∈ Δ → Set ℓ
 
 module FunctionTypeSemEnvInductive where
 --! FTSEInductive
@@ -139,13 +139,13 @@ module FunctionTypeSemEnv where
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = ≤-lub (suc⨆Δ Δ) (≤-id (suc ℓ)) 
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = ≤-lub (suc⨆Δ (ℓ′ ∷ Δ)) (ℓ∈Δ⇒ℓ<⨆Δ x) 
   
-  ⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
-  ⟦ Δ ⟧Δ = ∀ (ℓ : BoundLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundLift (#<Λ ℓ) (Set (# ℓ))
+  ⟦_⟧Δ    : (Δ : TEnv) → Set (suc⨆Δ Δ)
+  ⟦ Δ ⟧Δ  = ∀ (ℓ : BoundLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundLift (#<Λ ℓ) (Set (# ℓ))
 
 --! FTSEAsFunction
-⟦_⟧Δ : (Δ : TEnv) → Set (suc⨆Δ Δ)
-⟦  []   ⟧Δ = ⊤
-⟦ ℓ ∷ Δ ⟧Δ = Set ℓ × ⟦ Δ ⟧Δ
+⟦_⟧Δ        : (Δ : TEnv) → Set (suc⨆Δ Δ)
+⟦  []   ⟧Δ  = ⊤
+⟦ ℓ ∷ Δ ⟧Δ  = Set ℓ × ⟦ Δ ⟧Δ
 
 variable 
    η η′ η₁ η₂ η₃ : ⟦ Δ ⟧Δ
