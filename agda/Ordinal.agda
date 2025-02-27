@@ -18,10 +18,11 @@ private variable
 
 infix 30 _<_ _≤_ _>_ _≥_
 
+--! MDecl
 data MutualOrd : Set
 fst : MutualOrd → MutualOrd
-
 data _<_ : MutualOrd → MutualOrd → Set
+
 _>_ _≥_ _≤_ : MutualOrd → MutualOrd → Set
 a > b = b < a
 

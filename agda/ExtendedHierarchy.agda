@@ -90,7 +90,7 @@ a≥𝟎 = ≥𝟎
 
 𝟏 𝟐 ω ω+1 ω² : MutualOrd
 --!! MOExA
-𝟏 = ω^⟨ 𝟎 ⟩
+𝟏 = ω^ 𝟎 + 𝟎 [ a≥𝟎 ]
 𝟐 = ω^ 𝟎 + 𝟏 [ inj₂ refl ]
 --!! MOExB
 ω = ω^ 𝟏 + 𝟎 [ a≥𝟎 ]
@@ -105,16 +105,17 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; subst; subst₂) 
   renaming (sym to _⁻¹; trans to _∙_)
 
+--! MOsuc {
 sucₒ : MutualOrd → MutualOrd
 fst-ignores-suc : ∀ a → (fst a) ≡ fst (sucₒ a)
 
---! MOsuc
 sucₒ 𝟎 = 𝟏
 sucₒ ω^ a + b [ r ] = ω^ a + 
   sucₒ b [ subst (a ≥_) (fst-ignores-suc b) r ]
 
 fst-ignores-suc 𝟎              = refl
 fst-ignores-suc ω^ a + b [ r ] = refl
+--! }
 
 --! MOlub
 _⊔ₒ_ : MutualOrd → MutualOrd → MutualOrd
