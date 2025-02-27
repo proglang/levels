@@ -2,7 +2,7 @@
 module BoundQuantification where
 
 open import Level
-open import ExtendedHierarchy renaming (_≤_ to _≤ᵒ_; _<_ to _<ᵒ_; _>_ to _>ᵒ_)
+open import ExtendedHierarchy renaming (_≤_ to _≤ₒ_; _<_ to _<ₒ_; _>_ to _>ₒ_)
 
 --! BQ >
 
@@ -62,8 +62,8 @@ BoundedLift  : ℓ ≤ Λ → Set ℓ → Set Λ
 BoundedLift (≤-id ℓ)                 A = Lift ℓ A
 BoundedLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)    A = Lift (suc ℓ₂) (BoundedLift ℓ≤Λ A)
 BoundedLift (≤-lub ℓ₂ ℓ≤Λ)           A = Lift ℓ₂ (BoundedLift ℓ≤Λ A)
-BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) A = cast (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
-BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) A = cast (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) A = cast (subsumption-add {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) A = cast (subsumption-exp {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 
 bound-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
 bound-lift (≤-id ℓ)      a = lift a
@@ -94,65 +94,54 @@ module Properties where
   unlift-lift-cancel (≤-suc ℓ≤Λ)   a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-lub _ ℓ≤Λ) a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (subsumption-add {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a 
   unlift-lift-cancel (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (subsumption-exp {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a
 
 -- Proving the postulates on the MutualOrd Representation ---------------------
 
+≤-id′ : ∀ a → a ≤ₒ a
+≤-id′ a = inj₂ refl
+
+<-suc′ : ∀ a b → a <ₒ b → a <ₒ sucₒ b
+<-suc′ a b <₁ = <₁
+<-suc′ a b (<₂ a<b) = <₂ a<b
+<-suc′ a b (<₃ refl a<b) = <₃ refl (<-suc′ _ _ a<b)
+
+≤-suc′ : ∀ a b → a ≤ₒ b → a ≤ₒ sucₒ b
+≤-suc′ a b (inj₁ x) = inj₁ (<-suc′ a b x)
+≤-suc′ a b (inj₂ refl) = inj₁ (a<suc[a] _)
+  where a<suc[a] : ∀ a → a <ₒ sucₒ a 
+        a<suc[a] 𝟎 = <₁
+        a<suc[a] ω^ a + a₁ [ x ] = <₃ refl (a<suc[a] _)
+        
+<-lub′ : ∀ a b c → a <ₒ b → a <ₒ (b ⊔ₒ c)
+<-lub′ a b c = {!   !} 
+
+≤-lub′ :  ∀ a b c → a ≤ₒ b → a ≤ₒ (b ⊔ₒ c)
+≤-lub′ a b c x = {!   !}
+
+
+
 data LimOrd : MutualOrd → Set where 
-  lim′ : ∀ a → a >ᵒ 𝟎 → LimOrd (ω^⟨ a ⟩)
+  lim′ : ∀ a → a >ₒ 𝟎 → LimOrd (ω^⟨ a ⟩)
   add′ : ∀ a b r → LimOrd b → LimOrd ω^ a + b [ r ]
 
-LimOrd[a]→fst[a]>𝟎 : ∀ a → LimOrd a → fst a >ᵒ 𝟎
+LimOrd[a]→fst[a]>𝟎 : ∀ a → LimOrd a → fst a >ₒ 𝟎
 LimOrd[a]→fst[a]>𝟎 _ (lim′ _ x)                  = x
 LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₁ x) lima)    = <-trans (LimOrd[a]→fst[a]>𝟎 _ lima) x
 LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>𝟎 _ lima
 
-<-suc-lim′ : ∀ a b → a <ᵒ b → LimOrd b → sucₒ a <ᵒ b
+<-suc-lim′ : ∀ a b → a <ₒ b → LimOrd b → sucₒ a <ₒ b
 <-suc-lim′ a b <₁ limb = <₂ (LimOrd[a]→fst[a]>𝟎 _ limb)
 <-suc-lim′ a b (<₂ a<b) limb = <₂ a<b
 <-suc-lim′ a b (<₃ refl a<b) (add′ _ _ _ limb) = <₃ refl (<-suc-lim′ _ _ a<b limb) 
 
-<ᵒ-⊔ₒ-left : ∀ a b → b <ᵒ a → (a ⊔ₒ b) ≡ a
-<ᵒ-⊔ₒ-left a b <₁            = refl
-<ᵒ-⊔ₒ-left ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₂ x) with <-tri aa ba 
-... | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
-... | inj₂ (inj₁ y) = refl 
-... | inj₂ (inj₂ refl) with <-tri ab bb
-... | inj₁ y = ⊥-elim (<-irrefl x) 
-... | inj₂ (inj₁ y) = ⊥-elim (<-irrefl x)
-... | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl 
-<ᵒ-⊔ₒ-left ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₃ refl x) with <-tri ba ba 
-... | inj₁ y = ⊥-elim (<-irrefl y)
-... | inj₂ (inj₁ y) = refl 
-... | inj₂ (inj₂ refl) with <-tri ab bb
-... | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
-... | inj₂ (inj₁ y) = refl
-... | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl 
-
-<ᵒ-⊔ₒ-right : ∀ a b → a <ᵒ b → (a ⊔ₒ b) ≡ b
-<ᵒ-⊔ₒ-right a b <₁            = refl
-<ᵒ-⊔ₒ-right ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₂ x) with <-tri aa ba 
-... | inj₁ x = refl
-... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
-... | inj₂ (inj₂ refl) with <-tri ab bb
-... | inj₁ x = refl
-... | inj₂ (inj₁ y) = ⊥-elim (<-irrefl x)
-... | inj₂ (inj₂ refl) = refl
-<ᵒ-⊔ₒ-right ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₃ refl x) with <-tri ba ba 
-... | inj₁ x = refl
-... | inj₂ (inj₁ x) = ⊥-elim (<-irrefl x)
-... | inj₂ (inj₂ refl) with <-tri ab bb
-... | inj₁ x = refl
-... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
-... | inj₂ (inj₂ refl) = refl
-
-<-lublub′ : ∀ a b c → a <ᵒ c → b <ᵒ c → (a ⊔ₒ b) <ᵒ c
+<-lublub′ : ∀ a b c → a <ₒ c → b <ₒ c → (a ⊔ₒ b) <ₒ c
 <-lublub′ a b c <₁ b<c = b<c
-<-lublub′ a b c a<c <₁ = subst (_<ᵒ _) (sym (right-id′  _)) a<c
+<-lublub′ a b c a<c <₁ = subst (_<ₒ _) (sym (right-id′  _)) a<c
 <-lublub′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] ω^ ca + cb [ t ] (<₂ a<c) (<₂ b<c) with <-tri aa ba
 ... | inj₁ x = <₂ b<c
 ... | inj₂ (inj₁ x) = <₂ a<c
@@ -182,8 +171,8 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 ... | inj₂ (inj₁ x) = <₃ refl a<c
 ... | inj₂ (inj₂ refl) = <₃ refl b<c
 
-≤-lublub′ : ∀ a b c → a ≤ᵒ c → b ≤ᵒ c → (a ⊔ₒ b) ≤ᵒ c
+≤-lublub′ : ∀ a b c → a ≤ₒ c → b ≤ₒ c → (a ⊔ₒ b) ≤ₒ c
 ≤-lublub′ a b c (inj₁ x) (inj₁ y) = inj₁ (<-lublub′ _ _ _ x y) 
-≤-lublub′ a b c (inj₁ x) (inj₂ refl) = inj₂ (sym (<ᵒ-⊔ₒ-right _ _ x))
-≤-lublub′ a b c (inj₂ refl) (inj₁ x) = inj₂ (sym (<ᵒ-⊔ₒ-left _ _ x))       
-≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl
+≤-lublub′ a b c (inj₁ x) (inj₂ refl) = inj₂ (sym (<-⊔ₒ-right _ _ x)) 
+≤-lublub′ a b c (inj₂ refl) (inj₁ x) = inj₂ (sym (<-⊔ₒ-left _ _ x))       
+≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl 
