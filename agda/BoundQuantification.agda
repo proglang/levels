@@ -118,11 +118,11 @@ module Properties where
         a<suc[a] 𝟎 = <₁
         a<suc[a] ω^ a + a₁ [ x ] = <₃ refl (a<suc[a] _)
         
-<-lub′ : ∀ a b c → a <ₒ b → a <ₒ (b ⊔ₒ c)
-<-lub′ a b c = {!   !} 
+-- <-lub′ : ∀ a b c → a <ₒ b → a <ₒ (b ⊔ₒ c)
+-- <-lub′ a b c = {!   !} 
 
-≤-lub′ :  ∀ a b c → a ≤ₒ b → a ≤ₒ (b ⊔ₒ c)
-≤-lub′ a b c x = {!   !}
+-- ≤-lub′ :  ∀ a b c → a ≤ₒ b → a ≤ₒ (b ⊔ₒ c)
+-- ≤-lub′ a b c x = {!   !}
 
 
 
