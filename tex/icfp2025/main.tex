@@ -162,19 +162,19 @@ TODO: typeset in Agda style
 
 Agda contains significant support for an infinite  hierarchy of universes \cite{team25:_agda_languag_refer}. It
 provides an abstract datatype $\ALevel$ of universe levels along with
-constants $\Azero$, $\Asuc$, and $\_\sqcup\_$ that denote the base-level of the
+constants $\ASetzero$, $\ASetsuc$, and $\AgdaDatatype{\_⊔\_}$ that denote the base-level of the
 hierarchy, the successor, and the maximum of two levels.
 The level-parametric type $\ASeti i$ stands for the universe at level $i$
 and it obeys the typing
-$\ASeti i : ASeti{\Asuc~ i}$.
-Base types inhabit the universe $\ASeti{\Azero}$.
+$\ASeti i : \ASeti{\ASetsuc~ i}$.
+Base types inhabit the universe $\ASeti{\ASetzero}$.
 Type formation handles universe levels in the same way as finitely
 stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
 \begin{itemize}
 \item if $A_1 : \ASeti{ i_1}$ and $A_2 : \ASeti{i_2}$, then $A_1 \to A_2 : \ASeti{
-  (i_1 \sqcup i_2)}$;
+  (i_1 ~\ASetlub~ i_2)}$;
 \item  if  $\alpha : \ASeti i$ is a type variable and $A : \ASeti j$, then
-  $\forall \alpha. A : \ASeti{ (suc~i \sqcup j)}$.
+  $\forall \alpha. A : \ASeti{ (\ASetsuc~i ~\ASetlub~ j)}$.
 \end{itemize}
 
 To avoid inconsistencies, Agda does not allow pattern matching on the
@@ -182,8 +182,8 @@ type $\ALevel$. However, quantification over $\ALevel$ is allowed and results
 in a type at level $\omega$ (if the level-typed variable is used in a
 significant way). Unfortunately, levels $\omega$ and higher are
 \textbf{not} handled in a parametric way in Agda. Rather there are
-predefined types $\ASet_\omega$, $\ASet_{\omega1}$,
-$\ASet_{\omega2}$, and so on, for the levels $\omega$, $\omega+1$,
+predefined types $\AgdaDatatype{Setω}$, $\AgdaDatatype{Setω1}$,
+$\AgdaDatatype{Setω2}$, and so on, for the levels $\omega$, $\omega+1$,
 $\omega+2$. This design has some limitations, as most 
 notions in the standard library (prominently the equality type
 and its supporting infrastructure, but also parameteric
@@ -195,17 +195,17 @@ For convenience, Agda's unification algorithm has special treatment
 for the $\ALevel$ datatype and its operators
 \cite{team25:_agda_languag_refer}:
 \begin{itemize}
-\item Idempotence: $a \sqcup a \equiv  a$.
+\item Idempotence: $a ~\ASetlub~ a$ is the same as $a$.
 \item 
-Associativity: $(a \sqcup b) \sqcup c$ is the same as $a \sqcup (b \sqcup c)$.
+Associativity: $(a ~\ASetlub~ b) ~\ASetlub~ c$ is the same as $a ~\ASetlub~ (b ~\ASetlub~ c)$.
 \item 
-Commutativity: $a \sqcup b$ is the same as $b \sqcup a$.
+Commutativity: $a ~\ASetlub~ b$ is the same as $b ~\ASetlub~ a$.
 \item 
-Distributivity of $\Asuc$ over $\sqcup$: $\Asuc (a \sqcup b)$ is the same as $\Asuc~ a \sqcup \Asuc~ b$.
+Distributivity of $\ASetsuc$ over $\ASetlub$: $\ASetsuc (a ~\ASetlub~ b)$ is the same as $\ASetsuc~ a ~\ASetlub~ \ASetsuc~ b$.
 \item 
-Neutrality of $\Azero$: $a \sqcup \Azero$ is the same as $a$.
+Neutrality of $\ASetzero$: $a ~\ASetlub~ \ASetzero$ is the same as $a$.
 \item 
-Subsumption: $a \sqcup \Asuc~ a$ is the same as $\Asuc~ a$. 
+Subsumption: $a ~\ASetlub~ \ASetsuc~ a$ is the same as $\ASetsuc~ a$. 
 \end{itemize}
 In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
@@ -254,8 +254,8 @@ then it can be shown that each exponent satisfies $\beta_i < \alpha$.
 If we, again, write $\beta_i = \omega^{\gamma_1} + \dots +
 \omega^{\gamma_m}$ in Cantor normal form, then clearly $\gamma_j <
 \beta_i < \alpha$. As the ordering on ordinals is a well-order, we
-know this decreasing sequence must terminate and we obtain a finite % and normalizing -> representation is unique
-representation for each ordinal less than $\varepsilon_0$.
+know this decreasing sequence must terminate and we obtain a finite 
+and unique representation for each ordinal less than $\varepsilon_0$.
 
 \citet{DBLP:conf/cpp/ForsbergXG20} developed Agda
 formalizations for three equivalent representations for precisely this
@@ -407,7 +407,7 @@ context is {\SFTEnv} ranged over by $\Delta$.
 Types $T$ take a type variable context $\Delta$ as a parameter and a level
 index. The variables $\ell$, $\ell_1$, \dots{} range over
 $\ALevel$. The construction is standard. Base types live at level
-$\Azero$; function types live at the maximum level of argument and
+$\ASetzero$; function types live at the maximum level of argument and
 return types; type variables are
 represented by their position in the type variable context, i.e.,
 as de Bruijn indices; and

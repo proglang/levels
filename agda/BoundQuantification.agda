@@ -118,13 +118,52 @@ module Properties where
         a<suc[a] 𝟎 = <₁
         a<suc[a] ω^ a + a₁ [ x ] = <₃ refl (a<suc[a] _)
         
--- <-lub′ : ∀ a b c → a <ₒ b → a <ₒ (b ⊔ₒ c)
--- <-lub′ a b c = {!   !} 
+<-lub′ : ∀ a b c → a <ₒ b → a <ₒ (b ⊔ₒ c)
+<-lub′ a b 𝟎 a<b = subst (_ <ₒ_) (sym (right-id′ _)) a<b
+<-lub′ a ω^ ba + bb [ br ] ω^ ca + cb [ cr ] a<b with <-tri ba ca
+... | inj₁ x = <-trans a<b (<₂ x)
+... | inj₂ (inj₁ x) = a<b
+... | inj₂ (inj₂ refl) with <-tri bb cb 
+... | inj₁ x = <-trans a<b (<₃ refl x)
+... | inj₂ (inj₁ x) = a<b
+... | inj₂ (inj₂ refl) = subst (a <ₒ_) (MutualOrd⁼ refl refl) a<b 
 
--- ≤-lub′ :  ∀ a b c → a ≤ₒ b → a ≤ₒ (b ⊔ₒ c)
--- ≤-lub′ a b c x = {!   !}
+≤-lub′ :  ∀ a b c → a ≤ₒ b → a ≤ₒ (b ⊔ₒ c)
+≤-lub′ a b c (inj₁ x) = inj₁ (<-lub′ _ _ _ x)
+≤-lub′ a b 𝟎 (inj₂ refl) = inj₂ (right-id′ a)
+≤-lub′ 𝟎 b ω^ c + c₁ [ x ] (inj₂ refl) = inj₁ <₁
+≤-lub′ ω^ aa + ab [ ar ] b ω^ ca + cb [ cr ] (inj₂ refl) with <-tri aa ca 
+... | inj₁ x = inj₁ (<₂ x)
+... | inj₂ (inj₁ x) = inj₂ refl
+... | inj₂ (inj₂ refl) with <-tri ab cb
+... | inj₁ x = inj₁ (<₃ refl x)
+... | inj₂ (inj₁ x) = inj₂ refl
+... | inj₂ (inj₂ refl) = inj₂ (MutualOrd⁼ refl refl)
 
+≤-add′  : ∀ a b r → a ≤ₒ b → a ≤ₒ ω^ a + b [ r ]
+≤-add′ a b r a≤b = inj₁ (fst< _ _ _) 
 
+≤-exp′  : ∀ a b r → a ≤ₒ b → a ≤ₒ ω^ b + a [ r ]
+≤-exp′ a b r a≤b = inj₁ (rest< _ _ _) 
+
+data _≤ₒ′_ : MutualOrd → MutualOrd → Set where
+  ≤ₒ′-id   : ∀ a                 → a ≤ₒ′ a
+  ≤ₒ′-suc  : ∀ a b     → a ≤ₒ′ b → a ≤ₒ′ sucₒ b
+  ≤ₒ′-lub  : ∀ a b c   → a ≤ₒ′ b → a ≤ₒ′ (b ⊔ₒ c) 
+  ≤ₒ′-add  : ∀ a b c r → a ≤ₒ′ c → a ≤ₒ′ ω^ b + c [ r ] 
+  ≤ₒ′-exp  : ∀ a b c r → a ≤ₒ′ b → a ≤ₒ′ ω^ b + c [ r ]
+
+completeness : ∀ a b → a ≤ₒ b → a ≤ₒ′ b  
+completeness a b (inj₁ <₁) = {!   !}
+completeness ω^ aa + ab [ ar ] ω^ ba + bb [ br ] (inj₁ (<₂ x)) = lemma _ _ _ _ _ _ (completeness _ _ (inj₁ x))
+  where lemma : ∀ a b c d r s → a ≤ₒ′ c → ω^ a + b [ r ] ≤ₒ′ ω^ c + d [ s ]
+        lemma a _ _ _ _ _ (≤ₒ′-id .a) = {!   !}
+        lemma a _ _ _ _ _ (≤ₒ′-suc .a b x) = {!   !}
+        lemma a _ _ _ _ _ (≤ₒ′-lub .a b c x) = {!   !}
+        lemma a _ _ _ _ _ (≤ₒ′-add .a b c r x) = {!   !}
+        lemma a _ _ _ _ _ (≤ₒ′-exp .a b c r x) = {!   !}
+completeness a b (inj₁ (<₃ x x₁)) = {!   !}
+completeness a b (inj₂ refl) = ≤ₒ′-id _
 
 data LimOrd : MutualOrd → Set where 
   lim′ : ∀ a → a >ₒ 𝟎 → LimOrd (ω^⟨ a ⟩)
