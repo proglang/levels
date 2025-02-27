@@ -55,10 +55,11 @@
 %% the next command will enable that style.
 %%\citestyle{acmauthoryear}
 
-
 \input{agda-generated}
 \input{agdamacros}
 \input{unicodeletters}
+
+\newtheorem{remark}{Remark}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -445,8 +446,17 @@ that is, substituting the first variable in $T$ by $T'$.
 \section{Native Agda Semantics}
 \label{sec:semantics}
 
-Each denotational semantics consists of two parts: the semantics of
-types and the semantics of expressions.
+The denotational semantics we consider here consists of two parts: the semantics of
+types and the semantics of expressions. Both semantics are
+compositional.
+
+This section explores mappings of types and expressions to
+corresponding Agda domains that are as direct as possible, hence the
+name ``native''.
+
+\subsection{Types}
+\label{sec:types-1}
+
 
 The native semantics maps a type at level
 $\ell$ to $\ASeti\ell$. Due to the presence of type variables, the
@@ -475,10 +485,24 @@ We adopt the last alternative to define the type semantics:
 A type at level $\ell$ is interpreted as an element of $\ASeti\ell$.
 \SFTypeSem
 
-The key to make this semantics readable lies in our choice of the
-$\ALevel$ datatype for syntactic levels. If we chose, e.g., natural numbers for syntactic levels, the definitions
-for function types and universal types would become cluttered with
-transport lemmas (see \ref{xxx-example-transport}).
+
+\begin{remark}
+  The key to make this semantics readable lies in our choice of the
+  $\ALevel$ datatype for syntactic levels. If we chose, e.g., natural
+  numbers for syntactic levels, the definitions for function types and
+  universal types would become cluttered with transport lemmas caused
+  by the injection function $\AtoLevel : \ANat \to \ALevel$. In the
+  case of function types, the proof obligation would be
+  $\AtoLevel~l_1 \sqcup \AtoLevel~l_2 \equiv \AtoLevel (l_1 \sqcup_ℕ
+  l_2)$. As demonstrated in Section~\ref{sec:level-quantification},
+  transport lemmas in the semantics of types are to be avoided because
+  they proliferate into the semantics of expressions.
+\end{remark}
+
+\subsection{Expressions}
+\label{sec:expressions-1}
+
+
 
 For the expression semantics, we also need a variable environment.
 We define it analogously to the type variable environment, with a
@@ -522,9 +546,9 @@ The transport equality $\Aeq$ in the
 interpretation of expressions  appears to be unavoidable. So is another
 equality (not shown) in the definition of $\Alookup\textit{-}\gamma$.
 
-The interpretation of types requires no transports because of Agda's
-special treatment for the normalization and unification in the
-$\ALevel$ type.
+A final crucial point: The interpretation of types requires no transports because types are
+indexed by Agda's $\ALevel$ type, which is treated 
+specially by Agda's normalization and unification procedures.
 
 \section{Level Quantification}
 \label{sec:level-quantification}
@@ -546,12 +570,13 @@ and unrestricted levels, and any expression containing $\omega$ is not
 finite. From the structure of level expressions, we can see that all
 denoted levels must be smaller than $\omega + \omega$. 
 
-Consequently, there are two interpretations of level expressions, a
-finite one and a general one. We map finite expressions to natural
-numbers and general expressions to pairs of natural numbers $(i, j)$
+Consequently, there are two interpretation functions for level
+expressions, one for finite expressions and a general one. We map
+finite expressions to natural numbers and general expressions to pairs of natural numbers $(i, j)$
 representing the ordinal $\omega\cdot i + j$. 
-Both are relative to an interpretation of the level variables as
-finite levels, that is, natural numbers.
+Both are relative to an interpretation \AgdaFunction{⟦\_⟧δ} of the level variables as
+finite levels, that is, natural numbers. Elements of such a level
+environment are essentially vectors of natural numbers.
 
 \IRLEnvSem
 
