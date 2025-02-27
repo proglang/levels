@@ -168,7 +168,8 @@ drop-η (_ , η) = η
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in
   ⟦ T ⟧T κ η′
 ⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundedLevel ⌊ ω ⌋) →
-  cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ)) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
+  cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ))
+       (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
 
 postulate
   ⟦TLwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →
@@ -232,22 +233,22 @@ lookup-γ {Γ = _ ∷l Γ} {κ = κ} {η = A , η} γ (tskip {T = T} x) =
 lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) = 
   cast-elim _ (coe ⟦TLwk⟧T (lookup-γ {δ = δ} {κ = κ} γ x))
 
+--! ESem
 ⟦_⟧E : {Δ : TEnv δ} {T : Type Δ l} {Γ : EEnv Δ} → 
   Expr Γ T → (κ : ⟦ δ ⟧δ) (η : ⟦ Δ ⟧Δ κ) → ⟦ Γ ⟧Γ κ η → ⟦ T ⟧T κ η
 ⟦ ` x     ⟧E κ η γ = lookup-γ γ x
 ⟦ # n     ⟧E κ η γ = n
 ⟦ ‵suc e  ⟧E κ η γ = ℕ.suc (⟦ e ⟧E κ η γ)
-⟦_⟧E {T = (T₁ ⇒ T₂)} {Γ} (λx e) κ η γ = λ (x : ⟦ T₁ ⟧T κ η) → 
+⟦_⟧E {T = T₁ ⇒ T₂} {Γ} (λx e) κ η γ = λ x →
   let γ′ = _∷γ_ {T = T₁} {Γ = Γ} x γ in
   ⟦ e ⟧E κ η γ′
-⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ l ⇒ e) κ η γ = λ (A : Set (⟦ l ⟧L κ)) → 
+⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
+⟦_⟧E {Δ = Δ} (Λ l ⇒ e) κ η γ = λ A → 
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
   ⟦ e ⟧E κ η′ γ
-⟦ Λℓ e ⟧E κ η γ = λ (ℓ : BoundedLevel ⌊ ω ⌋) → 
-  cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
-⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
 ⟦ e ∙ T′ ⟧E κ η γ = coe ⟦[]TT⟧T (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 
+⟦ Λℓ e ⟧E κ η γ = λ ℓ → 
+  cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
 ⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ = 
   cast-elim _ (coe ⟦[]LT⟧T (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)))))
-      
-                                
+

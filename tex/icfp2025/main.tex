@@ -1,5 +1,5 @@
 \documentclass[manuscript,screen,review,anonymous]{acmart}
-\usepackage{cleveref}
+\usepackage[capitalize,noabbrev]{cleveref}
 %%
 \usepackage{agda}
 
@@ -808,13 +808,18 @@ injection function from $\AMutualOrd$ to $\ALevel$.
 
 \LtoLevel
 
-Next, we postulate some equality laws for the level constructor.
-
-\LAxioms
-
+\begin{figure}[tp]
+  \LAxioms
+  \caption{Axioms for level equality}
+  \label{fig:axioms-level-equality}
+\end{figure}
+In Figure~\ref{fig:axioms-level-equality}, we postulate some equality
+laws for the level constructor. As we cannot verify them using the
+$\ALevel$ type, we check their soundness for $\AMutualOrd$.
 The first two laws hold definitionally for the definition of $\Asuc$
-for $\AMutualOrd$. We proved the other three for $\AMutualOrd$.
-Moreover, $\AMutualOrd$ with $\Asuc$ and $\sqcup$ fulfills all laws
+for $\AMutualOrd$. We proved the soundness of the other three
+equalities for $\AMutualOrd$.
+Moreover, we prove that $\AMutualOrd$ with $\Asuc$ and $\sqcup$ fulfills all laws
 for a join-semilattice with an inflationary endomorphism, which is the
 requirement for Agda's special treatment of $\ALevel$ to work.
 
@@ -847,7 +852,7 @@ pairs a level with the proof that it is strictly smaller than its bound.
 
 The crux of this seemingly obvious definition is the definition of the
 underlying order $\_<\_$ on levels. We define it axiomatically,
-extending the standard definition of $\le$ on natural
+extending an alternative definition of $\le$ on natural
 numbers.\footnote{Viz.\ the definition of $\le'$ on natural numbers in
   the standard library.} The order is defined as a datatype so that we
 can perform induction on the order. This way we avoid pattern matching
@@ -937,7 +942,62 @@ The semantics of types (Figure~\ref{fig:eh-semantics-types}) has
 become readable, again. The cases for function types and universal
 types look like in Section~\ref{sec:types-1}. For level abstraction,
 the bound $\omega$ has to be stated and we have to lift the level of
-the body to (symbolic) level $\omega$. 
+the body to (symbolic) level $\omega$. As before, we need to address
+the weakening by a transport lemma \AgdaFunction{⟦Lwk⟧L} about level
+expression renamings.
+
+The semantics of environments $\Gamma$ is defined as before, but with
+the current semantics of types.
+\begin{figure}
+  \EHESem
+  \caption{Expression semantics}
+  \label{fig:eh-expression-semantics}
+\end{figure}
+
+Figure~\ref{fig:eh-expression-semantics} defines the expression
+semantics. It also has become more readable, again. All cases up to
+(including) type abstraction do not require any transport lemmas. The
+case for type application applies the usual transport to compensate
+the type substitution. Level abstraction and level application suffer
+from the lifting needed in the definition of their type semantics and
+we need to compensate the level substitution. The functions
+\AgdaFunction{cast-intro} and \AgdaFunction{cast-elim} transform the
+types according to the casts used in the type semantics.
+
+\subsection{Discussion}
+\label{sec:discussion-2}
+
+This section demonstrates the benefits of having an extended system of
+universe levels in a proof assistant like Agda. Compared to the
+approach in Section~\cref{sec:level-quantification}, we save
+significantly on boilerplate in the form of transport lemmas. The
+presence of transport lemmas decreases the readability of
+definitions. Moreover, if transports are required at the type level,
+they creep into the expression level and into proofs, making them tedious.
+
+We believe this section also demonstrates that one could extend Agda's
+system of universe levels in an upward compatible way to ordinals less
+than $\varepsilon_0$. We proved that Agda's current treatment of
+levels is still sound. For our experiments, we postulated a
+constructor for levels in Cantor normal form and we proved some
+equalities for ordinal levels sound and used them to rewrite symbolic
+levels using explicit casts. A real implementation would add a syntax
+for ordinal literals and integrate the equalities as rewrite rules
+(the rewrite extension of Agda does not permit us to rewrite levels to
+avoid paradoxa). Also, lifting to a {\ABoundedLevel} could be
+internalized to avoid casting in \cref{fig:eh-semantics-types} and
+\cref{fig:eh-expression-semantics}. 
+
+
+While our running example does not tap into the
+full power of this extension, it is easy to envision a formalization
+of a version of (infinitely) stratified System~F with bounded level quantification,
+where the bound can be any ordinal expressible with $\AMutualOrd$. The
+resulting system might even be simpler than the one discussed here,
+because we would not have to distinguish between finite and general
+level expressions.
+
+
 
 \section{Related Work}
 \label{sec:related-work}
