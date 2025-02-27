@@ -185,9 +185,183 @@ idem′ ω^ a + b [ r ] with <-tri a a
 ... | inj₂ (inj₁ a<a) = ⊥-elim (<-irrefl a<a)
 ... | inj₂ (inj₂ refl) = refl
 
+idem′⁼-right : ∀ a b r s → (ω^ a + b [ r ] ⊔ₒ ω^ a + b [ s ]) ≡ ω^ a + b [ s ]
+idem′⁼-right a b r s with <-tri a a
+... | inj₁ x = refl
+... | inj₂ (inj₁ x) = MutualOrd⁼ refl refl
+... | inj₂ (inj₂ refl) with <-tri b b 
+... | inj₁ x = refl
+... | inj₂ (inj₁ x) = MutualOrd⁼ refl refl
+... | inj₂ (inj₂ refl) = refl
+
+<-⊔ₒ-left : ∀ a b → b < a → (a ⊔ₒ b) ≡ a
+<-⊔ₒ-left a b <₁            = refl
+<-⊔ₒ-left ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₂ x) with <-tri aa ba 
+... | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+... | inj₂ (inj₁ y) = refl 
+... | inj₂ (inj₂ refl) with <-tri ab bb
+... | inj₁ y = ⊥-elim (<-irrefl x) 
+... | inj₂ (inj₁ y) = ⊥-elim (<-irrefl x)
+... | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl 
+<-⊔ₒ-left ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₃ refl x) with <-tri ba ba 
+... | inj₁ y = ⊥-elim (<-irrefl y)
+... | inj₂ (inj₁ y) = refl 
+... | inj₂ (inj₂ refl) with <-tri ab bb
+... | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+... | inj₂ (inj₁ y) = refl
+... | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl 
+
+<-⊔ₒ-right : ∀ a b → a < b → (a ⊔ₒ b) ≡ b
+<-⊔ₒ-right a b <₁            = refl
+<-⊔ₒ-right ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₂ x) with <-tri aa ba 
+... | inj₁ x = refl
+... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+... | inj₂ (inj₂ refl) with <-tri ab bb
+... | inj₁ x = refl
+... | inj₂ (inj₁ y) = ⊥-elim (<-irrefl x)
+... | inj₂ (inj₂ refl) = refl
+<-⊔ₒ-right ω^ aa + ab [ r ] ω^ ba + bb [ s ] (<₃ refl x) with <-tri ba ba 
+... | inj₁ x = refl
+... | inj₂ (inj₁ x) = ⊥-elim (<-irrefl x)
+... | inj₂ (inj₂ refl) with <-tri ab bb
+... | inj₁ x = refl
+... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+... | inj₂ (inj₂ refl) = refl
+
+a<b→a<b⊔c : ∀ a b c → a < b → a < (b ⊔ₒ c)
+a<b→a<b⊔c a b 𝟎 a<b = subst (_ <_) (right-id′ _ ⁻¹) a<b
+a<b→a<b⊔c a ω^ ba + bb [ br ] ω^ ca + cb [ cr ] a<b with <-tri ba ca
+... | inj₁ x = <-trans a<b (<₂ x)
+... | inj₂ (inj₁ x) = a<b
+... | inj₂ (inj₂ refl) with <-tri bb cb 
+... | inj₁ x = <-trans a<b (<₃ refl x)
+... | inj₂ (inj₁ x) = a<b
+... | inj₂ (inj₂ refl) = subst (a <_) (MutualOrd⁼ refl refl) a<b
+
+assoc′ : ∀ (a b c : MutualOrd) → 
+  (a ⊔ₒ b) ⊔ₒ c ≡ a ⊔ₒ (b ⊔ₒ c)
+assoc′ 𝟎 b c = refl
+assoc′ ω^ aa + ab [ ar ] 𝟎 c = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c with <-tri aa ba
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c | inj₁ x = <-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₂ x)) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] 𝟎 | inj₂ (inj₁ x) = <-⊔ₒ-left _ _ (<₂ x) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) with <-tri ba ca
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) | inj₁ x₁ = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) | inj₂ (inj₁ y) 
+  rewrite <-⊔ₒ-left _ _ (<₂ {b = bb} {r = br} {d = ab} {s = ar} x) | <-⊔ₒ-left _ _ (<₂ {b = cb} {r = cr} {d = ab} {s = ar} (<-trans y x)) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with <-tri bb cb 
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] _ | inj₂ (inj₁ x) | _ | inj₁ x₁ = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) with <-tri aa ba
+assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) | inj₂ (inj₁ x₂) = refl
+assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) | inj₂ (inj₂ refl) = ⊥-elim (<-irrefl x)
+assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₂ refl) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c | inj₂ (inj₂ refl) with <-tri ab bb
+assoc′ _ _ c | inj₂ (inj₂ refl) | inj₁ x = <-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₃ refl x)) ⁻¹
+assoc′ _ _ 𝟎 | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = <-⊔ₒ-left _ _ (<₃ refl x) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri aa ca 
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ y 
+  rewrite <-⊔ₒ-right _ _ (<₂ {b = ab} {r = ar} {d = cb} {s = cr} y) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) 
+  rewrite <-⊔ₒ-left _ _ (<₃ {a = aa} {r = br} {s = ar} refl x) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with <-tri ab cb | <-tri bb cb 
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ y | inj₁ x₂ 
+  rewrite <-⊔ₒ-right _ _ (<₃ {a = aa} {r = ar} {s = cr} refl y) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ x₁ | inj₂ (inj₁ x₂) 
+   = ⊥-elim (Lm[≥→¬<] (inj₁ x) (<-trans x₁ x₂))
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ y | inj₂ (inj₂ refl) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ y) | inj₁ x₁ 
+  rewrite <-⊔ₒ-left _ _ (<₃ {a = aa} {r = cr} {s = ar} refl y) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₁ x₁ 
+  rewrite idem′⁼-right aa ab ar cr = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) | inj₂ (inj₁ x₂) 
+  rewrite <-⊔ₒ-left _ _ (<₃ {a = aa} {r = br} {s = ar} refl x) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) | inj₂ (inj₂ refl) 
+  rewrite <-⊔ₒ-left _ _ (<₃ {a = aa} {r = cr} {s = ar} refl x) = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) 
+  rewrite <-⊔ₒ-left _ _ (<₃ {a = aa} {r = br} {s = ar} refl x)  = MutualOrd⁼ refl refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) 
+  rewrite idem′⁼-right aa ab ar cr = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] 𝟎 | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) rewrite idem′⁼-right aa ab ar br = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri aa ca
+assoc′ _ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₁ x = <-⊔ₒ-right _ _ (<₂ x) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₁ x) rewrite idem′⁼-right aa ab ar br = refl
+assoc′ ω^ aa + ab [ ar ] ω^ aa + ab [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ab cb 
+assoc′ _ _ _ | _ | _ | _ | inj₁ x = <-⊔ₒ-right _ _ (<₃ refl x) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] _ | _ | _ | _ | inj₂ (inj₁ x) rewrite idem′⁼-right aa bb ar br = refl
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | _ | _ | _ | inj₂ (inj₂ refl) rewrite idem′⁼-right aa ab ar cr = refl
+
 ¬ω^a+b<b : ∀ {a b : MutualOrd} {r : a ≥ fst b} → ¬ (ω^ a + b [ r ] < b)
 ¬ω^a+b<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
 ¬ω^a+b<b (<₃ refl x)      = ⊥-elim (¬ω^a+b<b x)
+
+¬ω^a+ω^a+b<b : ∀ {a b : MutualOrd} {r s} → ¬ (ω^ a + ω^ a + b [ r ] [ s ] < b)
+¬ω^a+ω^a+b<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
+¬ω^a+ω^a+b<b (<₃ {s = s} refl (<₂ a<c)) = ⊥-elim (Lm[≥→¬<] s a<c)
+¬ω^a+ω^a+b<b (<₃ refl (<₃ refl x)) = ⊥-elim (¬ω^a+ω^a+b<b x)
+
+infl′ : ∀ (a b c : MutualOrd) r s t u → 
+  ω^ a + ω^ b + c [ r ] [ s ] ⊔ₒ c ≡ ω^ a + (ω^ b + c [ t ] ⊔ₒ c) [ u ]
+infl′ a b 𝟎 r s t u = MutualOrd⁼ refl (MutualOrd⁼ refl refl)
+infl′ a b ω^ ca + cb [ cr ] r s t u with <-tri a ca | <-tri b ca
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] u x)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ (<≤-trans y u)) x)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) with <-tri ω^ b + cb [ cr ] cb 
+infl′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
+infl′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (Lm[≥→¬<] r y)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x₁ with <-tri ω^ b + ω^ a + cb [ cr ] [ r ] cb 
+infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] t x)
+infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] t x)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₁ y) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri ω^ b + ω^ ca + cb [ cr ] [ r ] cb
+infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
+infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with  <-tri ω^ b + cb [ cr ] cb 
+infl′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+infl′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ω^ a + ω^ a + cb [ cr ] [ r ] cb | <-tri ω^ a + cb [ cr ] cb
+infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (¬ω^a+ω^a+b<b x)
+infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+
+comm′ : ∀ (a b : MutualOrd) → 
+  (a ⊔ₒ b) ≡ (b ⊔ₒ a)
+comm′ 𝟎 𝟎 = refl
+comm′ 𝟎 ω^ b + b₁ [ x ] = refl
+comm′ ω^ a + a₁ [ x ] 𝟎 = refl
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] with <-tri aa ba | <-tri ba aa
+comm′ _ _ | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+comm′ _ _ | inj₁ x | inj₂ (inj₁ x₁) = refl
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] | inj₁ x | inj₂ (inj₂ refl) with <-tri bb ab 
+comm′ _ _  | inj₁ x | inj₂ (inj₂ refl) | inj₁ x₁ = ⊥-elim (<-irrefl x)
+comm′ _ _  | inj₁ x | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = refl
+comm′ _ _  | inj₁ x | inj₂ (inj₂ refl) | inj₂ (inj₂ y) = ⊥-elim (<-irrefl x)
+comm′ _ _  | inj₂ (inj₁ x₁) | inj₁ x = refl
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] | inj₂ (inj₂ refl) | inj₁ x with <-tri ab bb 
+comm′ _ _ | inj₂ (inj₂ refl) | inj₁ x | inj₁ x₁ = ⊥-elim (<-irrefl x)
+comm′ _ _ | inj₂ (inj₂ refl) | inj₁ x | inj₂ (inj₁ x₁) = ⊥-elim (<-irrefl x)
+comm′ _ _ | inj₂ (inj₂ refl) | inj₁ x | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl
+comm′ _ _ | inj₂ (inj₁ x) | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with <-tri bb ab 
+comm′ _ _ | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ x₁ = ⊥-elim (<-irrefl x)
+comm′ _ _ | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = ⊥-elim (<-irrefl x)
+comm′ _ _ | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₂ y) = refl
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri ab bb
+comm′ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ x₁ = refl
+comm′ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = ⊥-elim (<-irrefl x)
+comm′ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₂ refl) = refl
+comm′ ω^ aa + ab [ r ] ω^ ba + bb [ s ] | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ab bb | <-tri bb ab
+comm′ _ _ | _ | _ | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+comm′ _ _ | _ | _ | inj₁ x | inj₂ (inj₁ x₁) = refl
+comm′ _ _ | _ | _ | inj₁ x | inj₂ (inj₂ refl) = ⊥-elim (<-irrefl x)
+comm′ _ _ | _ | _ | inj₂ (inj₁ x₁) | inj₁ x = refl
+comm′ _ _ | _ | _ | inj₂ (inj₂ refl) | inj₁ x = ⊥-elim (<-irrefl x)
+comm′ _ _ | _ | _ | inj₂ (inj₁ x) | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ x) y)
+comm′ _ _ | _ | _ | inj₂ (inj₁ x) | inj₂ (inj₂ y) = refl
+comm′ _ _ | _ | _ | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = refl
+comm′ _ _ | _ | _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) = MutualOrd⁼ refl refl
 
 sub-add₁₀′ : ∀ (a b : MutualOrd) (s : a ≥ fst b) → 
   b ⊔ₒ ω^ a + b [ s ] ≡ ω^ a + b [ s ]
@@ -240,5 +414,5 @@ ord = record {
     cmp   = <-tri 
   ; <-ext = <-extensional 
   }  
-       
-open IR-Univ-Ordinal ord           
+                 
+open IR-Univ-Ordinal ord              
