@@ -175,15 +175,15 @@ constants $\ASetzero$, $\ASetsuc$, and $\AgdaDatatype{\_⊔\_}$ that denote the 
 hierarchy, the successor, and the maximum of two levels.
 The level-parametric type $\ASeti i$ stands for the universe at level $i$
 and it obeys the typing
-$\ASeti i : \ASeti{\ASetsuc~ i}$.
+$\ASeti i : \ASeti{(\ASetsuc~ i)}$.
 Base types inhabit the universe $\ASeti{\ASetzero}$.
 Type formation handles universe levels in the same way as finitely
 stratified System F \cite{DBLP:journals/iandc/Leivant91}. That is,
 \begin{itemize}
-\item if $A_1 : \ASeti{ i_1}$ and $A_2 : \ASeti{i_2}$, then $A_1 \to A_2 : \ASeti{
-  (i_1 ~\ASetlub~ i_2)}$;
+\item if $A : \ASeti{ i}$ and $B : \ASeti{ j}$, then $A \to B : \ASeti{
+  (i ~\ASetlub~ j)}$;
 \item  if  $\alpha : \ASeti i$ is a type variable and $A : \ASeti j$, then
-  $\forall \alpha. A : \ASeti{ (\ASetsuc~i ~\ASetlub~ j)}$.
+  $\forall \alpha. A :\ASeti{ (\ASetsuc~i ~\ASetlub~ j)}$.
 \end{itemize}
 
 To avoid inconsistencies, Agda does not allow pattern matching on the
@@ -220,10 +220,10 @@ In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
 
 By default, Agda keeps universe levels separate and requires explicit
-lifting to transfer values from, say, $\ASeti\ell$ to $\ASeti{(\ell
-  \sqcup \ell')}$. A different design choice is to have cumulativity,
-which means that anything inhabiting $\ASeti\ell$ also inhabits any
-higher universe $\ASeti{(\ell \sqcup \ell')}$. 
+lifting to transfer values from, say, $\ASeti{ i}$ to $\ASeti{ (i
+\ASetlub j)}$. A different design choice is to have cumulativity,
+which means that anything inhabiting $\ASeti{ i}$ also inhabits any
+higher universe $\ASeti{ (i \ASetlub j)}$. 
 Agda has an option that enables cumulativity, but we are not using it
 in this work as it does not fit into the framework of \cref{sec:encoding-universes}.
 
@@ -343,13 +343,13 @@ The maximum operation first compares the exponents and, if the exponents are equ
 to determine which ordinal is the maximum.
 The function \AgdaFunction{<-tri} compares two ordinals.
 Given two \AMutualOrd~ $a$ and $b$ the function gives proof, 
-that $a$ is either bigger, smaller, or equal to $b$. 
+that $a$ is either smaller, bigger or equal to $b$. 
 
 % Note that, in the very last case of the definition of 
 % \AgdaFunction{$\_\sqcup_o\_$} it does not matter which ordinal we chose.
 
 Given our additional definitions, we can prove the laws of a join-semilattice. 
-In the following equations $a$, $b$ and $c$ are range over arbitrary 
+In the following equations $a$, $b$ and $c$ range over arbitrary 
 expressions of type \AMutualOrd. 
 \vskip.5\baselineskip
 \begin{minipage}{0.6\linewidth}
@@ -367,7 +367,7 @@ Proving these laws is fairly mechanical, the only exception is the
 subsumption proof, where we generalize from the successor as
 implemented in Agda.
 To prove subsumption in its general form, we define a predicate 
-\AgdaFunction{$a \in' b$} that points to the location of $a$ in $b$ 
+$a$ \AgdaFunction{$\in'$} $b$ that points to the location of $a$ in $b$ 
 and from that we can prove that $a ⊔ b$ must be equal to $b$.
 
 \subsection{Encoding Universes}
@@ -376,7 +376,7 @@ and from that we can prove that $a ⊔ b$ must be equal to $b$.
 While Agda has built-in support for universes, it is possible to
 ``compress'' certain universe hierarchies into
 $\ASet$. \citet{DBLP:conf/csl/Kovacs22} constructs a very general model
-of cumulative universe hierarchies, which situated entirely in $\ASeti{0}$
+of cumulative universe hierarchies, which is situated entirely in $\ASeti{0}$
 and $\ASeti{1}$. The construction requires induction-recursion
 \cite{DBLP:conf/tlca/DybjerS99}, so that the model can be constructed
 in Agda along with its consistency proof.
@@ -386,8 +386,8 @@ Kov\'{a}cs's implementation in Agda is along the lines of
 recall the most important definitions of his construction of TTDL
 (type theory with dependent levels).
 
-A \emph{level structure} provides a set $\ALvl$ of levels, a strict
-linear order $<$, evidence that this order is propositional, and a
+A \emph{level structure} provides a set $\AgdaField{Lvl}$ of levels, a strict
+linear order $\AgdaField{\_<\_}$, evidence that this order is propositional, and a
 composition operator that embodies transitivity of the
 order. Universes can be indexed by any level structure, for example,
 natural numbers for ordinals less than $\omega$, pairs of natural
@@ -396,8 +396,8 @@ type-theoretic ordinal.
 
 \ULvlStruct
 
-The inductive type $U^{ir}$ of universe codes is defined mutually
-recursively with its interpretation $El^{ir}$ in $\ASet$.
+The inductive type \AgdaDatatype{U$^{ir}$} of universe codes is defined mutually
+recursively with its interpretation \AgdaFunction{El$^{ir}$} in $\ASet$.
 
 \begin{minipage}{0.45\linewidth}
 \UUirSpec
@@ -440,6 +440,7 @@ a function type is the maximum of the levels of argument and return types.
 Here, $\sqcup_1$ and $\sqcup_2$ are proofs that the first (second)
 argument of $\sqcup$ is less than or equal to their maximum. The
 function {\Acoe} transforms a type by applying an equality to it.
+% TODO explain that coe is subst id
 
 There is also a definition of a non-dependent function code.
 
@@ -668,7 +669,7 @@ expressions in \cref{fig:level-expressions}. They take a level variable context 
 by $\delta$) as a parameter and are
 indexed by a $\AMode$, ranged over by $\mu$. The former determines the
 level variables that may appear and the latter determines whether a level
-expression denotes a finite level, less than $\omega$, ($\Afin$) or if
+expression denotes a finite level, less than $\omega$ ($\Afin$), or if
 it is unrestricted ($\Aany$).
 
 From the indices we can see that level variables range over finite
@@ -992,13 +993,15 @@ always has the form $\ell \le \dots$, i.e., the left side is a variable.
 \end{minipage}
 
 We need two further axioms, which do not fit into the required schema
-for constructors of the $\_\le\_$ type. The axiom {\ALeLubLub} has a maximum on
+for constructors of the \AgdaFunction{$\_\le\_$} type. The axiom {\ALeLubLub} has a maximum on
 the left side of the relation and {\ALtSucLim} has a successor on the
 left side. The latter expresses the fact that we can always squeeze
 another ordinal between a limit ordinal $\beta$ and some
 $\alpha<\beta$, namely $\alpha+1$. To this end, the datatype $\ALim$
 characterizes limit ordinals (in $\AMutualOrd$): they need to end in
-$\omega^k$, for some $0<k$.
+$\omega^k$, for some $0<k$. 
+% TODO: explain that these could (maybe?) be proven  
+% if level constructors would assume injectivity?
 
 We proved all axioms for the $\AMutualOrd$ representation.
 
@@ -1014,7 +1017,7 @@ quantification. Figure~\ref{fig:eh-bounded-lifting} gives the
 definition, which relies on the {\ALift} type from Agda's level
 infrastructure. We only show the typing part, the expression part is
 defined similarly. The key is that this definition is by induction on
-the level order $\_\le\_$. The definition of the order is such that
+the level order \AgdaFunction{$\_\le\_$}. The definition of the order is such that
 the definition of lifting does \emph{not} require pattern matching on
 the $\ALevel$ type.
 
@@ -1096,6 +1099,8 @@ significantly on boilerplate in the form of transport lemmas. The
 presence of transport lemmas decreases the readability of
 definitions. Moreover, if transports are required at the type level,
 they creep into the expression level and into proofs, making them tedious.
+% and even more into the lemmas about the interaction between type and expression
+% semantics and substitution!
 
 We believe this section also demonstrates that one could extend Agda's
 system of universe levels in an upward compatible way to ordinals less

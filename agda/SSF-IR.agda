@@ -108,11 +108,11 @@ module _ where
   sucL : Lvl → Lvl
   sucL (fst , snd) = fst , ℕ.suc snd
 
-open IR-Univ-Ordinal ordinal-ℕ*ℕ renaming (Lvl to OrdLvl)
+open IR-Univ-Ordinal ordinal-ℕ*ℕ renaming (Lvl to ℕ×ℕ)
 
 variable 
   n n′ n₁ n₂ n₃ : ℕ
-  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : OrdLvl
+  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : ℕ×ℕ
   
 module _ where
   ≤-trans : ∀ {i} {j} {k} → i ≤ j → j ≤ k → i ≤ k
@@ -192,7 +192,7 @@ drop-κ (_ , κ) = κ
 ⟦ ` x       ⟧L′ κ  = lookup-κ κ x
 
 --! LSemAny
-⟦_⟧L : Lvl δ any → ⟦ δ ⟧δ → OrdLvl
+⟦_⟧L : Lvl δ any → ⟦ δ ⟧δ → ℕ×ℕ
 ⟦ ⟨ l ⟩     ⟧L κ  = ℕ.zero , ⟦ l ⟧L′ κ
 ⟦ `suc l    ⟧L κ  = sucL (⟦ l ⟧L κ)
 ⟦ l₁ `⊔ l₂  ⟧L κ  = ⟦ l₁ ⟧L κ ⊔ ⟦ l₂ ⟧L κ
@@ -353,7 +353,7 @@ crucial : ∀ {κ : ⟦ δ ⟧δ} (l : Lvl δ any) ℓ (code : U (⟦ Lwk l ⟧L
           Elⁱʳ {⟦ l ⟧L κ} {U< {⟦ l ⟧L κ}} (coe (cong U (⟦Lwk⟧L l κ ℓ)) code) ≡ 
           Elⁱʳ {⟦ Lwk l ⟧L (ℓ ∷κ κ)} {U< {⟦ Lwk l ⟧L (ℓ ∷κ κ)}} code
 crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
-  where generalized : (ℓ₁ ℓ₂ : OrdLvl) (code : U ℓ₁) (eq : ℓ₁ ≡ ℓ₂) →
+  where generalized : (ℓ₁ ℓ₂ : ℕ×ℕ) (code : U ℓ₁) (eq : ℓ₁ ≡ ℓ₂) →
                       Elⁱʳ {ℓ₂} {U< {ℓ₂}} (coe (cong U eq) code) ≡ Elⁱʳ {ℓ₁} {U< {ℓ₁}} code
         generalized _ _ _ refl = refl
 
