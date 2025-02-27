@@ -152,15 +152,23 @@ Contributions.
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-Agda, Ordinals, IR-Universes
-
+This paper assumes some familiarity with Agda
+\cite{DBLP:conf/icfp/Norell13}, but we give the occasional hint if we
+use a non-obvious feature. In this section, we mostly recall the most
+important results from the literature on which we base this
+work. Specifically,
+\begin{itemize}
+\item the treatment of universes in Agda;
+\item an Agda implementation of a useful fragment of ordinals (here we
+  have to prove some extra results);
+\item an inductive-recursive construction of a universe hierarchy that
+  can be indexed with ordinals.
+\end{itemize}
 
 \subsection{Universes in Agda}
 \label{sec:universes-agda}
 
-TODO: typeset in Agda style
-
-Agda contains significant support for an infinite  hierarchy of universes \cite{team25:_agda_languag_refer}. It
+Agda supports an infinite  hierarchy of universes \cite{team25:_agda_languag_refer}. It
 provides an abstract datatype $\ALevel$ of universe levels along with
 constants $\ASetzero$, $\ASetsuc$, and $\AgdaDatatype{\_⊔\_}$ that denote the base-level of the
 hierarchy, the successor, and the maximum of two levels.
@@ -210,7 +218,13 @@ Subsumption: $a ~\ASetlub~ \ASetsuc~ a$ is the same as $\ASetsuc~ a$.
 In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
 
-TODO: Cumulativity
+By default, Agda keeps universe levels separate and requires explicit
+lifting to transfer values from, say, $\ASeti\ell$ to $\ASeti{(\ell
+  \sqcup \ell')}$. A different design choice is to have cumulativity,
+which means that anything inhabiting $\ASeti\ell$ also inhabits any
+higher universe $\ASeti{(\ell \sqcup \ell')}$. 
+Agda has an option that enables cumulativity, but we are not using it
+in this work as it does not fit into the framework of \cref{sec:encoding-universes}.
 
 \subsection{Ordinals}
 \label{sec:ordinals}
@@ -1005,6 +1019,7 @@ level expressions.
 How do other proof assistants (Coq, Lean) handle universes?
 Cumulativity, Impact of impredicativity
 
+The type theory of Lean \cite{carneiro19:_type_theor_lean}
 
 \section{Conclusions}
 \label{sec:conclusions}
