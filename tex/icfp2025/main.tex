@@ -788,7 +788,9 @@ by augmenting the level datatype with extra elements and laws using
 suitable postulates.
 
 As our target is the same calculus as in
-Section~\ref{sec:level-quantification}, we can reuse the syntax.
+Section~\ref{sec:level-quantification}, we can reuse the syntax along
+with all sorts of typing context. Of course, we redefine all
+environments as well as the actual semantics.
 
 \subsection{Extended Hierarchy}
 \label{sec:extended-hierarchy}
@@ -873,12 +875,69 @@ $\omega^k$, for some $0<k$.
 
 We proved all axioms for the $\AMutualOrd$ representation.
 
+\begin{figure}[tp]
+  \BQBoundedLift
+  \caption{Bounded lifting}
+  \label{fig:eh-bounded-lifting}
+\end{figure}
+Similar to the encoding semantics in
+Section~\ref{sec:level-quantification}, we sometimes need to lift
+levels explicitly, but only in connection with level
+quantification. Figure~\ref{fig:eh-bounded-lifting} gives the
+definition, which relies on the {\ALift} type from Agda's level
+infrastructure. We only show the typing part, the expression part is
+defined similarly. The key is that this definition is by induction on
+the level order $\_\le\_$. The definition of the order is such that
+the definition of lifting does \emph{not} require pattern matching on
+the $\ALevel$ type.
+
 \subsection{Semantics}
 \label{sec:semantics-1}
+\begin{figure}[tp]
+  \begin{minipage}[t]{0.45\linewidth}
+    \EHLSemFin
+  \end{minipage}
+  \begin{minipage}[t]{0.45\linewidth}
+    \EHLSemAny
+  \end{minipage}
+  \caption{Semantics of level expressions}
+  \label{fig:eh-semantics-level-expressions}
+\end{figure}
 
+A level environment is still a vector of levels, but now we make it
+explicit that the levels are less than $\omega$.
 
+\EHLEnvSem
 
+The definition of the semantics of finite level expressions (Figure~\ref{fig:eh-semantics-level-expressions}) is
+slightly involved because we need to include proof that all results
+are bounded by $\omega$. To this end, we need some of our axioms along
+with the following lemma:
+\EHzeroLtomega
 
+The semantics of general level expressions is (almost) the same as
+before: we forget the bound when projecting from a finite level
+expression. 
+
+\EHFTSEAsFunction
+
+This definition of the type environment looks very similar to the
+definition from Section~\ref{sec:types-1}. The difference is that
+$\Delta$ now contains (finite) level expressions, which we have to
+interpret to get the actual element of $\ALevel$ to index
+$\ASet$. Moreover, the interpreted level is just some symbolic value
+that can stand for any ordinal in the range of our representation.
+
+\begin{figure}[tp]
+  \EHTSem
+  \caption{Semantics of Types}
+  \label{fig:eh-semantics-types}
+\end{figure}
+The semantics of types (Figure~\ref{fig:eh-semantics-types}) has
+become readable, again. The cases for function types and universal
+types look like in Section~\ref{sec:types-1}. For level abstraction,
+the bound $\omega$ has to be stated and we have to lift the level of
+the body to (symbolic) level $\omega$. 
 
 \section{Related Work}
 \label{sec:related-work}

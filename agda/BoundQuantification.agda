@@ -49,7 +49,7 @@ postulate
 --! BoundedLevel
 record BoundedLevel (Λ : Level) : Set where
   constructor _,_  
-  field  # : Level ;  #<Λ : # < Λ
+  field  #_ : Level ;  #<Λ : #_ < Λ
 
 open BoundedLevel public
 
@@ -58,12 +58,13 @@ bound {Λ} _ = Λ
 
 -- Lifiting using Ordering ----------------------------------------------------
 
+--! BoundedLift
 BoundedLift  : ℓ ≤ Λ → Set ℓ → Set Λ
-BoundedLift (≤-id ℓ)                 A = Lift ℓ A
-BoundedLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)    A = Lift (suc ℓ₂) (BoundedLift ℓ≤Λ A)
-BoundedLift (≤-lub ℓ₂ ℓ≤Λ)           A = Lift ℓ₂ (BoundedLift ℓ≤Λ A)
-BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) A = cast (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
-BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) A = cast (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-id ℓ)                  A = Lift ℓ A
+BoundedLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)     A = Lift (suc ℓ₂) (BoundedLift ℓ≤Λ A)
+BoundedLift (≤-lub ℓ₂ ℓ≤Λ)            A = Lift ℓ₂ (BoundedLift ℓ≤Λ A)
+BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ)  A = cast (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ)  A = cast (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 
 bound-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
 bound-lift (≤-id ℓ)      a = lift a
@@ -94,10 +95,10 @@ module Properties where
   unlift-lift-cancel (≤-suc ℓ≤Λ)   a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-lub _ ℓ≤Λ) a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a 
   unlift-lift-cancel (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a
 
 -- Proving the postulates on the MutualOrd Representation ---------------------

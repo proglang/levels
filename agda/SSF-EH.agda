@@ -12,9 +12,9 @@ open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; icong; subst)
 open import Function using (_∘_; id; flip; _$_)
 open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-intro; cast-elim; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
-open import BoundQuantification using (BoundedLevel; BoundedLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
+open import BoundQuantification using (BoundedLevel; BoundedLift; bound-lift; bound-unlift; _,_; #_; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
 
---! IR >
+--! EH >
 
 coe : ∀ {ℓ}{A B : Set ℓ} → A ≡ B → A → B
 coe = subst id
@@ -62,6 +62,7 @@ _[_]L : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
 variable
   ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : BoundedLevel ⌊ ω ⌋
 
+--! LEnvSem
 ⟦_⟧δ : (δ : LEnv) → Set
 ⟦ []    ⟧δ = ⊤
 ⟦ _ ∷ δ ⟧δ = BoundedLevel ⌊ ω ⌋ × ⟦ δ ⟧δ
@@ -79,23 +80,27 @@ lookup-κ {_ ∷ δ} (ℓ , κ) (there x)   = lookup-κ κ x
 drop-κ : ⟦ tt ∷ δ ⟧δ → ⟦ δ ⟧δ
 drop-κ (_ , κ) = κ
 
+-- the subst in the definition of 0<ω would be gone if EH be part of agda
+--! zeroLtomega
+0<ω : zero < ω^ zero + zero
+0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero))
+
+--! LSemFin
 ⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → BoundedLevel ⌊ ω ⌋
-⟦ `zero    ⟧L′ κ = zero , 
-  -- subst would be gone if EH be part of agda
-  let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in 
+⟦ `zero     ⟧L′ κ  = zero , 
   ≤-exp zero 0<ω
-⟦ `suc l   ⟧L′ κ = (suc (# (⟦ l ⟧L′ κ))) , 
-  let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in
+⟦ `suc l    ⟧L′ κ  = (suc (# ⟦ l ⟧L′ κ)) , 
   <-suc-lim _ _ (#<Λ (⟦ l ⟧L′ κ)) (lim 0<ω)
-⟦ ` x      ⟧L′ κ = lookup-κ κ x 
-⟦ l₁ `⊔ l₂ ⟧L′ κ = # (⟦ l₁ ⟧L′ κ) ⊔ # (⟦ l₂ ⟧L′ κ) , 
+⟦ ` x       ⟧L′ κ  = lookup-κ κ x 
+⟦ l₁ `⊔ l₂  ⟧L′ κ  = # ⟦ l₁ ⟧L′ κ ⊔ # ⟦ l₂ ⟧L′ κ ,
   ≤-lublub (#<Λ (⟦ l₁ ⟧L′ κ)) (#<Λ (⟦ l₂ ⟧L′ κ))
 
+--! LSemAny
 ⟦_⟧L : (l : Lvl δ any) → ⟦ δ ⟧δ → Level
-⟦ `suc l    ⟧L κ = suc (⟦ l ⟧L κ)
-⟦ l₁ `⊔ l₂  ⟧L κ = (⟦ l₁ ⟧L κ) ⊔ (⟦ l₂ ⟧L κ)
-⟦ ⟨ l ⟩     ⟧L κ = # (⟦ l ⟧L′ κ)
-⟦ `ω        ⟧L κ = ⌊ ω ⌋
+⟦ `suc l    ⟧L κ  = suc (⟦ l ⟧L κ)
+⟦ l₁ `⊔ l₂  ⟧L κ  = ⟦ l₁ ⟧L κ ⊔ ⟦ l₂ ⟧L κ
+⟦ ⟨ l ⟩     ⟧L κ  = # ⟦ l ⟧L′ κ
+⟦ `ω        ⟧L κ  = ⌊ ω ⌋
 
 postulate
   ⟦Lwk⟧L : ∀ (l : Lvl δ any) (κ : ⟦ δ ⟧δ) ℓ → 
@@ -137,10 +142,11 @@ postulate
   _[_]TT : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
   _[_]TL : Type (∷l Δ) l → (l′ : Lvl δ fin) → Type Δ (l [ l′ ]L)
        
-⟦_⟧Δ_ : (Δ : TEnv δ) → (κ : ⟦ δ ⟧δ) → Set (suc⨆Δ κ Δ)
-⟦  []   ⟧Δ κ = ⊤
-⟦ l ∷ Δ ⟧Δ κ = Set (⟦ l ⟧L κ) × ⟦ Δ ⟧Δ κ
-⟦ ∷l Δ  ⟧Δ κ = ⟦ Δ ⟧Δ drop-κ κ
+--! FTSEAsFunction
+⟦_⟧Δ : (Δ : TEnv δ) → (κ : ⟦ δ ⟧δ) → Set (suc⨆Δ κ Δ)
+⟦  []    ⟧Δ κ  = ⊤
+⟦ l ∷ Δ  ⟧Δ κ  = Set (⟦ l ⟧L κ) × ⟦ Δ ⟧Δ κ
+⟦ ∷l Δ   ⟧Δ κ  = ⟦ Δ ⟧Δ (drop-κ κ)
 
 _∷η_ : {κ : ⟦ δ ⟧δ} → Set (⟦ l ⟧L κ) → ⟦ Δ ⟧Δ κ → ⟦ l ∷ Δ ⟧Δ κ
 _∷η_ = _,_
@@ -153,14 +159,15 @@ lookup-η {κ = ℓ , κ} η (lskip {l = l} x) = cast (sym (⟦Lwk⟧L l κ ℓ)
 drop-η : {κ : ⟦ δ ⟧δ} → ⟦ l ∷ Δ ⟧Δ κ → ⟦ Δ ⟧Δ κ 
 drop-η (_ , η) = η
 
+--! TSem
 ⟦_⟧T : {Δ : TEnv δ} → (T : Type Δ l) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set (⟦ l ⟧L κ)
-⟦ Nat     ⟧T κ η = ℕ
-⟦ ` α     ⟧T κ η = lookup-η η α
-⟦ T₁ ⇒ T₂ ⟧T κ η = ⟦ T₁ ⟧T κ η → ⟦ T₂ ⟧T κ η   
-⟦_⟧T {Δ = Δ} (∀α {l = l} T) κ η = ∀ (A : Set (⟦ l ⟧L κ)) → 
+⟦ Nat      ⟧T κ η  = ℕ
+⟦ ` α      ⟧T κ η  = lookup-η η α
+⟦ T₁ ⇒ T₂  ⟧T κ η  = ⟦ T₁ ⟧T κ η → ⟦ T₂ ⟧T κ η   
+⟦_⟧T {Δ = Δ} (∀α {l = l} T) κ η = ∀ A → 
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in
   ⟦ T ⟧T κ η′
-⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundedLevel ⌊ ω ⌋) → 
+⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundedLevel ⌊ ω ⌋) →
   cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ)) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
 
 postulate
@@ -197,7 +204,7 @@ data _∋_ : EEnv Δ → Type Δ l → Set where
 
 data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
   `_    : Γ ∋ T → Expr Γ T
-  #_    : ℕ → Expr Γ Nat
+  #    : ℕ → Expr Γ Nat
   ‵suc  : Expr Γ Nat → Expr Γ Nat
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)

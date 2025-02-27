@@ -31,15 +31,15 @@ postulate
   -- compiler laws to solve level (in-)equalities
   -- the laws are proven below for the mutual ord representation
 --! Axioms
-  β-suc-zero         : suc zero ≡ ω^ zero + zero         -- definitional
-  β-suc-ω            : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
-  distributivity     : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
-  subsumption-add₁₀  : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
-  subsumption-exp₁₀  : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
+  β-suc-zero      : suc zero ≡ ω^ zero + zero         -- definitional
+  β-suc-ω         : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
+  distributivity  : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
+  sub-add₁₀       : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
+  sub-exp₁₀       : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
 
   -- in reality Agda would apply an infinite set of equations:
-  --   subsumption-addₙₘ for all n, m ∈ ℕ
-  --   subsumption-expₙₘ for all n, m ∈ ℕ
+  --   sub-addₙₘ for all n, m ∈ ℕ
+  --   sub-expₙₘ for all n, m ∈ ℕ
   -- or more specifically:
   --   subsumption : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ₂ if ℓ occurs in ℓ₁ or ℓ₂
   --
@@ -189,10 +189,10 @@ idem′ ω^ a + b [ r ] with <-tri a a
 ¬ω^a+b<b {r = r} (<₂ a<c) = ⊥-elim (Lm[≥→¬<] r a<c)
 ¬ω^a+b<b (<₃ refl x)      = ⊥-elim (¬ω^a+b<b x)
 
-subsumption-add₁₀′ : ∀ (a b : MutualOrd) (s : a ≥ fst b) → 
+sub-add₁₀′ : ∀ (a b : MutualOrd) (s : a ≥ fst b) → 
   b ⊔ₒ ω^ a + b [ s ] ≡ ω^ a + b [ s ]
-subsumption-add₁₀′ a 𝟎              s = refl 
-subsumption-add₁₀′ a ω^ b + d [ r ] s with <-tri b a 
+sub-add₁₀′ a 𝟎              s = refl 
+sub-add₁₀′ a ω^ b + d [ r ] s with <-tri b a 
 ... | inj₁ _          = refl
 ... | inj₂ (inj₁ a<b) = ⊥-elim (Lm[≥→¬<] s a<b)
 ... | inj₂ (inj₂ refl) with <-tri d ω^ b + d [ r ]
@@ -202,10 +202,10 @@ subsumption-add₁₀′ a ω^ b + d [ r ] s with <-tri b a
 ¬ω^a+b<a : ∀ {a b : MutualOrd} {r : a ≥ fst b} → ¬ (ω^ a + b [ r ] < a)
 ¬ω^a+b<a (<₂ x) = ⊥-elim (¬ω^a+b<a x)
 
-subsumption-exp₁₀′ : ∀ (a b : MutualOrd) (s : a ≥ fst b) → 
+sub-exp₁₀′ : ∀ (a b : MutualOrd) (s : a ≥ fst b) → 
   a ⊔ₒ ω^ a + b [ s ] ≡ ω^ a + b [ s ]
-subsumption-exp₁₀′ 𝟎                b s = refl 
-subsumption-exp₁₀′ ω^ aa + ab [ r ] b s with <-tri aa (ω^ aa + ab [ r ])
+sub-exp₁₀′ 𝟎                b s = refl 
+sub-exp₁₀′ ω^ aa + ab [ r ] b s with <-tri aa (ω^ aa + ab [ r ])
 ... | inj₁ x = refl
 ... | inj₂ (inj₁ x) = ⊥-elim (¬ω^a+b<a x)
 
