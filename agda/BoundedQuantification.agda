@@ -1,5 +1,5 @@
 {-# OPTIONS --warn=noUserWarning #-}
-module BoundQuantification where
+module BoundedQuantification where
 
 open import Level
 open import ExtendedHierarchy renaming (_≤_ to _≤ₒ_; _<_ to _<ₒ_; _>_ to _>ₒ_)
@@ -24,7 +24,7 @@ data _≤_ : Level → Level → Set where
 
 -- the important thing is, that the left hand side of the inequalities does not 
 -- differ to the ones in the hypotheses, 
--- such that we can recurse in the BoundedLift / bound-lift / bound-unlift functions 
+-- such that we can recurse in the BoundedLift / bounded-lift / bounded-unlift functions 
 
 --! LevelLt
 _<_ : Level → Level → Set
@@ -66,21 +66,21 @@ BoundedLift (≤-lub ℓ₂ ℓ≤Λ)            A = Lift ℓ₂ (BoundedLift �
 BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ)  A = cast (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ)  A = cast (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 
-bound-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
-bound-lift (≤-id ℓ)      a = lift a
-bound-lift (≤-suc ℓ≤Λ)   a = lift (bound-lift ℓ≤Λ a)
-bound-lift (≤-lub _ ℓ≤Λ) a = lift (bound-lift ℓ≤Λ a)
-bound-lift (≤-add _ ℓ≤Λ) a = cast-intro _ (lift (bound-lift ℓ≤Λ a))
-bound-lift (≤-exp _ ℓ≤Λ) a = cast-intro _ (lift (bound-lift ℓ≤Λ a))
+bounded-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
+bounded-lift (≤-id ℓ)      a = lift a
+bounded-lift (≤-suc ℓ≤Λ)   a = lift (bounded-lift ℓ≤Λ a)
+bounded-lift (≤-lub _ ℓ≤Λ) a = lift (bounded-lift ℓ≤Λ a)
+bounded-lift (≤-add _ ℓ≤Λ) a = cast-intro _ (lift (bounded-lift ℓ≤Λ a))
+bounded-lift (≤-exp _ ℓ≤Λ) a = cast-intro _ (lift (bounded-lift ℓ≤Λ a))
 
-bound-unlift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → BoundedLift ℓ≤Λ A → A
-bound-unlift (≤-id ℓ)      (Level.lift a) = a
-bound-unlift (≤-suc ℓ≤Λ)   (Level.lift a) = bound-unlift ℓ≤Λ a
-bound-unlift (≤-lub _ ℓ≤Λ) (Level.lift a) = bound-unlift ℓ≤Λ a
-bound-unlift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
-... | lift a = bound-unlift ℓ≤Λ a 
-bound-unlift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
-... | lift a = bound-unlift ℓ≤Λ a 
+bounded-unlift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → BoundedLift ℓ≤Λ A → A
+bounded-unlift (≤-id ℓ)      (Level.lift a) = a
+bounded-unlift (≤-suc ℓ≤Λ)   (Level.lift a) = bounded-unlift ℓ≤Λ a
+bounded-unlift (≤-lub _ ℓ≤Λ) (Level.lift a) = bounded-unlift ℓ≤Λ a
+bounded-unlift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
+... | lift a = bounded-unlift ℓ≤Λ a 
+bounded-unlift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
+... | lift a = bounded-unlift ℓ≤Λ a 
 
 -- Properties for Lifiting using Ordering -------------------------------------
 
@@ -90,15 +90,15 @@ open import Data.Empty using (⊥; ⊥-elim)
 
 module Properties where  
   unlift-lift-cancel : ∀ (ℓ≤Λ : ℓ ≤ Λ) {A : Set ℓ} → (a : A) → 
-    bound-unlift ℓ≤Λ (bound-lift ℓ≤Λ a) ≡ a 
+    bounded-unlift ℓ≤Λ (bounded-lift ℓ≤Λ a) ≡ a 
   unlift-lift-cancel (≤-id ℓ)      a = refl  
   unlift-lift-cancel (≤-suc ℓ≤Λ)   a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-lub _ ℓ≤Λ) a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a 
   unlift-lift-cancel (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bound-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a
 
 -- Proving the postulates on the MutualOrd Representation ---------------------

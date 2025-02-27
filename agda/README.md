@@ -18,7 +18,7 @@
 ### Library Code
 
 - `ExtendedHierarchy.agda`: Extended Level Hierarchy with support for levels up to ε₀
-- `BoundQuantification.agda`: Bounded Level Quantification (with support for Extended Hierarchy) 
+- `BoundedQuantification.agda`: Bounded Level Quantification (with support for Extended Hierarchy) 
 
 ### Stratified System F Formalizations
 

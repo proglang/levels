@@ -196,24 +196,24 @@ $\omega+2$. This design has some limitations, as most
 notions in the standard library (prominently the equality type
 and its supporting infrastructure, but also parameteric
 types like sums, pairs, lists, and so on) are defined in a level-parametric
-way, and thus they cannot be used with $\ASet_\omega$ 
+way, and thus they cannot be used with $\AgdaDatatype{Setω}$ 
 and higher universe levels.
 
 For convenience, Agda's unification algorithm has special treatment
 for the $\ALevel$ datatype and its operators
 \cite{team25:_agda_languag_refer}:
 \begin{itemize}
-\item Idempotence: $a ~\ASetlub~ a$ is the same as $a$.
+\item Idempotence: $i ~\ASetlub~ i$ is the same as $i$.
 \item 
-Associativity: $(a ~\ASetlub~ b) ~\ASetlub~ c$ is the same as $a ~\ASetlub~ (b ~\ASetlub~ c)$.
+Associativity: $(i ~\ASetlub~ j) ~\ASetlub~ k$ is the same as $i ~\ASetlub~ (j ~\ASetlub~ k)$.
 \item 
-Commutativity: $a ~\ASetlub~ b$ is the same as $b ~\ASetlub~ a$.
+Commutativity: $i ~\ASetlub~ j$ is the same as $j ~\ASetlub~ i$.
 \item 
-Distributivity of $\ASetsuc$ over $\ASetlub$: $\ASetsuc (a ~\ASetlub~ b)$ is the same as $\ASetsuc~ a ~\ASetlub~ \ASetsuc~ b$.
+Distributivity of $\ASetsuc$ over $\ASetlub$: $\ASetsuc (i ~\ASetlub~ j)$ is the same as $\ASetsuc~ i ~\ASetlub~ \ASetsuc~ j$.
 \item 
-Neutrality of $\ASetzero$: $a ~\ASetlub~ \ASetzero$ is the same as $a$.
+Neutrality of $\ASetzero$: $i ~\ASetlub~ \ASetzero$ is the same as $i$.
 \item 
-Subsumption: $a ~\ASetlub~ \ASetsuc~ a$ is the same as $\ASetsuc~ a$. 
+Subsumption: $i ~\ASetlub~ \ASetsuc~ i$ is the same as $\ASetsuc~ j$. 
 \end{itemize}
 In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
@@ -280,19 +280,84 @@ that the represented subset of ordinals is well-ordered.
 We build on one of their representations, called {\AMutualOrd}, define
 some additional operations, and prove some properties which are needed
 in the context of universe levels.\footnote{Technically, the
-  mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
-  cubical Agda \cite{XXX}. We back-ported the definitions for
-  MutualOrd to standard Agda, as cubical is not needed for this representation.}
+mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
+cubical Agda \cite{10.1145/3341691}. We back-ported the definitions for
+MutualOrd to standard Agda, as cubical is not needed for this representation.}
 In particular, we prove the laws of a join-semilattice with an
 inflationary endomorphism.
 
-TODO: Insert
-\begin{itemize}
-\item Definition of \AMutualOrd
-\item Explanation
-\item Example(s)
-\item any additional properties that we had to prove
-\end{itemize}
+The \AMutualOrd~ representation defines ordinals in CNF as tree structure 
+together with the order invariant through mutual recursion.
+when constructing the ordinal $ω^a + b$, 
+we require $a$ to be greater than or equal to the first exponent of an ordinal $b$.
+Thus we also need to define the function \AgdaFunction{fst}, 
+which computes the first exponent of an ordinal simultaneously.
+
+\begin{minipage}{0.52\linewidth}
+  \OMDef  
+  \OfstDef
+  \end{minipage}
+  \begin{minipage}{0.37\linewidth}
+  \OOrdDef
+\end{minipage}
+
+Here we write \OGtDef~. 
+The above correct-by-construction definition
+constrains the set of ordinals that can be build using the constructors 
+to only those, that satisfy the order constraint intrinsically.
+Consider the following examples of ordinals within this representation.
+\vskip.5\baselineskip
+\begin{minipage}{0.33\linewidth}
+    \LMOExA 
+  \end{minipage}
+  \begin{minipage}{0.33\linewidth}
+    \LMOExB
+  \end{minipage}
+  \begin{minipage}{0.33\linewidth}
+    \LMOExC
+\end{minipage}
+\vskip.5\baselineskip
+In addition to the definitions from \citet{DBLP:conf/cpp/ForsbergXG20} 
+we introduce a successor and maximum operation for \AMutualOrd~ and then proceed to proof the laws of the join-semilattice.
+
+The successor operation pushes a \AgdaFunction{$\mathbf{1}$} into the sum, 
+until its very end.
+In the recursive case we also need to manipulate the greater or equal proof accordingly.
+The maximum operation compares the exponents or the rest of the sum, if the exponents are equal, 
+to determine which ordinal is the maximum. 
+We use the function \AgdaFunction{<-tri} to compare two ordinals.
+Given two \AMutualOrd~ $a$ and $b$ the function gives proof, 
+that $a$ is either larger, smaller or equal to $b$. 
+
+\begin{minipage}{0.55\linewidth}
+    \LMOlub
+  \end{minipage}
+  \begin{minipage}{0.35\linewidth}
+    \LMOsuc
+\end{minipage}
+
+Note that, in the very last case of the definition of 
+\AgdaFunction{$\_\sqcup_o\_$} it does not matter which ordinal we chose.
+
+Given our additional definitions, we can proof the laws of the join-semilattice. 
+In the following equations $a$, $b$ and $c$ are range over arbitrary 
+expressions of type \AMutualOrd. 
+\vskip.5\baselineskip
+\begin{minipage}{0.6\linewidth}
+  Associativity: \LAssoc \\
+  Commutativity: \LComm \\
+  Distributivity: \LDist
+\end{minipage}
+\begin{minipage}{0.4\linewidth}
+  Idempotence: \LIdem \\
+  Neutrality: \LNeut \\
+  Subsumption: \LSubsum
+\end{minipage}
+\vskip.5\baselineskip
+Proving these laws is fairly mechanical, the only exception is the subsumption proof. 
+To prove subsumption in its general form, we define a predicate 
+\AgdaFunction{$a \in^\prime b$} that points to the location of $a$ in $b$ 
+and from that we can prove that $a ⊔ b$ must be equal to $b$.
 
 \subsection{Encoding Universes}
 \label{sec:encoding-universes}

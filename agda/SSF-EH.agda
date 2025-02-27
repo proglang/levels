@@ -12,7 +12,7 @@ open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; icong; subst)
 open import Function using (_∘_; id; flip; _$_)
 open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-intro; cast-elim; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
-open import BoundQuantification using (BoundedLevel; BoundedLift; bound-lift; bound-unlift; _,_; #_; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
+open import BoundedQuantification using (BoundedLevel; BoundedLift; bounded-lift; bounded-unlift; _,_; #_; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
 
 --! EH >
 
