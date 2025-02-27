@@ -148,6 +148,7 @@ How do we propose to fix it?
 
 Contributions.
 
+Note on the Agda code: what is proved and what is postulated?
 
 \section{Preliminaries}
 \label{sec:preliminaries}
@@ -493,7 +494,13 @@ that Agda's special treatment applies to syntactic levels (see
 \ref{sec:universes-agda}). The representation of a type variable
 context is {\SFTEnv} ranged over by $\Delta$.
 
-Types $T$ take a type variable context $\Delta$ as a parameter and a level
+\begin{figure}[tp]
+  \SFType
+  \caption{Syntax of types}
+  \label{fig:native-type-syntax}
+\end{figure}
+Types $T$ in \cref{fig:native-type-syntax} take a type variable
+context $\Delta$ as a parameter and a level 
 index. The variables $\ell$, $\ell_1$, \dots{} range over
 $\ALevel$. The construction is standard. Base types live at level
 $\ASetzero$; function types live at the maximum level of argument and
@@ -501,8 +508,18 @@ return types; type variables are
 represented by their position in the type variable context, i.e.,
 as de Bruijn indices; and
 universal quantification introduces a new type variable at level $\ell$.
-\SFType
-Variable contexts $\Gamma$ are indexed by a type variable context. They
+
+\begin{figure}[tp]
+  \begin{minipage}{0.45\linewidth}
+    \SFEEnv
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+    \SFEEnvNi
+  \end{minipage}
+  \caption{Variable contexts}
+  \label{fig:native-variable-contexts}
+\end{figure}
+Variable contexts $\Gamma$ in \cref{fig:native-variable-contexts} are indexed by a type variable context. They
 are either empty, bind a variable to a type, or bind a type variable
 to a level. Correspondingly, variable access $\_\ni\_$ has two ways to
 skip over a binding. Accessing a variable across a type variable
@@ -510,18 +527,15 @@ binding (in \Atskip) requires weakening the type found before the type
 binding.\footnote{{\ATwk} is a standard renaming on types that
   performs weakening.}
 
-\begin{minipage}{0.45\linewidth}
-  \SFEEnv
-\end{minipage}
-\begin{minipage}{0.45\linewidth}
-  \SFEEnvNi
-\end{minipage}
-
 \subsection{Expressions}
 \label{sec:syntax-expressions}
 
-
-Expressions $e$ take a variable context $\Gamma$ as a parameter and are indexed
+\begin{figure}[tp]
+  \SFExpr
+  \caption{Syntax of expressions}
+  \label{fig:native-expression-syntax}
+\end{figure}
+Expressions $e$ in \cref{fig:native-expression-syntax} take a variable context $\Gamma$ as a parameter and are indexed
 by a type, as usual. The first five cases are standard as for
 simply-typed lambda calculus. The type-lambda takes the level of the
 new type variable and a body expression that is typed in a
@@ -529,8 +543,6 @@ level-extended variable context to construct an expression of type
 $\forall\alpha T$. Type application takes such an expression and a
 type of suitable level to construct an expression of type $T[T']$,
 that is, substituting the first variable in $T$ by $T'$.
-
-\SFExpr
 
 \section{Native Agda Semantics}
 \label{sec:semantics}
@@ -570,7 +582,7 @@ environment.
 \item Finally, we define the environment by induction:
   \SFFTSEAsFunction
 \end{enumerate}
-We adopt the last alternative to define the type semantics:
+We adopt the last alternative to stay below $\ASeto$ and define the type semantics:
 A type at level $\ell$ is interpreted as an element of $\ASeti\ell$.
 \SFTypeSem
 
@@ -606,7 +618,12 @@ nested pairs of values.
   \SFFESEAsFunction
 \end{minipage}
 
-The first five cases of the expression semantics correspond again to
+\begin{figure}[tp]
+  \SFESem
+  \caption{Expression semantics}
+  \label{fig:native-expression-semantics}
+\end{figure}
+The first five cases of the expression semantics in \cref{fig:native-expression-semantics} correspond again to
 the analogous construction for the simply-typed lambda calculus. The
 interpretation of a type-lambda at level $\ell$ is a function that
 takes an element $A : \ASeti\ell$ and stores it in the type variable
@@ -617,8 +634,6 @@ required equality $\Aeq$ shows that we trade the type interpretation
 of $T'$ in the type variable environment for the substitution of $T'$
 into $T$. The lemmas involved are straightforward substitution
 lemmas. 
-
-\SFESem
 
 \subsection{Discussion}
 \label{sec:discussion-1}
@@ -641,17 +656,20 @@ specially by Agda's normalization and unification procedures.
 
 \section{Level Quantification}
 \label{sec:level-quantification}
+\begin{figure}[tp]
+  \IRLvl
+  \caption{Level expressions}
+  \label{fig:level-expressions}
+\end{figure}
 
 As a new twist, we add level quantification (as in Agda) to the source
 language. To this end, we need a new syntactic category: level
-expressions. They take a level variable context {\IRLEnv} (ranged over
+expressions in \cref{fig:level-expressions}. They take a level variable context {\IRLEnv} (ranged over
 by $\delta$) as a parameter and are
 indexed by a $\AMode$, ranged over by $\mu$. The former determines the
 level variables that may appear and the latter determines whether a level
 expression denotes a finite level, less than $\omega$, ($\Afin$) or if
 it is unrestricted ($\Aany$).
-
-\IRLvl
 
 From the indices we can see that level variables range over finite
 levels, the successor and maximum operators can be used with finite
@@ -659,7 +677,17 @@ and unrestricted levels, and any expression containing $\omega$ is not
 finite. From the structure of level expressions, we can see that all
 denoted levels must be smaller than $\omega + \omega$. 
 
-Consequently, there are two interpretation functions for level
+\begin{figure}[tp]
+  \begin{minipage}{0.45\linewidth}
+    \IRLSemFin
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+    \IRLSemAny
+  \end{minipage}
+  \caption{Semantics of level expressions}
+  \label{fig:ir-semantics-level-expressions}
+\end{figure}
+Consequently, \cref{fig:ir-semantics-level-expressions} defines two interpretation functions for level
 expressions, one for finite expressions and a general one. We map
 finite expressions to natural numbers and general expressions to pairs of natural numbers $(i, j)$
 representing the ordinal $\omega\cdot i + j$. 
@@ -668,13 +696,6 @@ finite levels, that is, natural numbers. Elements of such a level
 environment are essentially vectors of natural numbers.
 
 \IRLEnvSem
-
-\begin{minipage}{0.45\linewidth}
-  \IRLSemFin
-\end{minipage}
-\begin{minipage}{0.45\linewidth}
-  \IRLSemAny
-\end{minipage}
 
 \subsection{Types}
 \label{sec:types}
@@ -690,8 +711,13 @@ over level bindings and $\ALwk$ for weakening of level expressions.
 \begin{minipage}{0.45\linewidth}
   \IRTEnvNi
 \end{minipage}
+\begin{figure}[tp]
+  \IRType
+  \caption{Syntax of types (revised)}
+  \label{fig:ir-type-syntax}
+\end{figure}
 
-The syntax of types is also very similar to the one from
+The syntax of types in \cref{fig:ir-type-syntax} is also very similar to the one from
 Section~\ref{sec:syntax-types}, with the following differences:
 \begin{enumerate}
 \item The type variable context is indexed by level context $\delta$.
@@ -708,10 +734,9 @@ This structure models the provisions of Agda: There is level
 quantification over finite levels and this quantification may push
 levels to $\omega$ and higher, but all levels stay below $\omega+\omega$.
 
-\IRType
-
 Starting with the semantics of a type variable context, we draw from
-the inductive-recursive universe construction. Our interpretation of
+the inductive-recursive universe construction explained in
+\cref{sec:encoding-universes}. Our interpretation of
 types takes two steps. The first encoding step interprets types as
 codes; the second step interprets these codes. Hence, a type variable
 context is interpreted as a vector of codes where a type variable at
@@ -720,6 +745,12 @@ is a level expression that has to be interpreted first.)
 
 \IRFTSEAsFunction
 
+\begin{figure}[tp]
+  \IRencode
+  \caption{Encoding of types}
+  \label{fig:ir-encoding-types}
+\end{figure}
+\Cref{fig:ir-encoding-types} contains the encoding function for types.
 The encoding of the $\ANat$ type is obvious.  Type variables are
 looked up in their environment. Function types are mapped to a
 non-dependent function code after lifting argument and result codes to
@@ -750,8 +781,6 @@ $\ell$. It remains to encode $T$ in the extended level variable
 environment, eliminate the weakening from $T$'s level with a transport
 equality and lift the resulting code to a level $\ge \omega$ to
 compensate for the level quantification.
-
-\IRencode
 
 The semantics of a type is then a set obtained by interpretation of
 the code.
@@ -809,6 +838,10 @@ non-value bindings $\Atskip$ and $\Alskip$.
 Moving to the expression semantics in
 Figure~\ref{fig:ir-expression-semantics}, the cases for variables and 
 numbers are straightforward. But then things go south.
+\textbf{We include the full text of this definition to convey an
+  impression of its complexity. Readers are not expected to study
+  these details on paper, but are invited to do so in the accompanying
+  code.}
 The level liftings that are part of the encoding of the function type
 have to be reflected as transport equalities in the cases for
 abstraction and application. Without going into details, in each case, we have to lift the

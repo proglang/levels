@@ -168,7 +168,7 @@ _[_]L : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
 
 --! LEnvSem
 ⟦_⟧δ        : LEnv → Set
-⟦ [] ⟧δ     = ⊤
+⟦ []    ⟧δ  = ⊤
 ⟦ _ ∷ δ ⟧δ  = ℕ × ⟦ δ ⟧δ
 
 variable
@@ -186,10 +186,10 @@ drop-κ (_ , κ) = κ
 
 --! LSemFin
 ⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → ℕ
-⟦ `zero    ⟧L′ κ  = ℕ.zero
-⟦ `suc l   ⟧L′ κ  = ℕ.suc (⟦ l ⟧L′ κ)
-⟦ l₁ `⊔ l₂ ⟧L′ κ  = ⟦ l₁ ⟧L′ κ ⊔ℕ ⟦ l₂ ⟧L′ κ
-⟦ ` x      ⟧L′ κ  = lookup-κ κ x
+⟦ `zero     ⟧L′ κ  = ℕ.zero
+⟦ `suc l    ⟧L′ κ  = ℕ.suc (⟦ l ⟧L′ κ)
+⟦ l₁ `⊔ l₂  ⟧L′ κ  = ⟦ l₁ ⟧L′ κ ⊔ℕ ⟦ l₂ ⟧L′ κ
+⟦ ` x       ⟧L′ κ  = lookup-κ κ x
 
 --! LSemAny
 ⟦_⟧L : Lvl δ any → ⟦ δ ⟧δ → OrdLvl
@@ -238,9 +238,9 @@ postulate
 
 --! FTSEAsFunction
 ⟦_⟧Δ : (Δ : TEnv δ) → (κ : ⟦ δ ⟧δ) → Set 
-⟦  []   ⟧Δ κ  = ⊤
-⟦ l ∷ Δ ⟧Δ κ  = U (⟦ l ⟧L κ) × ⟦ Δ ⟧Δ κ
-⟦ ∷l Δ  ⟧Δ κ  = ⟦ Δ ⟧Δ (drop-κ κ)
+⟦  []    ⟧Δ κ  = ⊤
+⟦ l ∷ Δ  ⟧Δ κ  = U (⟦ l ⟧L κ) × ⟦ Δ ⟧Δ κ
+⟦ ∷l Δ   ⟧Δ κ  = ⟦ Δ ⟧Δ (drop-κ κ)
 
 _∷η_ : {κ : ⟦ δ ⟧δ} →  U (⟦ l ⟧L κ) → ⟦ Δ ⟧Δ κ → ⟦ l ∷ Δ ⟧Δ κ
 _∷η_ = _,_
