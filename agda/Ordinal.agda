@@ -24,23 +24,29 @@ fst : MutualOrd → MutualOrd
 data _<_ : MutualOrd → MutualOrd → Set
 _>_ _≥_ _≤_ : MutualOrd → MutualOrd → Set
 a > b = b < a
+
+--!! GtDef 
 a ≥ b = a > b ⊎ a ≡ b
+
 a ≤ b = b ≥ a
 
+--! MDef 
 data MutualOrd where
-  𝟎 : MutualOrd
-  ω^_+_[_] : (a b : MutualOrd) → a ≥ fst b → MutualOrd
+  𝟎         : MutualOrd
+  ω^_+_[_]  : (a b : MutualOrd) → a ≥ fst b → MutualOrd
 
 private variable
   a b c d : MutualOrd
   r : a ≥ fst b
   s : c ≥ fst d
 
+--! OrdDef
 data _<_ where
   <₁ : 𝟎 < ω^ a + b [ r ]
   <₂ : a < c → ω^ a + b [ r ] < ω^ c + d [ s ]
   <₃ : a ≡ c → b < d → ω^ a + b [ r ] < ω^ c + d [ s ]
 
+--! fstDef
 fst  𝟎               = 𝟎
 fst (ω^ a + _ [ _ ]) = a
 

@@ -188,24 +188,24 @@ $\omega+2$. This design has some limitations, as most
 notions in the standard library (prominently the equality type
 and its supporting infrastructure, but also parameteric
 types like sums, pairs, lists, and so on) are defined in a level-parametric
-way, and thus they cannot be used with $\ASet_\omega$ 
+way, and thus they cannot be used with $\AgdaDatatype{Setω$ 
 and higher universe levels.
 
 For convenience, Agda's unification algorithm has special treatment
 for the $\ALevel$ datatype and its operators
 \cite{team25:_agda_languag_refer}:
 \begin{itemize}
-\item Idempotence: $a ~\ASetlub~ a$ is the same as $a$.
+\item Idempotence: $i ~\ASetlub~ i$ is the same as $i$.
 \item 
-Associativity: $(a ~\ASetlub~ b) ~\ASetlub~ c$ is the same as $a ~\ASetlub~ (b ~\ASetlub~ c)$.
+Associativity: $(i ~\ASetlub~ j) ~\ASetlub~ k$ is the same as $i ~\ASetlub~ (j ~\ASetlub~ k)$.
 \item 
-Commutativity: $a ~\ASetlub~ b$ is the same as $b ~\ASetlub~ a$.
+Commutativity: $i ~\ASetlub~ j$ is the same as $j ~\ASetlub~ i$.
 \item 
-Distributivity of $\ASetsuc$ over $\ASetlub$: $\ASetsuc (a ~\ASetlub~ b)$ is the same as $\ASetsuc~ a ~\ASetlub~ \ASetsuc~ b$.
+Distributivity of $\ASetsuc$ over $\ASetlub$: $\ASetsuc (i ~\ASetlub~ j)$ is the same as $\ASetsuc~ i ~\ASetlub~ \ASetsuc~ j$.
 \item 
-Neutrality of $\ASetzero$: $a ~\ASetlub~ \ASetzero$ is the same as $a$.
+Neutrality of $\ASetzero$: $i ~\ASetlub~ \ASetzero$ is the same as $i$.
 \item 
-Subsumption: $a ~\ASetlub~ \ASetsuc~ a$ is the same as $\ASetsuc~ a$. 
+Subsumption: $i ~\ASetlub~ \ASetsuc~ i$ is the same as $\ASetsuc~ j$. 
 \end{itemize}
 In other words, the level structure is a join-semilattice with an
 inflationary endomorphism \cite{DBLP:journals/tcs/BezemC22}.
@@ -266,19 +266,51 @@ that the represented subset of ordinals is well-ordered.
 We build on one of their representations, called {\AMutualOrd}, define
 some additional operations, and prove some properties which are needed
 in the context of universe levels.\footnote{Technically, the
-  mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
-  cubical Agda \cite{XXX}. We back-ported the definitions for
-  MutualOrd to standard Agda, as cubical is not needed for this representation.}
+mechanization of \citet{DBLP:conf/cpp/ForsbergXG20} relies on
+cubical Agda \cite{10.1145/3341691}. We back-ported the definitions for
+MutualOrd to standard Agda, as cubical is not needed for this representation.}
 In particular, we prove the laws of a join-semilattice with an
 inflationary endomorphism.
 
-TODO: Insert
-\begin{itemize}
-\item Definition of \AMutualOrd
-\item Explanation
-\item Example(s)
-\item any additional properties that we had to prove
-\end{itemize}
+The \AMutualOrd~ representation essentially defines the tree representing 
+the ordinals in CNF together with the order invariant mutually recursively. 
+
+\begin{minipage}{0.5\linewidth}
+  \OMDef  
+  \end{minipage}
+  \begin{minipage}{0.5\linewidth}
+  \OOrdDef
+\end{minipage}
+
+Where \OGtDef~ and \AgdaFunction{fst}~ $a$ extracts the the exponent 
+of some \AMutualOrd~ $a$.
+
+Consider the following easy examples of ordinals in this representation 
+
+\begin{minipage}{0.33\linewidth}
+    \LMOExA 
+  \end{minipage}
+  \begin{minipage}{0.33\linewidth}
+    \LMOExB
+  \end{minipage}
+  \begin{minipage}{0.33\linewidth}
+    \LMOExC
+\end{minipage}
+TODO small explanation?
+
+For this representation we also proof the laws of the join-semilattice.
+Instead of having the inflationary law subsumption law directly, 
+that is $a \sqcup b = b$ if $a \in b$.
+
+
+
+
+% \begin{itemize}
+% \item Definition of \AMutualOrd
+% \item Explanation
+% \item Example(s)
+% \item any additional properties that we had to prove
+% \end{itemize}
 
 \subsection{Encoding Universes}
 \label{sec:encoding-universes}

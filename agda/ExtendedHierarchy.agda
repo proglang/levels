@@ -36,6 +36,7 @@ postulate
   distributivity  : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
   sub-add₁₀       : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
   sub-exp₁₀       : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
+  infl-add        : ω^ ℓ₁ + ω^ ℓ₂ + ℓ₃ ⊔ ℓ₃ ≡ ω^ ℓ₁ + (ω^ ℓ₂ + ℓ₃ ⊔ ℓ₃) 
 
   -- in reality Agda would apply an infinite set of equations:
   --   sub-addₙₘ for all n, m ∈ ℕ
@@ -80,16 +81,23 @@ cast-intro-elim-cancel refl a = refl
 
 open import Data.Sum using (_⊎_; inj₁; inj₂) 
 
-ω^⟨_⟩ : MutualOrd → MutualOrd
-ω^⟨ a ⟩ = ω^ a + 𝟎 [ ≥𝟎 ]
 
-𝟏 ω ω+1 ω+2 : MutualOrd
+a≥𝟎 = ≥𝟎
+
+ω^⟨_⟩ : MutualOrd → MutualOrd
+--!! MOExAbbr
+ω^⟨ a ⟩ = ω^ a + 𝟎 [ a≥𝟎 ]
+
+𝟏 𝟐 ω ω+1 ω² : MutualOrd
+--!! MOExA
 𝟏 = ω^⟨ 𝟎 ⟩
 𝟐 = ω^ 𝟎 + 𝟏 [ inj₂ refl ]
-ω = ω^⟨ 𝟏 ⟩
-ω² = ω^⟨ 𝟐 ⟩
+--!! MOExB
+ω = ω^ 𝟏 + 𝟎 [ a≥𝟎 ]
 ω+1 = ω^ 𝟏 + 𝟏 [ inj₁ <₁ ]
-ω+2 = ω^ 𝟏 + 𝟐 [ inj₁ <₁ ]
+--!! MOExC
+ω² = ω^ 𝟐 + 𝟎 [ a≥𝟎 ]
+ω²+1 = ω^ 𝟐 + 𝟏 [ inj₁ <₁ ]
 
 -- Successor & Maximum Operation on MutualOrd ---------------------------------
 
@@ -300,31 +308,86 @@ assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | _ | _ | _ | 
 ¬ω^a+ω^a+b<b (<₃ {s = s} refl (<₂ a<c)) = ⊥-elim (Lm[≥→¬<] s a<c)
 ¬ω^a+ω^a+b<b (<₃ refl (<₃ refl x)) = ⊥-elim (¬ω^a+ω^a+b<b x)
 
-infl′ : ∀ (a b c : MutualOrd) r s t u → 
-  ω^ a + ω^ b + c [ r ] [ s ] ⊔ₒ c ≡ ω^ a + (ω^ b + c [ t ] ⊔ₒ c) [ u ]
-infl′ a b 𝟎 r s t u = MutualOrd⁼ refl (MutualOrd⁼ refl refl)
-infl′ a b ω^ ca + cb [ cr ] r s t u with <-tri a ca | <-tri b ca
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] u x)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ (<≤-trans y u)) x)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) with <-tri ω^ b + cb [ cr ] cb 
-infl′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
-infl′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (Lm[≥→¬<] r y)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x₁ with <-tri ω^ b + ω^ a + cb [ cr ] [ r ] cb 
-infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] t x)
-infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] t x)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₁ y) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri ω^ b + ω^ ca + cb [ cr ] [ r ] cb
-infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
-infl′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with  <-tri ω^ b + cb [ cr ] cb 
-infl′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
-infl′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
-infl′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ω^ a + ω^ a + cb [ cr ] [ r ] cb | <-tri ω^ a + cb [ cr ] cb
-infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₁ y = ⊥-elim (¬ω^a+b<b y)
-infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (¬ω^a+ω^a+b<b x)
-infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
-infl′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+-- inflationary′ : ∀ (a b c : MutualOrd) r s t u → 
+--   ω^ a + ω^ b + c [ r ] [ s ] ⊔ₒ c ≡ ω^ a + (ω^ b + c [ t ] ⊔ₒ c) [ u ]
+-- inflationary′ a b 𝟎 r s t u = MutualOrd⁼ refl (MutualOrd⁼ refl refl)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u with <-tri a ca | <-tri b ca
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] u x)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (inj₁ (<≤-trans y u)) x)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) with <-tri ω^ b + cb [ cr ] cb 
+-- inflationary′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
+-- inflationary′ a b ω^ b + cb [ cr ] r s t u | inj₁ x | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (Lm[≥→¬<] r y)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x₁ with <-tri ω^ b + ω^ a + cb [ cr ] [ r ] cb 
+-- inflationary′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₁ y = ⊥-elim (Lm[≥→¬<] t x)
+-- inflationary′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₁ x | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] t x)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₁ y) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri ω^ b + ω^ ca + cb [ cr ] [ r ] cb
+-- inflationary′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ x₁ = ⊥-elim (Lm[≥→¬<] u x)
+-- inflationary′ a b ω^ a + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = ⊥-elim (Lm[≥→¬<] u x)
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) with  <-tri ω^ b + cb [ cr ] cb 
+-- inflationary′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+-- inflationary′ a b ω^ b + cb [ cr ] r s t u | inj₂ (inj₁ x) | inj₂ (inj₂ refl) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+-- inflationary′ a b ω^ ca + cb [ cr ] r s t u | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ω^ a + ω^ a + cb [ cr ] [ r ] cb | <-tri ω^ a + cb [ cr ] cb
+-- inflationary′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+-- inflationary′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₁ x | inj₂ (inj₁ y) = ⊥-elim (¬ω^a+ω^a+b<b x)
+-- inflationary′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₁ y = ⊥-elim (¬ω^a+b<b y)
+-- inflationary′ a a ω^ a + cb [ cr ] r s t u | _ | _ | inj₂ (inj₁ x) | inj₂ (inj₁ x₁) = MutualOrd⁼ refl (MutualOrd⁼ refl (MutualOrd⁼ refl refl))
+
+⊔ₒ-fst : ∀ a b c r → (ω^ a + b [ r ] ⊔ₒ c) ≡ c → a ≤ fst c
+⊔ₒ-fst a b ω^ ca + cb [ cr ] r eq with <-tri a ca 
+... | inj₁ x = inj₁ x
+⊔ₒ-fst a b ω^ ca + cb [ cr ] r refl | inj₂ (inj₁ x) = ⊥-elim (<-irrefl x)
+... | inj₂ (inj₂ refl) with <-tri b cb
+⊔ₒ-fst a b ω^ a + cb [ cr ] r refl | inj₂ (inj₂ refl) | inj₁ x = inj₂ refl
+⊔ₒ-fst a b ω^ a + cb [ cr ] r refl | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = ⊥-elim (<-irrefl x)
+⊔ₒ-fst a b ω^ a + cb [ cr ] r refl | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) = inj₂ refl
+
+fst[a]≤a : ∀ a → fst a ≤ a
+fst[a]≤a 𝟎 = inj₂ refl
+fst[a]≤a ω^ a + a₁ [ r ] = inj₁ (fst< _ _ _)
+
+-- fst[a]≤fst[b]→a≤b : ∀ a b → fst a ≤ fst b → a ≤ b
+-- fst[a]≤fst[b]→a≤b 𝟎 𝟎 x = inj₂ refl
+-- fst[a]≤fst[b]→a≤b 𝟎 ω^ b + b₁ [ x₁ ] x = inj₁ <₁
+-- fst[a]≤fst[b]→a≤b ω^ a + a₁ [ inj₁ x ] 𝟎 (inj₂ refl) = ⊥-elim (≮𝟎 x)
+-- fst[a]≤fst[b]→a≤b ω^ a + a₁ [ inj₂ y ] 𝟎 (inj₂ refl) = {!  !}
+-- fst[a]≤fst[b]→a≤b ω^ a + a₁ [ x₁ ] ω^ b + b₁ [ x₂ ] (inj₁ x) = inj₁ (<₂ x)
+-- fst[a]≤fst[b]→a≤b ω^ a + a₁ [ x₁ ] ω^ b + b₁ [ x₂ ] (inj₂ refl) = {!   !}
+
+a≡fst[a]→a≡𝟎 : ∀ a → fst a ≡ a → a ≡ 𝟎
+a≡fst[a]→a≡𝟎 𝟎 refl = refl
+
+data _∊′_ : MutualOrd → MutualOrd → Set where
+  id  : ∀ a → a ∊′ a
+  add : ∀ (a b c : MutualOrd) r → a ∊′ c → a ∊′ ω^ b + c [ r ]
+  exp : ∀ (a b c : MutualOrd) r → a ∊′ b → a ∊′ ω^ b + c [ r ]
+
+subsumption′ : ∀ (a b : MutualOrd) → a ∊′ b → a ⊔ₒ b ≡ b
+subsumption′ a b (id .a) = idem′ a
+subsumption′ 𝟎 b (add .𝟎 b₁ c r x) = refl
+subsumption′ ω^ aa + ab [ ar ] b (add .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
+... | inj₁ y = refl
+... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r) y)
+... | inj₂ (inj₂ refl) with <-tri ab c
+... | inj₁ y = refl
+... | inj₂ (inj₂ refl) = refl
+... | inj₂ (inj₁ y) with ≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r 
+... | refl with subsumption′ _ _ x  
+... | a = {!   !} -- ⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b _ _ ar) y)
+subsumption′ 𝟎 b (exp .𝟎 b₁ c r x) = refl
+subsumption′ ω^ aa + ab [ ar ] b (exp .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
+... | inj₁ x₁ = refl
+... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) y)
+... | inj₂ (inj₂ refl) with <-tri ab c 
+... | inj₁ y = refl
+... | inj₂ (inj₂ refl) = refl
+... | inj₂ (inj₁ y) with a≡fst[a]→a≡𝟎 _ ((≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) ⁻¹)
+... | refl with ar 
+... | inj₁ ()
+... | inj₂ y₁ with r 
+... | inj₁ ()
+... | inj₂ y₂ = {!   !} --⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b ab c (inj₂ ((trans (y₁ ⁻¹) y₂) ⁻¹))) y)
 
 comm′ : ∀ (a b : MutualOrd) → 
   (a ⊔ₒ b) ≡ (b ⊔ₒ a)

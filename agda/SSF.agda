@@ -140,7 +140,7 @@ module FunctionTypeSemEnv where
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = ≤-lub (suc⨆Δ (ℓ′ ∷ Δ)) (ℓ∈Δ⇒ℓ<⨆Δ x) 
   
   ⟦_⟧Δ    : (Δ : TEnv) → Set (suc⨆Δ Δ)
-  ⟦ Δ ⟧Δ  = ∀ (ℓ : BoundLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundLift (#<Λ ℓ) (Set (# ℓ))
+  ⟦ Δ ⟧Δ  = ∀ (ℓ : BoundedLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundedLift (#<Λ ℓ) (Set (# ℓ))
 
 --! FTSEAsFunction
 ⟦_⟧Δ        : (Δ : TEnv) → Set (suc⨆Δ Δ)
@@ -267,8 +267,8 @@ module FunctionExprSemEnv where
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ℓ Γ} (tskip x) = Γ∋T⇒Tℓ≤⨆Γ x
   
   ⟦_⟧Γ : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
-  ⟦_⟧Γ Γ η = ∀ (ℓ : BoundLevel (suc (⨆Γ Γ))) (T : Type _ (BQ.# ℓ)) → (x : Γ ∋ T) → 
-    BoundLift (Γ∋T⇒Tℓ≤⨆Γ x) ((⟦ T ⟧T η))
+  ⟦_⟧Γ Γ η = ∀ (ℓ : BoundedLevel (suc (⨆Γ Γ))) (T : Type _ (BQ.# ℓ)) → (x : Γ ∋ T) → 
+    BoundedLift (Γ∋T⇒Tℓ≤⨆Γ x) ((⟦ T ⟧T η))
 
 --! FESEAsFunction
 ⟦_⟧Γ   : (Γ : EEnv Δ) → ⟦ Δ ⟧Δ → Set (⨆Γ Γ)
