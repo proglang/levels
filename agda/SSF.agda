@@ -132,8 +132,8 @@ module FunctionTypeSemEnvInductive where
     _∷η_  : Set ℓ → ⟦ Δ ⟧Δ → ⟦ ℓ ∷ Δ ⟧Δ
 
 module FunctionTypeSemEnv where
-  -- example of using BoundQuantification to encode semantic environments as function that do not hit Setω
-  open import BoundQuantification 
+  -- example of using BoundedQuantification to encode semantic environments as function that do not hit Setω
+  open import BoundedQuantification 
   
   ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : TEnv} → ℓ ∈ Δ → ℓ < (suc⨆Δ Δ)
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = ≤-lub (suc⨆Δ Δ) (≤-id (suc ℓ)) 
@@ -259,7 +259,7 @@ data Expr (Γ : EEnv Δ) : Type Δ ℓ → Set where
 
 module FunctionExprSemEnv where
   -- also works for semantic expression environments
-  open import BoundQuantification as BQ
+  open import BoundedQuantification as BQ
   
   Γ∋T⇒Tℓ≤⨆Γ : {T : Type Δ ℓ} {Γ : EEnv Δ} → Γ ∋ T → ℓ ≤ (⨆Γ Γ)
   Γ∋T⇒Tℓ≤⨆Γ {Γ = _ ∷ Γ} here = ≤-lub (⨆Γ Γ) (≤-id _)

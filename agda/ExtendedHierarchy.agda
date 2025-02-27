@@ -363,31 +363,31 @@ data _∊′_ : MutualOrd → MutualOrd → Set where
   add : ∀ (a b c : MutualOrd) r → a ∊′ c → a ∊′ ω^ b + c [ r ]
   exp : ∀ (a b c : MutualOrd) r → a ∊′ b → a ∊′ ω^ b + c [ r ]
 
-subsumption′ : ∀ (a b : MutualOrd) → a ∊′ b → a ⊔ₒ b ≡ b
-subsumption′ a b (id .a) = idem′ a
-subsumption′ 𝟎 b (add .𝟎 b₁ c r x) = refl
-subsumption′ ω^ aa + ab [ ar ] b (add .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
-... | inj₁ y = refl
-... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r) y)
-... | inj₂ (inj₂ refl) with <-tri ab c
-... | inj₁ y = refl
-... | inj₂ (inj₂ refl) = refl
-... | inj₂ (inj₁ y) with ≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r 
-... | refl with subsumption′ _ _ x  
-... | a = {!   !} -- ⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b _ _ ar) y)
-subsumption′ 𝟎 b (exp .𝟎 b₁ c r x) = refl
-subsumption′ ω^ aa + ab [ ar ] b (exp .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
-... | inj₁ x₁ = refl
-... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) y)
-... | inj₂ (inj₂ refl) with <-tri ab c 
-... | inj₁ y = refl
-... | inj₂ (inj₂ refl) = refl
-... | inj₂ (inj₁ y) with a≡fst[a]→a≡𝟎 _ ((≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) ⁻¹)
-... | refl with ar 
-... | inj₁ ()
-... | inj₂ y₁ with r 
-... | inj₁ ()
-... | inj₂ y₂ = {!   !} --⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b ab c (inj₂ ((trans (y₁ ⁻¹) y₂) ⁻¹))) y)
+-- subsumption′ : ∀ (a b : MutualOrd) → a ∊′ b → a ⊔ₒ b ≡ b
+-- subsumption′ a b (id .a) = idem′ a
+-- subsumption′ 𝟎 b (add .𝟎 b₁ c r x) = refl
+-- subsumption′ ω^ aa + ab [ ar ] b (add .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
+-- ... | inj₁ y = refl
+-- ... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r) y)
+-- ... | inj₂ (inj₂ refl) with <-tri ab c
+-- ... | inj₁ y = refl
+-- ... | inj₂ (inj₂ refl) = refl
+-- ... | inj₂ (inj₁ y) with ≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) r 
+-- ... | refl with subsumption′ _ _ x  
+-- ... | a = {!   !} -- ⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b _ _ ar) y)
+-- subsumption′ 𝟎 b (exp .𝟎 b₁ c r x) = refl
+-- subsumption′ ω^ aa + ab [ ar ] b (exp .(ω^ aa + ab [ ar ]) b₁ c r x) with <-tri aa b₁
+-- ... | inj₁ x₁ = refl
+-- ... | inj₂ (inj₁ y) = ⊥-elim (Lm[≥→¬<] (≤-trans (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) y)
+-- ... | inj₂ (inj₂ refl) with <-tri ab c 
+-- ... | inj₁ y = refl
+-- ... | inj₂ (inj₂ refl) = refl
+-- ... | inj₂ (inj₁ y) with a≡fst[a]→a≡𝟎 _ ((≤≥→≡ (⊔ₒ-fst _ _ _ _ (subsumption′ _ _ x)) (fst[a]≤a _)) ⁻¹)
+-- ... | refl with ar 
+-- ... | inj₁ ()
+-- ... | inj₂ y₁ with r 
+-- ... | inj₁ ()
+-- ... | inj₂ y₂ = {!   !} --⊥-elim (Lm[≥→¬<] (fst[a]≤fst[b]→a≤b ab c (inj₂ ((trans (y₁ ⁻¹) y₂) ⁻¹))) y)
 
 comm′ : ∀ (a b : MutualOrd) → 
   (a ⊔ₒ b) ≡ (b ⊔ₒ a)
