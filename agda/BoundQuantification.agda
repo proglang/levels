@@ -33,7 +33,7 @@ _<_ ℓ₁ ℓ₂ = suc ℓ₁ ≤ ℓ₂
 --! Lim
 data Lim : Level → Set where
   lim  : ∀ {ℓ}  → zero < ℓ  → Lim (ω^ ℓ + zero)
-  add  : ∀ ℓ₁   → Lim ℓ₂     → Lim (ω^ ℓ₁ + ℓ₂)
+  add  : ∀ ℓ₁   → Lim ℓ₂    → Lim (ω^ ℓ₁ + ℓ₂)
   
 postulate 
 --! AxiomsLe

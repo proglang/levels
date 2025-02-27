@@ -31,11 +31,11 @@ postulate
   -- compiler laws to solve level (in-)equalities
   -- the laws are proven below for the mutual ord representation
 --! Axioms
-  β-suc-zero         : suc zero ≡ ω^ zero + zero         -- definitional
-  β-suc-ω            : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
-  distributivity     : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
-  subsumption-add₁₀  : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
-  subsumption-exp₁₀  : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
+  β-suc-zero       : suc zero ≡ ω^ zero + zero         -- definitional
+  β-suc-ω          : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
+  distributivity   : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
+  subsumption-add  : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
+  subsumption-exp  : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
 
   -- in reality Agda would apply an infinite set of equations:
   --   subsumption-addₙₘ for all n, m ∈ ℕ
