@@ -1,6 +1,6 @@
 {-# OPTIONS --warn=noUserWarning #-}
 open import Relation.Binary.PropositionalEquality 
-  using (_≡_; refl; cong; trans; subst)
+  using (_≡_; refl; cong; trans; subst; dsubst₂)
 open import Level
 
 --! L >
@@ -9,14 +9,17 @@ open import Level
 
 infix 40 ω^_+_
 postulate
+--! Cantor
   ω^_+_ : (ℓ₁ ℓ₂ : Level) → Level
-{-# WARNING_ON_USAGE ω^_+_ "Safety: check that you do not hallucinate levels that violate the cantor normal form property" #-}
+
+{-# WARNING_ON_USAGE ω^_+_ "Safety: check that constructed levels do not violate the order invariant of cantor normal form" #-}
 
 -- with symbols for valid ordinals in cnf our hierarchy grows to ε₀
 Setε₀ = Setω
 
--- safe interface for constructing infinite levels that fulfill the cnf property
+-- safe interface for constructing infinite levels that fulfill the cnf invariant
 open import Ordinal public
+--! toLevel
 ⌊_⌋ : MutualOrd → Level
 ⌊ 𝟎 ⌋                = zero
 ⌊ ω^ l₁ + l₂ [ _ ] ⌋ = ω^ ⌊ l₁ ⌋ + ⌊ l₂ ⌋
@@ -26,13 +29,15 @@ private variable
   
 postulate
   -- compiler laws to solve level (in-)equalities
-  -- the laws are proven blow for the mutual ord representation
-  β-suc-zero     : suc zero ≡ ω^ zero + zero         -- by definition 
-  β-suc-ω        : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- by definition      
-  distributivity : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂ 
-  subsumption-add₁₀ : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
-  subsumption-exp₁₀ : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
-  -- in reality the Agda compiler would apply an infinite set of equations:
+  -- the laws are proven below for the mutual ord representation
+--! Axioms
+  β-suc-zero         : suc zero ≡ ω^ zero + zero         -- definitional
+  β-suc-ω            : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
+  distributivity     : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
+  subsumption-add₁₀  : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
+  subsumption-exp₁₀  : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
+
+  -- in reality Agda would apply an infinite set of equations:
   --   subsumption-addₙₘ for all n, m ∈ ℕ
   --   subsumption-expₙₘ for all n, m ∈ ℕ
   -- or more specifically:
@@ -48,6 +53,7 @@ postulate
 
 -- Casting Set Levels ---------------------------------------------------------
 
+--! cast {
 cast : ∀ {ℓ₁ ℓ₂} → ℓ₁ ≡ ℓ₂ → Set ℓ₁ → Set ℓ₂ 
 cast refl A = A
 
@@ -56,6 +62,13 @@ cast-intro refl a = a
 
 cast-elim : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → cast eq A → A  
 cast-elim refl a = a
+--! }
+
+dsubst : ∀{ℓ}{A : Set ℓ} (f : A → Level) (P : ∀ a → Set (f a)) {x y : A} → x ≡ y → P x → P y
+dsubst f P refl px = px
+
+cast' : ℓ₁ ≡ ℓ₂ → Set ℓ₁ → Set ℓ₂
+cast' eq A = dsubst _ (λ ℓ → Set ℓ) eq A
 
 cast-elim-intro-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : A) → cast-elim eq (cast-intro eq a) ≡ a  
 cast-elim-intro-cancel refl a = refl
@@ -63,7 +76,7 @@ cast-elim-intro-cancel refl a = refl
 cast-intro-elim-cancel : ∀ {ℓ₁ ℓ₂} → (eq : ℓ₁ ≡ ℓ₂) → {A : Set ℓ₁} → (a : cast eq A) → cast-intro eq (cast-elim eq a) ≡ a 
 cast-intro-elim-cancel refl a = refl
 
--- MutualOrd Instanciations ---------------------------------------------------
+-- MutualOrd Instantiations ---------------------------------------------------
 
 open import Data.Sum using (_⊎_; inj₁; inj₂) 
 

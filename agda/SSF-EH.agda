@@ -12,7 +12,7 @@ open import Data.Product using (_,_; _×_; ∃-syntax)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; icong; subst)
 open import Function using (_∘_; id; flip; _$_)
 open import ExtendedHierarchy using (𝟎; 𝟏; ω; ω²; ⌊_⌋; cast; cast-intro; cast-elim; β-suc-zero; β-suc-ω; β-suc-⌊⌋; ω^_+_;  <₁; <₂; <₃)
-open import BoundQuantification using (BoundLevel; BoundLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
+open import BoundQuantification using (BoundedLevel; BoundedLift; bound-lift; bound-unlift; _,_; #; #<Λ; _<_; _≤_; ≤-id; ≤-suc; ≤-add; ≤-exp; ≤-lublub; <-suc-lim; lim)
 
 --! IR >
 
@@ -60,26 +60,26 @@ _[_]L : Lvl (tt ∷ δ) μ → Lvl δ fin → Lvl δ μ
 `ω            [ l′ ]L = `ω 
 
 variable
-  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : BoundLevel ⌊ ω ⌋
+  ℓ ℓ′ ℓ₁ ℓ₂ ℓ₃ : BoundedLevel ⌊ ω ⌋
 
 ⟦_⟧δ : (δ : LEnv) → Set
 ⟦ []    ⟧δ = ⊤
-⟦ _ ∷ δ ⟧δ = BoundLevel ⌊ ω ⌋ × ⟦ δ ⟧δ
+⟦ _ ∷ δ ⟧δ = BoundedLevel ⌊ ω ⌋ × ⟦ δ ⟧δ
     
 variable
   κ κ′ κ₁ κ₂ κ₃ : ⟦ δ ⟧δ
 
-_∷κ_ : BoundLevel ⌊ ω ⌋ → ⟦ δ ⟧δ → ⟦ tt ∷ δ ⟧δ
+_∷κ_ : BoundedLevel ⌊ ω ⌋ → ⟦ δ ⟧δ → ⟦ tt ∷ δ ⟧δ
 _∷κ_ = _,_
 
-lookup-κ : ⟦ δ ⟧δ → tt ∈ δ → BoundLevel ⌊ ω ⌋
+lookup-κ : ⟦ δ ⟧δ → tt ∈ δ → BoundedLevel ⌊ ω ⌋
 lookup-κ {_ ∷ δ} (ℓ , κ) (here refl) = ℓ
 lookup-κ {_ ∷ δ} (ℓ , κ) (there x)   = lookup-κ κ x
 
 drop-κ : ⟦ tt ∷ δ ⟧δ → ⟦ δ ⟧δ
 drop-κ (_ , κ) = κ
 
-⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → BoundLevel ⌊ ω ⌋
+⟦_⟧L′ : Lvl δ fin → ⟦ δ ⟧δ → BoundedLevel ⌊ ω ⌋
 ⟦ `zero    ⟧L′ κ = zero , 
   -- subst would be gone if EH be part of agda
   let 0<ω = subst (suc zero ≤_) β-suc-zero (≤-id (suc zero)) in 
@@ -160,7 +160,7 @@ drop-η (_ , η) = η
 ⟦_⟧T {Δ = Δ} (∀α {l = l} T) κ η = ∀ (A : Set (⟦ l ⟧L κ)) → 
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in
   ⟦ T ⟧T κ η′
-⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundLevel ⌊ ω ⌋) → 
+⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundedLevel ⌊ ω ⌋) → 
   cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ)) (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
 
 postulate
@@ -236,7 +236,7 @@ lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) =
 ⟦_⟧E {Δ = Δ} {T = T} {Γ = Γ} (Λ l ⇒ e) κ η γ = λ (A : Set (⟦ l ⟧L κ)) → 
   let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
   ⟦ e ⟧E κ η′ γ
-⟦ Λℓ e ⟧E κ η γ = λ (ℓ : BoundLevel ⌊ ω ⌋) → 
+⟦ Λℓ e ⟧E κ η γ = λ (ℓ : BoundedLevel ⌊ ω ⌋) → 
   cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
 ⟦ e₁ · e₂ ⟧E κ η γ = ⟦ e₁ ⟧E κ η γ (⟦ e₂ ⟧E κ η γ)
 ⟦ e ∙ T′ ⟧E κ η γ = coe ⟦[]TT⟧T (⟦ e ⟧E κ η γ (⟦ T′ ⟧T κ η)) 

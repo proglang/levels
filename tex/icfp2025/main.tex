@@ -712,7 +712,13 @@ semantics of the respective types. The construction skips over
 non-value bindings $\Atskip$ and $\Alskip$.
 % \IRTEnvSem
 
-Moving to the expression semantics, the cases for variables and
+\begin{figure}[tp]
+  \IRESem
+  \caption{Expression semantics}
+  \label{fig:ir-expression-semantics}
+\end{figure}
+Moving to the expression semantics in
+Figure~\ref{fig:ir-expression-semantics}, the cases for variables and 
 numbers are straightforward. But then things go south.
 The level liftings that are part of the encoding of the function type
 have to be reflected as transport equalities in the cases for
@@ -740,31 +746,139 @@ interpreting the level expression in the original level
 environment. $\ALTT$ trades a level substitution (into a type) for a
 level environment extension.
 
-\IRESem
 
 \subsection{Discussion}
 \label{sec:discussion}
 
-The construction of universe levels by induction-recursion is very
+The construction of universe levels by induction-recursion is
 elegant and allows us to stay firmly within $\ASet$ (and $\ASetOne$).
 However, using such an encoding for interesting examples turns out to
 be painful, because the encoding has to account explicitly for level
 subsumption aka lifting. The presence of lifting aggravates the
-inherent problems with transfer lemmas that arise naturally in the
+inherent problems with transport lemmas that arise naturally in the
 elimination forms for universal types and level quantification.
 
 Admittedly, the definitions in this section do not tap into the full
 power of the encoding. While we restrict level quantification to
-finite levels, Kov\'acs's framework can easily deal with more. Due to
+finite levels, the framework of \citet{DBLP:conf/csl/Kovacs22} can easily deal with more. Due to
 the choice of example, we do not venture into dependent types and we
 do not make  use of a $\ASet$-like type, all of which would be
 possible with the framework.
 
 On a final note, it is possible to express the semantics of level quantification
-``natively'' within Agda, it is cumbersome and not fully general
-(i.e., restricted to universes up to $\ASeto$).
-For that reason, we only discuss a semantics using Kov\'acs's
+``natively'' within Agda. Doing so is cumbersome and not fully general
+(i.e., restricted to universes up to $\ASeto$), because it requires
+defining a datatype that either contains a $\ASeti\ell$ or a $\ASeto$.
+For that reason, we only defined a semantics using Kov\'acs's
 construction.
+
+\section{Back to Native Semantics}
+\label{sec:back-native-semant}
+
+One key point in the construction of an uncluttered semantics in
+Section~\ref{sec:semantics} is the special treatment of the type
+$\ALevel$ by Agda's normalization and unification. In this section, we
+work in a hypothetical extension of Agda where the $\ALevel$ type
+contains limit ordinals, too. More precisely, we propose to work with
+ordinals less than $\varepsilon_0$ represented in Cantor normal form
+as elements of $\AMutualOrd$ (cf.\ Section~\ref{sec:ordinals}).
+
+Even though this extension is hypothetical, we can give a taste of it
+by augmenting the level datatype with extra elements and laws using
+suitable postulates.
+
+As our target is the same calculus as in
+Section~\ref{sec:level-quantification}, we can reuse the syntax.
+
+\subsection{Extended Hierarchy}
+\label{sec:extended-hierarchy}
+
+To construct an extended hierarchy of universes, indexed by ordinals
+represented by $\AMutualOrd$, 
+we start by postulating a new (unsafe) constructor of levels, which is
+essentially the branching constructor of $\AMutualOrd$. It is unsafe
+to use this constructor directly because it does not enforce the order invariant of $\AMutualOrd$.
+
+\LCantor
+
+The safe interface for constructing levels beyond $\omega$ is an
+injection function from $\AMutualOrd$ to $\ALevel$.
+
+\LtoLevel
+
+Next, we postulate some equality laws for the level constructor.
+
+\LAxioms
+
+The first two laws hold definitionally for the definition of $\Asuc$
+for $\AMutualOrd$. We proved the other three for $\AMutualOrd$.
+Moreover, $\AMutualOrd$ with $\Asuc$ and $\sqcup$ fulfills all laws
+for a join-semilattice with an inflationary endomorphism, which is the
+requirement for Agda's special treatment of $\ALevel$ to work.
+
+In other words, Agda will do most of the simplification of levels with
+its built-in ``magic'', but it will need occasional help of the
+programmer if the above axioms are needed. To this end, we define some
+cast operations that manipulate the level index of the $\ASet$ type.
+
+\Lcast
+
+\begin{remark}
+  The cognoscenti will be reminded of the $\Asubst$ function from the
+  Agda library, but this function is not applicable because it
+  abstracts over a predicate $P : A \to \ASeti\ell$, for some fixed
+  level $\ell$. In our case, a \emph{dependent} predicate
+  $P : (\ell : \ALevel) \to \ASeti{(\Asuc~\ell)}$ ist needed. (It is
+  easy to extend $\Asubst$ accordingly.)
+\end{remark}
+
+\subsection{Bounded Levels}
+\label{sec:bounded-levels}
+
+Now that we squeeze a much larger fragment of the ordinals into the
+$\ALevel$ type, we need to be able to restrict level quantification to
+(limit) ordinals of our choosing. To this end, we define a machinery
+for bounding levels with an ordinal. It culminates in a record that
+pairs a level with the proof that it is strictly smaller than its bound.
+
+\BQBoundedLevel
+
+The crux of this seemingly obvious definition is the definition of the
+underlying order $\_<\_$ on levels. We define it axiomatically,
+extending the standard definition of $\le$ on natural
+numbers.\footnote{Viz.\ the definition of $\le'$ on natural numbers in
+  the standard library.} The order is defined as a datatype so that we
+can perform induction on the order. This way we avoid pattern matching
+on the $\ALevel$ datatype, which is not permitted in Agda. This
+restriction also dictates the form of the axioms where the outcome
+always has the form $\ell \le \dots$, i.e., the left side is a variable.
+
+\begin{minipage}{0.45\linewidth}
+  \BQLevelLe
+  \BQLevelLt
+\end{minipage}
+\begin{minipage}{0.45\linewidth}
+  \BQLim
+  \BQAxiomsLe
+\end{minipage}
+
+We need two further axioms, which do not fit into the required schema
+for constructors of the $\_\le\_$ type. The axiom {\ALeLubLub} has a maximum on
+the left side of the relation and {\ALtSucLim} has a successor on the
+left side. The latter expresses the fact that we can always squeeze
+another ordinal between a limit ordinal $\beta$ and some
+$\alpha<\beta$, namely $\alpha+1$. To this end, the datatype $\ALim$
+characterizes limit ordinals (in $\AMutualOrd$): they need to end in
+$\omega^k$, for some $0<k$.
+
+We proved all axioms for the $\AMutualOrd$ representation.
+
+\subsection{Semantics}
+\label{sec:semantics-1}
+
+
+
+
 
 \section{Related Work}
 \label{sec:related-work}

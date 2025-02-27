@@ -14,67 +14,71 @@ private variable
 
 -- axiom
 
+--! LevelLe
 data _≤_ : Level → Level → Set where
-  ≤-id  : ∀ ℓ → ℓ ≤ ℓ
-  ≤-suc : ℓ₁ ≤ ℓ₂ → ℓ₁ ≤ suc ℓ₂
-  ≤-lub : ∀ ℓ₂ → ℓ ≤ ℓ₁ → ℓ ≤ (ℓ₁ ⊔ ℓ₂) 
-  ≤-add : ∀ ℓ₁ → ℓ ≤ ℓ₂ → ℓ ≤ ω^ ℓ₁ + ℓ₂ 
-  ≤-exp : ∀ ℓ₂ → ℓ ≤ ℓ₁ → ℓ ≤ ω^ ℓ₁ + ℓ₂ 
+  ≤-id   : ∀ ℓ            → ℓ ≤ ℓ
+  ≤-suc  : ℓ ≤ ℓ₂         → ℓ ≤ suc ℓ₂
+  ≤-lub  : ∀ ℓ₁ → ℓ ≤ ℓ₂  → ℓ ≤ (ℓ₁ ⊔ ℓ₂) 
+  ≤-add  : ∀ ℓ₁ → ℓ ≤ ℓ₂  → ℓ ≤ ω^ ℓ₁ + ℓ₂ 
+  ≤-exp  : ∀ ℓ₂ → ℓ ≤ ℓ₁  → ℓ ≤ ω^ ℓ₁ + ℓ₂ 
 
 -- the important thing is, that the left hand side of the inequalities does not 
 -- differ to the ones in the hypotheses, 
--- such that we can recurse in the BoundLift / bound-lift / bound-unlift functions 
+-- such that we can recurse in the BoundedLift / bound-lift / bound-unlift functions 
 
+--! LevelLt
 _<_ : Level → Level → Set
 _<_ ℓ₁ ℓ₂ = suc ℓ₁ ≤ ℓ₂ 
 
+--! Lim
 data Lim : Level → Set where
-  lim : ∀ {ℓ} → zero < ℓ → Lim (ω^ ℓ + zero)
-  add : ∀ ℓ₁ → Lim ℓ₂ → Lim (ω^ ℓ₁ + ℓ₂)
+  lim  : ∀ {ℓ}  → zero < ℓ  → Lim (ω^ ℓ + zero)
+  add  : ∀ ℓ₁   → Lim ℓ₂     → Lim (ω^ ℓ₁ + ℓ₂)
   
 postulate 
-  ≤-lublub  : ℓ₁ ≤ ℓ₃ → ℓ₂ ≤ ℓ₃ → (ℓ₁ ⊔ ℓ₂) ≤ ℓ₃
-  <-suc-lim : ∀ ℓ₁ ℓ₂ → ℓ₁ < ℓ₂ → Lim ℓ₂ → suc ℓ₁ < ℓ₂
+--! AxiomsLe
+  ≤-lublub   : ℓ₁ ≤ ℓ₃ → ℓ₂ ≤ ℓ₃ → (ℓ₁ ⊔ ℓ₂) ≤ ℓ₃
+  <-suc-lim  : ∀ ℓ₁ ℓ₂ → ℓ₁ < ℓ₂ → Lim ℓ₂ → suc ℓ₁ < ℓ₂
+
   -- unification fails
   -- no injectivity of suc / ω^_+_ on postulates!
   -- proven on MutualOrd representation below
   -- propose to add injectivity? does this lead to inconsistency?
 
 -- Bounded Quantification -----------------------------------------------------
-record BoundLevel (Λ : Level) : Set where
+--! BoundedLevel
+record BoundedLevel (Λ : Level) : Set where
   constructor _,_  
-  field 
-    # : Level
-    #<Λ : # < Λ
+  field  # : Level ;  #<Λ : # < Λ
 
-open BoundLevel public
+open BoundedLevel public
 
-bound : BoundLevel Λ → Level
+bound : BoundedLevel Λ → Level
 bound {Λ} _ = Λ
 
 -- Lifiting using Ordering ----------------------------------------------------
 
-BoundLift  : ℓ ≤ Λ → Set ℓ → Set Λ
-BoundLift (≤-id ℓ)                 A = Lift ℓ A
-BoundLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)    A = Lift (suc ℓ₂) (BoundLift ℓ≤Λ A)
-BoundLift (≤-lub ℓ₂ ℓ≤Λ)           A = Lift ℓ₂ (BoundLift ℓ≤Λ A)
-BoundLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) A = cast (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A))
-BoundLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) A = cast (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A))
+BoundedLift  : ℓ ≤ Λ → Set ℓ → Set Λ
+BoundedLift (≤-id ℓ)                 A = Lift ℓ A
+BoundedLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)    A = Lift (suc ℓ₂) (BoundedLift ℓ≤Λ A)
+BoundedLift (≤-lub ℓ₂ ℓ≤Λ)           A = Lift ℓ₂ (BoundedLift ℓ≤Λ A)
+BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) A = cast (subsumption-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) A = cast (subsumption-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 
-bound-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundLift ℓ≤Λ A
+bound-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
 bound-lift (≤-id ℓ)      a = lift a
 bound-lift (≤-suc ℓ≤Λ)   a = lift (bound-lift ℓ≤Λ a)
 bound-lift (≤-lub _ ℓ≤Λ) a = lift (bound-lift ℓ≤Λ a)
 bound-lift (≤-add _ ℓ≤Λ) a = cast-intro _ (lift (bound-lift ℓ≤Λ a))
 bound-lift (≤-exp _ ℓ≤Λ) a = cast-intro _ (lift (bound-lift ℓ≤Λ a))
 
-bound-unlift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → BoundLift ℓ≤Λ A → A
+bound-unlift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → BoundedLift ℓ≤Λ A → A
 bound-unlift (≤-id ℓ)      (Level.lift a) = a
 bound-unlift (≤-suc ℓ≤Λ)   (Level.lift a) = bound-unlift ℓ≤Λ a
 bound-unlift (≤-lub _ ℓ≤Λ) (Level.lift a) = bound-unlift ℓ≤Λ a
-bound-unlift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A)} a
+bound-unlift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
 ... | lift a = bound-unlift ℓ≤Λ a 
-bound-unlift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundLift ℓ≤Λ A)} a
+bound-unlift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) {A = A} a with cast-elim _ {A = Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A)} a
 ... | lift a = bound-unlift ℓ≤Λ a 
 
 -- Properties for Lifiting using Ordering -------------------------------------
@@ -182,4 +186,4 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 ≤-lublub′ a b c (inj₁ x) (inj₁ y) = inj₁ (<-lublub′ _ _ _ x y) 
 ≤-lublub′ a b c (inj₁ x) (inj₂ refl) = inj₂ (sym (<ᵒ-⊔ₒ-right _ _ x))
 ≤-lublub′ a b c (inj₂ refl) (inj₁ x) = inj₂ (sym (<ᵒ-⊔ₒ-left _ _ x))       
-≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl     
+≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl
