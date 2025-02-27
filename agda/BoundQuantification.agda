@@ -153,17 +153,17 @@ data _≤ₒ′_ : MutualOrd → MutualOrd → Set where
   ≤ₒ′-add  : ∀ a b c r → a ≤ₒ′ c → a ≤ₒ′ ω^ b + c [ r ] 
   ≤ₒ′-exp  : ∀ a b c r → a ≤ₒ′ b → a ≤ₒ′ ω^ b + c [ r ]
 
-completeness : ∀ a b → a ≤ₒ b → a ≤ₒ′ b  
-completeness a b (inj₁ <₁) = {!   !}
-completeness ω^ aa + ab [ ar ] ω^ ba + bb [ br ] (inj₁ (<₂ x)) = lemma _ _ _ _ _ _ (completeness _ _ (inj₁ x))
-  where lemma : ∀ a b c d r s → a ≤ₒ′ c → ω^ a + b [ r ] ≤ₒ′ ω^ c + d [ s ]
-        lemma a _ _ _ _ _ (≤ₒ′-id .a) = {!   !}
-        lemma a _ _ _ _ _ (≤ₒ′-suc .a b x) = {!   !}
-        lemma a _ _ _ _ _ (≤ₒ′-lub .a b c x) = {!   !}
-        lemma a _ _ _ _ _ (≤ₒ′-add .a b c r x) = {!   !}
-        lemma a _ _ _ _ _ (≤ₒ′-exp .a b c r x) = {!   !}
-completeness a b (inj₁ (<₃ x x₁)) = {!   !}
-completeness a b (inj₂ refl) = ≤ₒ′-id _
+-- completeness : ∀ a b → a ≤ₒ b → a ≤ₒ′ b  
+-- completeness a b (inj₁ <₁) = {!   !}
+-- completeness ω^ aa + ab [ ar ] ω^ ba + bb [ br ] (inj₁ (<₂ x)) = lemma _ _ _ _ _ _ (completeness _ _ (inj₁ x))
+--   where lemma : ∀ a b c d r s → a ≤ₒ′ c → ω^ a + b [ r ] ≤ₒ′ ω^ c + d [ s ]
+--         lemma a _ _ _ _ _ (≤ₒ′-id .a) = {!   !}
+--         lemma a _ _ _ _ _ (≤ₒ′-suc .a b x) = {!   !}
+--         lemma a _ _ _ _ _ (≤ₒ′-lub .a b c x) = {!   !}
+--         lemma a _ _ _ _ _ (≤ₒ′-add .a b c r x) = {!   !}
+--         lemma a _ _ _ _ _ (≤ₒ′-exp .a b c r x) = {!   !}
+-- completeness a b (inj₁ (<₃ x x₁)) = {!   !}
+-- completeness a b (inj₂ refl) = ≤ₒ′-id _
 
 data LimOrd : MutualOrd → Set where 
   lim′ : ∀ a → a >ₒ 𝟎 → LimOrd (ω^⟨ a ⟩)
