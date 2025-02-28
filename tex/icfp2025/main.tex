@@ -316,7 +316,7 @@ higher universe $\ASeti{ (i \ASetlub j)}$.
 Agda has an option that enables cumulativity, but we are not using it
 in this work as it does not fit into the framework of \cref{sec:encoding-universes}.
 
-\subsection{Syntax and Equality in Agda}
+\subsection{Equality in Agda}
 \label{sec:eqreason}
 \begin{figure}[tp]
   \begin{minipage}[t]{0.45\linewidth}
@@ -1370,6 +1370,7 @@ We considered two ways to construct the denotational semantics for the
 full systems: either use a compressed universe hierarchy constructed
 with induction-recursion, which fits squarely in \ASet,
 or extend Agda's level hierarchy.
+
 Induction recursion is well studied but leads to problems with
 transport lemmas in the semantics definitions.
 
