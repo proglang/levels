@@ -1358,25 +1358,40 @@ Lean's type theory is explained in detail by \citet{carneiro19:_type_theor_lean}
 
 \section{Conclusions}
 \label{sec:conclusions}
-We looked at an intrinsic mechanization of stratified System F with level quantification.
-In native Agda, this mechanization is not directly possible since it pushes against Agda's hierarchy limit.
-At the very least, it reaches the border where Agda can be parametric over the level, namely $\omega$.
 
-Two options arose: either use induction recursion to squish everything into \ASet,
+The starting point of our investigation is a mechanization of a
+denotational semantics for finitely stratified System F with level quantification based on an
+intrinsically-typed syntax representation.
+In native Agda, our construction has to omit level quantification
+because it pushes against the limits of Agda's universe hierarchy.
+% At the very least, it reaches the border where Agda can be parametric over the level, namely $\omega$.
+
+We considered two ways to construct the denotational semantics for the
+full systems: either use a compressed universe hierarchy constructed
+with induction-recursion, which fits squarely in \ASet,
 or extend Agda's level hierarchy.
-Induction recursion is well studied but leads to problems with the transfer lemma in the definitions of the native semantics for stratified System F.
+Induction recursion is well studied but leads to problems with
+transport lemmas in the semantics definitions.
 
-Extending Agda's level hierarchy up to $\epsilon_0$ with ordinals in Cantor Normal Form would, in reality,
-require modifying Agda's compiler.
-However, we tried to simulate it as accurately as possible using postulated reduction laws
-that were proven on another representation of ordinals.
+Extending Agda's level hierarchy  with ordinals up to $\epsilon_0$ in
+Cantor Normal Form would normally require modifying Agda's implementation.
+To test drive this extension, we tried to simulate it as accurately as
+possible using postulated reduction laws and inequations 
+that we proved on concrete representation of ordinals.
 
 To effectively use the additional levels, we also described the concept of bounded levels and
 bounded level quantification.
-Using both, we can reason over levels up to a certain limit.
+Using both, we can reason over levels up to a certain bound, not
+necessarily a limit ordinal.
 
 We found that extending Agda's level hierarchy, in contrast to using induction recursion,
 leads to definitions with less noise that are easier to work with.
+It would be interesting to investigate if Agda's implementation can be
+extended by incorporating our postulated laws and inequations.
+Of course, this extended implementation may still not suit everyone's needs
+because it has the hard limit of quantification over levels less than
+$\varepsilon_0$, replacing the present bound of $\ASeto$. But this
+restriction seems unavoidable.
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
