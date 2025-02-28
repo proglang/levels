@@ -139,15 +139,15 @@
 
 In type theory, universe hierarchies originate from the need to avoid
 logical inconsistencies to maintain good mathematical reasoning.
-Martin-Löf's original proposal contained the axiom
+Martin-Löf's original proposal \cite{martin-lof71:_theor_types} contained the axiom
 Type:Type. Subsequently, Girard constructed a paradox (a term
 inhabiting the empty type) which proved the
 original proposal inconsistent. 
-Somewhat ironically, one movitation for type theory was to avoid
+Somewhat ironically, one motivation for type theory was to avoid
 Russell's paradox in set theory that results from admitting
 unrestricted comprehension. 
 
-Martin-Löf introduced universes in intuitionistic type theory to
+\citet{DBLP:books/daglib/0000395} introduced universes in intuitionistic type theory to
 handle large collections of types consistently. A universe is a type
 that contains other types as elements. Instead of having a single
 classifier Type, he defined a hierarchy: 
@@ -156,15 +156,42 @@ classifier Type, he defined a hierarchy:
   them, and so on.
 \item Type$_1$ contains Type$_0$ as well as constructions involving
   it.
-\item Generally, we write Type$_i$:Type$_{i+1}$.
+\item Generally, we have Type$_i$:Type$_{i+1}$.
 \end{itemize}
 
 Modern type theories, such as those used in Coq, Agda, or Lean,
-implement universes in slightly varying form.
+implement universes in slightly varying form. We concentrate on Agda
+and review Coq and Agda in \cref{sec:related-work}.
 
-How do universe levels work in Agda?
+Agda supports a hierarchy of universes. It allows us to write
+definitions that are parameteric in the universe level, which is
+provided as an abstract type with operations successor and maximum
+(level arithmetic). Like other type theories, Agda supports different
+sorts of universes, $\ASet$ and $\AProp$, containing predicative and
+impredicative types, the latter being proof-irrelevant.
 
-What becomes awkward with Agda's approach?
+While parametric definitions are allowed, the level parameters range
+over a type that is essentially isomorphic to the natural
+numbers.
+However, this approach is not sufficient as certain types that express
+quantification over levels cannot be assigned a to parametric
+universe. An example would be the type $T = \forall \ell \to \ASeti\ell
+\to \ASeti{(\Asuc~\ell)}$. As Agda finds no $\ell$ such that $T :
+\ASeti\ell$, it assigns $T : \ASeto$ (a fixed predefined universe).
+
+In \cref{sec:types-1} and later in \cref{sec:discussion-2}, we discuss
+some types that hit this bound and arise in practice. The problem with
+types in universe $\ASeto$ and higher is that they are not compatible
+with library definitions \cite{team25:_agda_stand_librar}. This is
+because most library definitions are level polymorphic and thus not
+applicable to entities that live in $\ASeto$ and higher. Examples are
+lists, vectors, pairs, sums, function tools (identity, composition,
+etc), and so on. One important example is the equality type.
+In consequence, users of such entities need to define their own
+specialized versions of lists, vectors, equality, and so on. Mostly,
+it boils down to copy the existing implementation and change
+$\ASet\ell$ to $\ASeto$ where appropriate. And they
+have to do so for each level afresh: $\ASeto$, $\ASetoo$, $\ASetooo$, \dots
 
 How do we propose to fix it?
 
@@ -1153,11 +1180,26 @@ level expressions.
 \section{Related Work}
 \label{sec:related-work}
 
+\citet{10.1093/oso/9780198501275.003.0012} presents a general and
+historical overview of the notion of a universe in type theory.
+
+\citet{voevodsky14} develops a type system with universe polymorphism.
+
+\citet{DBLP:conf/csl/Kovacs22}
+
+\citet{DBLP:conf/types/BezemCDE22}
+
+\citet{DBLP:journals/pacmpl/PoiretGMPSTT25} introduce sort
+polymorphism and study its metatheory. Sort polymorphism enables us to
+write definitions independent of which particular universe (hierarchy)
+they are situated in. So this notion lives one level higher than
+universe polymorphism.
+
 \subsection{Universes in Coq}
 \label{sec:universes-coq}
 
 Coq supports a cumulative hierarchy of type universes and employs a
-constraint-solving mechanism to manage them automatically. 
+constraint-solving mechanism to manage them automatically \cite{DBLP:journals/pacmpl/SozeauBFTW20,DBLP:conf/itp/SozeauT14}. 
 Coq has an infinite hierarchy of universes
 \( \text{Type}_0 \), \( \text{Type}_1 \), \( \text{Type}_2 \), … where:
 \(\text{Type}_i : \text{Type}_{i+1} \).
@@ -1166,7 +1208,7 @@ This hierarchy is cumulative, i.e., \(\text{Type}_i \subseteq \text{Type}_{i+1} 
 Coq does not assign fixed levels to universes and it does not support
 level arithmetic. Instead, it assigns 
 universe variables and generates universe constraints during type
-checking. Type checking fails, if the constraints have no solution.
+checking \cite{Herbelin2005TypeIW}. Type checking fails, if the constraints have no solution.
 
 %%% Sorts in Coq: Prop, Set, and Type**
 
