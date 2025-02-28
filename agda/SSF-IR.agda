@@ -10,7 +10,7 @@ open import Data.List.Membership.Propositional
 open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.Product.Properties using (×-≡,≡←≡)
 open import Function using (id)
-open import Relation.Binary.PropositionalEquality using (module ≡-Reasoning)
+open import Relation.Binary.PropositionalEquality using (cong; subst; module ≡-Reasoning)
 open ≡-Reasoning
 
 open import Universe using (module Lib; module IRUniverse)
@@ -61,7 +61,7 @@ module _ where
     with cmp-ℕ i j
   ... | inj₁ x = inj₁ (s≤s x)
   ... | inj₂ (inj₁ x) = inj₂ (inj₁ (s≤s x))
-  ... | inj₂ (inj₂ y) = inj₂ (inj₂ (ℕ.suc & y))
+  ... | inj₂ (inj₂ y) = inj₂ (inj₂ (cong ℕ.suc y))
 
   cmp-ℕ*ℕ : (i j : ℕ × ℕ) →
       i <ℕ*ℕ j ⊎ j <ℕ*ℕ i ⊎ i ≡ j
@@ -261,11 +261,11 @@ encode (T₁ ⇒ T₂) κ η  =  Lift≤ (⊔₁ _ _) (encode T₁ κ η) ⇒' L
 encode {Δ = Δ} (∀α {l = l} T) κ η =
     let pu = <≤-trans ℕ*ℕ.<suc (⊔₁ _ _) in
     Π' (U' pu) λ A → 
-    let eq = Uⁱʳ & ext (λ j → ext (λ p → (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) & (Acc-prop _ wf))) in
+    let eq = cong Uⁱʳ (ext (λ j → ext (λ p → (cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf))))) in
     let S = encode T κ (_∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η) in 
     Lift≤ (⊔₂ _ _) S
 encode (∀ℓ {l = l} T) κ η = Π' ℕ' λ ℓ → 
-    let S = coe (U & ⟦Lwk⟧L l κ ℓ) (encode T (ℓ ∷κ κ) η) in 
+    let S = coe (cong U (⟦Lwk⟧L l κ ℓ)) (encode T (ℓ ∷κ κ) η) in 
     Lift≤ (⊔₂ ω _) S
 
 -- alternative
@@ -373,13 +373,13 @@ crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
   let eq₂ = ElLift≤ (⊔₂ (⟦ l₁ ⟧L κ) _) (encode T₂ κ η) in
   coe eq₂ (⟦ e₁ ⟧E κ η γ (coe eq₁ (⟦ e₂ ⟧E κ η γ)))
 ⟦_⟧E {Δ = Δ} {T = ∀α {l′ = l′} T} (Λ l ⇒ e) κ η γ = λ A → 
-  let eq = (Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
+  let eq = cong Uⁱʳ (ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
   let η′ =  _∷η_ {l = l} {Δ = Δ} {κ = κ} (coe eq A) η in
   let eq = sym (ElLift≤ (⊔₂ (⟦ `suc l ⟧L κ) (⟦ l′ ⟧L κ)) (encode T κ η′)) in 
   coe eq (⟦ e ⟧E κ η′ γ)
 ⟦_⟧E {Δ = Δ} (_∙_ {l′} {l = l} {T = T} e T′) κ η γ = 
-  let eq₁ = Uⁱʳ & ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf))) in
-  let eq₂ = Uⁱʳ & (ext (λ j → ext (λ p → trans (U<-compute {⟦ l ⟧L κ} {wf} {j} {p}) (sym U<-compute)))) in
+  let eq₁ = cong Uⁱʳ (ext (λ j → ext (λ p → cong (λ acc → (U< {⟦ l ⟧L κ} ⦃ acc ⦄ j p)) (Acc-prop _ wf)))) in
+  let eq₂ = cong Uⁱʳ (ext (λ j → ext (λ p → trans (U<-compute {⟦ l ⟧L κ} {wf} {j} {p}) (sym U<-compute)))) in
   let eq₃ = cong (λ A → let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} A η in 
             Elⁱʳ (Lift≤ (⊔₂ (⟦ `suc l ⟧L κ) _) (encode T κ η′))) (coe-coe eq₂ eq₁) in
   let eq₄ = let η′ = _∷η_ {l = l} {Δ = Δ} {κ = κ} (encode T′ κ η) η in 
@@ -391,6 +391,6 @@ crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
   let eq₂ = crucial l ℓ (encode T (ℓ ∷κ κ) η) in
   coe (sym (trans eq₁ eq₂)) (⟦ e ⟧E (ℓ ∷κ κ) η γ)
 ⟦ _∙ℓ_ {l = l} {T = T} e l′ ⟧E κ η γ = 
-  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (U & ⟦Lwk⟧L l κ (⟦ l′ ⟧L′ κ)) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) in
+  let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (cong U (⟦Lwk⟧L l κ (⟦ l′ ⟧L′ κ))) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) in
   let eq₂ = trans eq₁ (trans (crucial l (⟦ l′ ⟧L′ κ) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) ⟦[]LT⟧T) in 
   coe eq₂ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))

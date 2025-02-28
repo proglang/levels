@@ -102,8 +102,7 @@ a≥𝟎 = ≥𝟎
 -- Successor & Maximum Operation on MutualOrd ---------------------------------
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; subst; subst₂) 
-  renaming (sym to _⁻¹; trans to _∙_)
+open Eq using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂) 
 
 --! MOsuc {
 sucₒ : MutualOrd → MutualOrd
@@ -150,15 +149,15 @@ fst[a]≡0→a<ω ω^ a + b [ r ] refl = <₂ <₁
 
 MutualOrd→ℕ : (a : MutualOrd) → a < ω → ℕ
 MutualOrd→ℕ a <₁ = ℕ.zero
-MutualOrd→ℕ a (<₂ {b = b} {inj₂ y} <₁) = ℕ.suc (MutualOrd→ℕ b (fst[a]≡0→a<ω b (y ⁻¹)))
+MutualOrd→ℕ a (<₂ {b = b} {inj₂ y} <₁) = ℕ.suc (MutualOrd→ℕ b (fst[a]≡0→a<ω b (sym y)))
 
 fst[ℕ→MutualOrd]≡0 : ∀ n → fst (ℕ→MutualOrd n) ≡ 𝟎
 fst[ℕ→MutualOrd]≡0 ℕ.zero    = refl
 fst[ℕ→MutualOrd]≡0 (ℕ.suc n) = 
-    (fst-ignores-suc (ℕ→MutualOrd n) ⁻¹) ∙ (fst[ℕ→MutualOrd]≡0 n)
+    trans (sym (fst-ignores-suc (ℕ→MutualOrd n))) (fst[ℕ→MutualOrd]≡0 n)
 
 ω+ₙ_ : ℕ → MutualOrd
-ω+ₙ n = ω^ 𝟏 + ℕ→MutualOrd n [ subst (𝟏 ≥_) (fst[ℕ→MutualOrd]≡0 n ⁻¹) (inj₁ <₁) ]
+ω+ₙ n = ω^ 𝟏 + ℕ→MutualOrd n [ subst (𝟏 ≥_) (sym (fst[ℕ→MutualOrd]≡0 n)) (inj₁ <₁) ]
 
 -- Properties for Successor and Maximum Operation ------------------------------
 
@@ -249,7 +248,7 @@ idem′⁼-right a b r s with <-tri a a
 ... | inj₂ (inj₂ refl) = refl
 
 a<b→a<b⊔c : ∀ a b c → a < b → a < (b ⊔ₒ c)
-a<b→a<b⊔c a b 𝟎 a<b = subst (_ <_) (right-id′ _ ⁻¹) a<b
+a<b→a<b⊔c a b 𝟎 a<b = subst (_ <_) (sym (right-id′ _)) a<b
 a<b→a<b⊔c a ω^ ba + bb [ br ] ω^ ca + cb [ cr ] a<b with <-tri ba ca
 ... | inj₁ x = <-trans a<b (<₂ x)
 ... | inj₂ (inj₁ x) = a<b
@@ -265,8 +264,8 @@ assoc′ : ∀ (a b c : MutualOrd) →
 assoc′ 𝟎 b c = refl
 assoc′ ω^ aa + ab [ ar ] 𝟎 c = refl
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c with <-tri aa ba
-assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c | inj₁ x = <-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₂ x)) ⁻¹
-assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] 𝟎 | inj₂ (inj₁ x) = <-⊔ₒ-left _ _ (<₂ x) ⁻¹
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c | inj₁ x = sym (<-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₂ x)))
+assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] 𝟎 | inj₂ (inj₁ x) = sym (<-⊔ₒ-left _ _ (<₂ x))
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) with <-tri ba ca
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) | inj₁ x₁ = refl
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₁ x) | inj₂ (inj₁ y) 
@@ -279,8 +278,8 @@ assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) | inj₂ (inj₁ x
 assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₁ x₁) | inj₂ (inj₂ refl) = ⊥-elim (<-irrefl x)
 assoc′ _ _ _ | inj₂ (inj₁ x) | _ | inj₂ (inj₂ refl) = refl
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] c | inj₂ (inj₂ refl) with <-tri ab bb
-assoc′ _ _ c | inj₂ (inj₂ refl) | inj₁ x = <-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₃ refl x)) ⁻¹
-assoc′ _ _ 𝟎 | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = <-⊔ₒ-left _ _ (<₃ refl x) ⁻¹
+assoc′ _ _ c | inj₂ (inj₂ refl) | inj₁ x = sym (<-⊔ₒ-right _ _ (a<b→a<b⊔c _ _ c (<₃ refl x)))
+assoc′ _ _ 𝟎 | inj₂ (inj₂ refl) | inj₂ (inj₁ x) = sym (<-⊔ₒ-left _ _ (<₃ refl x))
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) with <-tri aa ca 
 assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₁ x) | inj₁ y 
   rewrite <-⊔ₒ-right _ _ (<₂ {b = ab} {r = ar} {d = cb} {s = cr} y) = refl
@@ -306,10 +305,10 @@ assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ aa + cb [ cr ] | inj₂ (inj�
   rewrite idem′⁼-right aa ab ar cr = refl
 assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] 𝟎 | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) rewrite idem′⁼-right aa ab ar br = refl
 assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri aa ca
-assoc′ _ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₁ x = <-⊔ₒ-right _ _ (<₂ x) ⁻¹
+assoc′ _ _ _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₁ x = sym (<-⊔ₒ-right _ _ (<₂ x))
 assoc′ ω^ aa + ab [ ar ] ω^ aa + bb [ br ] _ | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₁ x) rewrite idem′⁼-right aa ab ar br = refl
 assoc′ ω^ aa + ab [ ar ] ω^ aa + ab [ br ] ω^ ca + cb [ cr ] | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) | inj₂ (inj₂ refl) with <-tri ab cb 
-assoc′ _ _ _ | _ | _ | _ | inj₁ x = <-⊔ₒ-right _ _ (<₃ refl x) ⁻¹
+assoc′ _ _ _ | _ | _ | _ | inj₁ x = sym (<-⊔ₒ-right _ _ (<₃ refl x))
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] _ | _ | _ | _ | inj₂ (inj₁ x) rewrite idem′⁼-right aa bb ar br = refl
 assoc′ ω^ aa + ab [ ar ] ω^ ba + bb [ br ] ω^ ca + cb [ cr ] | _ | _ | _ | inj₂ (inj₂ refl) rewrite idem′⁼-right aa ab ar cr = refl
 
@@ -385,7 +384,7 @@ subsumption′ ω^ aa + ab [ ar ] b (exp .(ω^ aa + ab [ ar ]) b₁ c r x) with 
 ... | inj₂ (inj₂ refl) with <-tri ab c 
 ... | inj₁ y = refl
 ... | inj₂ (inj₂ refl) = refl
-... | inj₂ (inj₁ y) = ⊥-elim (¬ω^a+b⊔a≡a _ _ _ (subsumption′ _ _ x ⁻¹)) 
+... | inj₂ (inj₁ y) = ⊥-elim (¬ω^a+b⊔a≡a _ _ _ (sym (subsumption′ _ _ x))) 
 
 comm′ : ∀ (a b : MutualOrd) → 
 --!! Comm
