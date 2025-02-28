@@ -1,3 +1,4 @@
+{-# OPTIONS --warn=noUserWarning #-}
 module SSF-EH where
 
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
