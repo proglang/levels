@@ -250,7 +250,7 @@ higher universe $\ASeti{ (i \ASetlub j)}$.
 Agda has an option that enables cumulativity, but we are not using it
 in this work as it does not fit into the framework of \cref{sec:encoding-universes}.
 
-\subsection{Agda Syntax and Equality Reasoning}
+\subsection{Syntax and Equality in Agda}
 \label{sec:eqreason}
 \begin{figure}[tp]
   \begin{minipage}[t]{0.45\linewidth}
@@ -274,6 +274,12 @@ We write $a ~\AgdaDatatype{$\equiv$}~ b$ to describe the type
 that proposes $a$ and $b$ are equal.
 In general, we can write underscores in function and datatype names, 
 where arguments should go in place of the underscores.
+Arguments in curly brackets are referred to as implicit arguments 
+(e.g. $\ell$ and $A$ in the equality datatype). 
+Agda attempts to infer them automatically. 
+If Agda fails to infer them,
+the programmer must specify them manually using the syntax $\{a = b\}$.
+
 The standard library includes operations to further use 
 and manipulate equality proof.
 
