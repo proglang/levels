@@ -16,3 +16,4 @@ latex/
 .agdatex-hashes.json
 agda-generated.tex
 *.pdf
+supplement.zip
