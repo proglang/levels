@@ -190,14 +190,43 @@ etc), and so on. One important example is the equality type.
 In consequence, users of such entities need to define their own
 specialized versions of lists, vectors, equality, and so on. Mostly,
 it boils down to copy the existing implementation and change
-$\ASet\ell$ to $\ASeto$ where appropriate. And they
+$\ASeti\ell$ to $\ASeto$ where appropriate. And they
 have to do so for each level afresh: $\ASeto$, $\ASetoo$, $\ASetooo$, \dots
 
-How do we propose to fix it?
+In this paper, we explore two avenues to address this issue and
+compare their feasibility when it comes to working with the resulting artefacts.
+One avenue (\cref{sec:level-quantification}) is to compress universe
+hierarchies by encoding them into $\ASet$. Our tool to do so is an
+inductive-recursive construction that enables dealing with universe
+hierarchies indexed by ordinals. 
 
-Contributions.
+The second avenue (\cref{sec:back-native-semant}), which is the main
+contribution of this work, is to inject ordinals $< \varepsilon_0$ into
+Agda's type for levels. This way all library constructions apply to
+entities in a much larger range of levels. Technically, we prove that
+the required operations on our chosen representation of ordinals
+behave as expected by Agda's type checker and we have to provide some
+equality and inequality axioms to deal with limit ordinals. As our
+work is purely library-based, we have to apply these axioms manually
+in our examples. However, we believe that our investigation could be
+the basis for an extension of Agda's implementation to support a
+bigger range of levels.
+
+\subsection*{Contributions}
+
+\begin{itemize}
+\item Three implementations of a denotational semantics for finitely
+  stratified System~F: one native Agda implementation (without level polymorphism), one using the
+  inductive-recursive universe construction to support level
+  polymorphism, and one using ordinal-extended hierarchy of levels
+  (with level polymorphism).
+\item 
+\end{itemize}
 
 Note on the Agda code: what is proved and what is postulated?
+
+\textbf{The supplement contains the complete Agda code underlying this
+submission. We plan to submit it as an artefact.}
 
 \section{Preliminaries}
 \label{sec:preliminaries}
