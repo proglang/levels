@@ -685,7 +685,7 @@ denoted levels must be smaller than $\omega + \omega$.
   \begin{minipage}{0.45\linewidth}
     \IRLSemAny
   \end{minipage}
-  \caption{Semantics of level expressions}
+  \caption{Level expression semantics}
   \label{fig:ir-semantics-level-expressions}
 \end{figure}
 Consequently, \cref{fig:ir-semantics-level-expressions} defines two interpretation functions for level
@@ -883,15 +883,17 @@ elimination forms for universal types and level quantification.
 
 Admittedly, the definitions in this section do not tap into the full
 power of the encoding. While we restrict level quantification to
-finite levels, the framework of \citet{DBLP:conf/csl/Kovacs22} can easily deal with more. Due to
+finite levels (i.e., natural numbers), the framework of
+\citet{DBLP:conf/csl/Kovacs22} can 
+reflect the full level structure into the object language. Due to
 the choice of example, we do not venture into dependent types and we
 do not make  use of a $\ASet$-like type, all of which would be
-possible with the framework.
+possible within the framework.
 
 On a final note, it is possible to express the semantics of level quantification
 ``natively'' within Agda. Doing so is cumbersome and not fully general
 (i.e., restricted to universes up to $\ASeto$), because it requires
-defining a datatype that either contains a $\ASeti\ell$ or a $\ASeto$.
+defining a datatype at level $\omega+1$ that either contains a $\ASeti\ell$ or a $\ASeto$.
 For that reason, we only defined a semantics using Kov\'acs's
 construction.
 
@@ -1030,7 +1032,7 @@ the $\ALevel$ type.
   \begin{minipage}[t]{0.45\linewidth}
     \EHLSemAny
   \end{minipage}
-  \caption{Semantics of level expressions}
+  \caption{Level expression semantics}
   \label{fig:eh-semantics-level-expressions}
 \end{figure}
 
@@ -1060,7 +1062,7 @@ that can stand for any ordinal in the range of our representation.
 
 \begin{figure}[tp]
   \EHTSem
-  \caption{Semantics of Types}
+  \caption{Type semantics}
   \label{fig:eh-semantics-types}
 \end{figure}
 The semantics of types (Figure~\ref{fig:eh-semantics-types}) has
