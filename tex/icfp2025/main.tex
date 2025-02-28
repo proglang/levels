@@ -291,19 +291,18 @@ in this work as it does not fit into the framework of \cref{sec:encoding-univers
   \caption{Equality in Agda}
   \label{fig:eq-agda}
 \end{figure}
-Agda provides a set of operations to manipulate equality proofs.
-We will discuss only the pieces most relevant for this paper.
+Agda provides operations to manipulate equality proofs.
+We only discuss the pieces most relevant for this paper.
 
 In \Cref{fig:eq-agda} the equality datatype is defined in the usual
 way. 
-The definition uses Agda's mixfix syntax. 
+The definition uses Agda's mixfix syntax where underscores in a name indicate the
+placement of arguments. 
 We write $a ~\AgdaDatatype{$\equiv$}~ b$ to describe the type 
 that proposes $a$ and $b$ are equal.
-In general, we can write underscores in function and datatype names, 
-where arguments should go in place of the underscores.
 Arguments in curly brackets are referred to as implicit arguments 
-(e.g. $\ell$ and $A$ in the equality datatype). 
-Agda attempts to infer them automatically. 
+(e.g., $\ell$ and $A$ in the equality datatype). 
+Most of the time Agda is able to infer implicit arguments. 
 If Agda fails to infer them,
 the programmer must specify them manually using the syntax $\{a = b\}$.
 The standard library includes operations to further use 
@@ -311,13 +310,13 @@ and manipulate equality proof.
 
 A simple way to create an new equality using an existing one 
 is the \AgdaFunction{cong} function.
-It applies, given an equality proof  
-$a ~\AgdaDatatype{$\equiv$}~ b$, a function $f$ to both $a$ and $b$
+Given an equality proof  
+$a ~\AgdaDatatype{$\equiv$}~ b$, it applies a function $f$ to both $a$ and $b$
 resulting in an new equality proof $f~a ~\AgdaDatatype{$\equiv$}~ f~b$.
 
-Occasionally we use {\AgdaFunction{sym}} to transform 
+Occasionally, we use {\AgdaFunction{sym}} to transform 
 an equality proof of the form $a ~\AgdaDatatype{$\equiv$}~ b$ into
-proof that $b ~\AgdaDatatype{$\equiv$}~ a$. Additionally, we 
+proof for $b ~\AgdaDatatype{$\equiv$}~ a$. Additionally, we 
 use {\AgdaFunction{trans}} to compose two proofs
 $a ~\AgdaDatatype{$\equiv$}~ b$ and $b ~\AgdaDatatype{$\equiv$}~ c$,
 obtaining proof that $a ~\AgdaDatatype{$\equiv$}~ c$.
