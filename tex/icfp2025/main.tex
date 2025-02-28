@@ -98,10 +98,9 @@
 %% article.
 \begin{abstract}
   The first draft of Martin-L\"{o}f's type theory proposed the
-  assumption Type:Type. Subsequently, universe levels have been introduced to
-  avoid the resulting inconsistencies by assuming
-  Type$_i$:Type$_{i+1}$. 
-  Proof assistants based on type theory support such universe levels
+  assumption Type:Type. Subsequently, universe hierarchies have been
+  introduced to avoid the resulting inconsistencies. 
+  Proof assistants based on type theory support such universe hierarchies
   to varying degree, but they impose restrictions that can make coding
   awkward.
 
@@ -127,7 +126,7 @@
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
-\keywords{Dependent types, universes, ordinal numbers}
+\keywords{Dependent types, universe hierarchies, ordinals, Agda}
 
 
 %%
@@ -138,7 +137,30 @@
 \section{Introduction}
 \label{sec:introduction}
 
-The origin of universe levels.
+In type theory, universe hierarchies originate from the need to avoid
+logical inconsistencies to maintain good mathematical reasoning.
+Martin-Löf's original proposal contained the axiom
+Type:Type. Subsequently, Girard constructed a paradox (a term
+inhabiting the empty type) which proved the
+original proposal inconsistent. 
+Somewhat ironically, one movitation for type theory was to avoid
+Russell's paradox in set theory that results from admitting
+unrestricted comprehension. 
+
+Martin-Löf introduced universes in intuitionistic type theory to
+handle large collections of types consistently. A universe is a type
+that contains other types as elements. Instead of having a single
+classifier Type, he defined a hierarchy: 
+\begin{itemize}
+\item Type$_0$ contains types like numbers, booleans, functions and products among
+  them, and so on.
+\item Type$_1$ contains Type$_0$ as well as constructions involving
+  it.
+\item Generally, we write Type$_i$:Type$_{i+1}$.
+\end{itemize}
+
+Modern type theories, such as those used in Coq, Agda, or Lean,
+implement universes in slightly varying form.
 
 How do universe levels work in Agda?
 
@@ -1131,10 +1153,40 @@ level expressions.
 \section{Related Work}
 \label{sec:related-work}
 
-How do other proof assistants (Coq, Lean) handle universes?
-Cumulativity, Impact of impredicativity
+\subsection{Universes in Coq}
+\label{sec:universes-coq}
 
-The type theory of Lean \cite{carneiro19:_type_theor_lean}
+Coq supports a cumulative hierarchy of type universes and employs a
+constraint-solving mechanism to manage them automatically. 
+Coq has an infinite hierarchy of universes
+\( \text{Type}_0 \), \( \text{Type}_1 \), \( \text{Type}_2 \), … where:
+\(\text{Type}_i : \text{Type}_{i+1} \).
+This hierarchy is cumulative, i.e., \(\text{Type}_i \subseteq \text{Type}_{i+1} \) .
+
+Coq does not assign fixed levels to universes and it does not support
+level arithmetic. Instead, it assigns 
+universe variables and generates universe constraints during type
+checking. Type checking fails, if the constraints have no solution.
+
+%%% Sorts in Coq: Prop, Set, and Type**
+
+\subsection{Universes in Lean}
+\label{sec:universes-lean}
+
+
+Lean handles universes in a way similar to Coq and Agda where
+universes are usually managed automatically, but explicit handling is possible when needed.
+As in Coq, there is a cumulative hierarchy of universes.
+Definitions can be parametric in universe levels.
+Lean provides level arithmetic via max (maximum) and lift (move to a
+higher universe).
+
+% Sorts in Lean: Sort 0 - Prop, Sort 1 - Type 0, Sort 2 - Type 1, and
+% so on
+
+Lean's type theory is explained in detail by \citet{carneiro19:_type_theor_lean}.
+
+
 
 \section{Conclusions}
 \label{sec:conclusions}
