@@ -720,7 +720,7 @@ environment.
   However, we cannot use this function as an argument to $\ASeti\_$
   because Agda does not let us to define an inductive datatype where
   the level depends on an index type. 
-\item Finally, we define the environment by induction as a heterogenous list:
+\item Finally, we define the environment by induction as a heterogeneous list:
   \SFFTSEAsFunction
 \end{enumerate}
 We adopt the last alternative to stay below $\ASeto$ and define the type semantics:
@@ -1162,26 +1162,6 @@ the level order \AgdaFunction{$\_\le\_$}. The definition of the order is such th
 the definition of lifting does \emph{not} require pattern matching on
 the $\ALevel$ type.
 
-Using the above definitions we can add a fourth alternative for the 
-encoding of semantic type environments described in Section \ref{sec:types-1}.
-
-\SFVarLess
-\SFFEnv
-
-The lemma \AgdaFunction{ℓ∈Δ⇒ℓ<⨆Δ} proves, without the need to match on levels, that
-if a type variable is to be found inside $\Delta$, then its level $\ell$ must be less than
-\AgdaFunction{suc⨆Δ} $\Delta$.
-We then proceed to fix the issue with the first option mentioned in Section \ref{sec:types-1},
-namely that the function ends up in \AgdaDatatype{Set$\omega$}, 
-by using bounded level quantification over \AgdaFunction{suc⨆Δ} $\Delta$.
-As a result, our function lives in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$ 
-instead of \AgdaDatatype{Set$\omega$}.
-The only inconvenience is that we are required to always return a \ASet~
-that lives exactly in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$.
-Hence we use \AgdaFunction{BoundedLift} to account for that.
-In return, we require explicit (un-) lifting when to define insert or lookup operations.
-For that reason we stuck to the heterogenous list approach.
-
 \subsection{Semantics}
 \label{sec:semantics-1}
 \begin{figure}[tp]
@@ -1249,6 +1229,27 @@ from the lifting needed in the definition of their type semantics and
 we need to compensate the level substitution. The functions
 \AgdaFunction{cast-intro} and \AgdaFunction{cast-elim} transform the
 types according to the casts used in the type semantics.
+
+\subsection{A Fourth Option to Represent Semantic Type Environments}
+With the above definitions, we can add a fourth alternative for the encoding of semantic type environments described at the beginning of Section \ref{sec:types-1}.
+
+\SFVarLess
+\SFFEnv
+
+The lemma \AgdaFunction{ℓ∈Δ⇒ℓ<⨆Δ} proves, without the need to match on levels, that
+if a type variable is found inside $\Delta$, then its level $\ell$ must be less than
+\AgdaFunction{suc⨆Δ} $\Delta$.
+We then proceed to fix the issue with the first option mentioned in Section \ref{sec:types-1},
+namely that the function ends up in \AgdaDatatype{Set$\omega$},
+by using bounded level quantification over \AgdaFunction{suc⨆Δ} $\Delta$.
+As a result, our function lives in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$
+instead of \AgdaDatatype{Set$\omega$}.
+The only inconvenience is that we are required to always return a \ASet~
+that lives exactly in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$.
+Hence, we use \AgdaFunction{BoundedLift} to account for that.
+In return, we require explicit (un-)lifting to define the associated insert or lookup operations.
+For that reason, we stuck to the heterogeneous list approach.
+
 
 \subsection{Discussion}
 \label{sec:discussion-2}
