@@ -222,16 +222,21 @@ bigger range of levels.
   polymorphism (\cref{sec:level-quantification}), and one using ordinal-extended hierarchy of levels
   (with level polymorphism) in~\cref{sec:back-native-semant}.
 \item In~\cref{sec:extended-hierarchy} we explain the construction of
-  the extended level hierarchy and in~\cref{sec:bounded-levels} our
-  notion of bounded levels (to support level quantification in the
-  extended hierarchy) and how to fit both into Agda.
-\item 
+  the \textbf{extended level hierarchy} and how to fit it into Agda.
+\item In~\cref{sec:bounded-levels} we introduce the
+  notion of \textbf{bounded levels} to support level quantification in the
+  extended hierarchy. Initially, bounds were intended to be limit
+  ordinals, but in~\cref{sec:fourth-opti-repr} we show an important
+  application of non-limit ordinals are bounds.
 \end{itemize}
 
-Note on the Agda code: what is proved and what is postulated?
-
 \textbf{The supplement contains the complete Agda code underlying this
-submission. We plan to submit it as an artefact.}
+  submission. We plan to submit it as an artefact.}
+
+In the code, we prove all properties, but stop at standard properties
+mainly about composition of renamings and substitutions. These proofs
+are standard and can be found elsewhere
+(see~\cref{sec:running-example} for some pointers); so we just postulate these properties.
 
 \section{Preliminaries}
 \label{sec:preliminaries}
@@ -1231,6 +1236,8 @@ we need to compensate the level substitution. The functions
 types according to the casts used in the type semantics.
 
 \subsection{A Fourth Option to Represent Semantic Type Environments}
+\label{sec:fourth-opti-repr}
+
 With the above definitions, we can add a fourth alternative for the encoding of semantic type environments described at the beginning of Section \ref{sec:types-1}.
 
 \SFVarLess
