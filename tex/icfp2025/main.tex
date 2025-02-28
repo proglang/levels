@@ -1364,9 +1364,10 @@ At the very least, it reaches the border where Agda can be parametric over the l
 
 Two options arose: either use induction recursion to squish everything into \ASet,
 or extend Agda's level hierarchy.
-Induction recursion is well studied but leads to problems with the transfer lemma in the definitions of the native semantics for stratified System F.
+Induction recursion is well studied but leads to problems with the transfer lemma in the definitions 
+of the native Agda semantics for stratified System F.
 
-Extending Agda's level hierarchy up to $\epsilon_0$ with ordinals in Cantor Normal Form would, in reality,
+Extending Agda's level hierarchy to $\epsilon_0$ with ordinals in Cantor Normal Form would, in reality,
 require modifying Agda's compiler.
 However, we tried to simulate it as accurately as possible using postulated reduction laws
 that were proven on another representation of ordinals.
