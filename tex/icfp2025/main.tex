@@ -657,7 +657,7 @@ universal quantification introduces a new type variable at level $\ell$.
 \end{figure}
 Variable contexts $\Gamma$ in \cref{fig:native-variable-contexts} are indexed by a type variable context. They
 are either empty, bind a variable to a type, or bind a type variable
-to a level. Correspondingly, variable access $\_\ni\_$ has two ways to
+to a level. Correspondingly, variable access \AgdaDatatype{$\_\ni\_$} has two ways to
 skip over a binding. Accessing a variable across a type variable
 binding (in \Atskip) requires weakening the type found before the type
 binding.\footnote{{\ATwk} is a standard renaming on types that
@@ -676,8 +676,8 @@ by a type, as usual. The first five cases are standard as for
 simply-typed lambda calculus. The type-lambda takes the level of the
 new type variable and a body expression that is typed in a
 level-extended variable context to construct an expression of type
-$\forall\alpha T$. Type application takes such an expression and a
-type of suitable level to construct an expression of type $T[T']$,
+\AgdaDatatype{$\forall\alpha$}~ $T$. Type application takes such an expression and a
+type of suitable level to construct an expression of type $T$\AgdaDatatype{$[$}$T'$\AgdaDatatype{$]$T},
 that is, substituting the first variable in $T$ by $T'$.
 
 \section{Native Agda Semantics}
@@ -715,7 +715,7 @@ environment.
   However, we cannot use this function as an argument to $\ASeti\_$
   because Agda does not let us to define an inductive datatype where
   the level depends on an index type. 
-\item Finally, we define the environment by induction:
+\item Finally, we define the environment by induction as a heterogenous list:
   \SFFTSEAsFunction
 \end{enumerate}
 We adopt the last alternative to stay below $\ASeto$ and define the type semantics:
@@ -730,8 +730,7 @@ A type at level $\ell$ is interpreted as an element of $\ASeti\ell$.
   universal types would become cluttered with transport lemmas caused
   by the injection function $\AtoLevel : \ANat \to \ALevel$. In the
   case of function types, the proof obligation would be
-  $\AtoLevel~l_1 \sqcup \AtoLevel~l_2 \equiv \AtoLevel (l_1 \sqcup_ℕ
-  l_2)$. As demonstrated in Section~\ref{sec:level-quantification},
+  $\AtoLevel~l_1 \sqcup \AtoLevel~l_2 \equiv \AtoLevel~ (l_1~$\AgdaFunction{$\sqcup_ℕ$}$~l_2)$. As demonstrated in Section~\ref{sec:level-quantification},
   transport lemmas in the semantics of types are to be avoided because
   they proliferate into the semantics of expressions.
 \end{remark}
@@ -892,8 +891,8 @@ looked up in their environment. Function types are mapped to a
 non-dependent function code after lifting argument and result codes to
 their maximum level.
 
-The encoding of universal quantification $\forall
-\alpha: l. T$ (with $T$ at level $l'$) involves a $\Pi$-type. The
+The encoding of universal quantification \AgdaDatatype{$\forall
+\alpha$} $: l. T$ (with $T$ at level $l'$) involves a $\Pi$-type. The
 argument of this $\APi$-code is a type at some level 
 $l$, so we have to give a universe code $\AUp$ with an argument $pu$ that selects the correct
 level with a proof that it is strictly before the current one in the
@@ -946,15 +945,15 @@ We shall not repeat the cases for numbers, variables, lambda, etc as
 they are essentially identical to what we have seen before in
 Section~\ref{sec:syntax-expressions}. It remains to discuss the new
 expression formers, level abstraction and level application.
-Level abstraction $\Lambda\ell$ pushes a new level variable on the
+Level abstraction \AgdaInductiveConstructor{$\Lambda\ell$} pushes a new level variable on the
 expression context and the type variable context. Level application
-$\bullet\ell$ takes a level abstraction and applies it to a finite
+\AgdaInductiveConstructor{$\_\bullet\ell\_$} takes a level abstraction and applies it to a finite
 level. The resulting expression substitutes the level expression for
 the level variable in the body of the level abstraction.
 
 The implication of having level abstraction and level application is
 that our framework has to support substitution of level expressions in
-level expressions and types.  Level application uses $T [ l' ]\ATL$
+level expressions and types.  Level application uses $T$\AgdaDatatype{$[$}$l'$\AgdaDatatype{$]$TL}
 for substituting level expression $l'$ for the first level variable in $T$.
 
 \IRExpr
@@ -1157,6 +1156,26 @@ defined similarly. The key is that this definition is by induction on
 the level order \AgdaFunction{$\_\le\_$}. The definition of the order is such that
 the definition of lifting does \emph{not} require pattern matching on
 the $\ALevel$ type.
+
+Using the above definitions we can add a fourth alternative for the 
+encoding of semantic type environments described in Section \ref{sec:types-1}.
+
+\SFVarLess
+\SFFEnv
+
+The lemma \AgdaFunction{ℓ∈Δ⇒ℓ<⨆Δ} proves, without the need to match on levels, that
+if a type variable is to be found inside $\Delta$, then its level $\ell$ must be less than
+\AgdaFunction{suc⨆Δ} $\Delta$.
+We then proceed to fix the issue with the first option mentioned in Section \ref{sec:types-1},
+namely that the function ends up in \AgdaDatatype{Set$\omega$}, 
+by using bounded level quantification over \AgdaFunction{suc⨆Δ} $\Delta$.
+As a result, our function lives in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$ 
+instead of \AgdaDatatype{Set$\omega$}.
+The only inconvenience is that we are required to always return a \ASet~
+that lives exactly in \AgdaDatatype{Set}$($\AgdaFunction{suc⨆Δ} $\Delta)$.
+Hence we use \AgdaFunction{BoundedLift} to account for that.
+In return, we require explicit (un-) lifting when to define insert or lookup operations.
+For that reason we stuck to the heterogenous list approach.
 
 \subsection{Semantics}
 \label{sec:semantics-1}

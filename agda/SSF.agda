@@ -150,11 +150,13 @@ module FunctionTypeSemEnvInductive where
 module FunctionTypeSemEnv where
   -- example of using BoundedQuantification to encode semantic environments as function that do not hit Setω
   open import BoundedQuantification 
-  
+
+  --! VarLess
   ℓ∈Δ⇒ℓ<⨆Δ : ∀ {ℓ} {Δ : TEnv} → ℓ ∈ Δ → ℓ < (suc⨆Δ Δ)
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ ∷ Δ}  (here refl) = ≤-lub (suc⨆Δ Δ) (≤-id (suc ℓ)) 
   ℓ∈Δ⇒ℓ<⨆Δ {Δ = ℓ′ ∷ Δ} (there x)   = ≤-lub (suc⨆Δ (ℓ′ ∷ Δ)) (ℓ∈Δ⇒ℓ<⨆Δ x) 
   
+  --! FEnv
   ⟦_⟧Δ    : (Δ : TEnv) → Set (suc⨆Δ Δ)
   ⟦ Δ ⟧Δ  = ∀ (ℓ : BoundedLevel (suc⨆Δ Δ)) → # ℓ ∈ Δ → BoundedLift (#<Λ ℓ) (Set (# ℓ))
 
