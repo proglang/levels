@@ -1301,11 +1301,19 @@ level expressions.
 \citet{10.1093/oso/9780198501275.003.0012} presents a general and
 historical overview of the notion of a universe in type theory.
 
-\citet{voevodsky14} develops a type system with universe polymorphism.
+\citet{voevodsky14} develops a type system with universe polymorphism
+using constraints.
 
-\citet{DBLP:conf/csl/Kovacs22}
+\citet{DBLP:conf/csl/Kovacs22} develops syntax and semantics for
+cumulative universe hierarchies where levels can be drawn from any
+well-founded order. He defines a model using induction-recursion. This
+model generalizes universe features found in Coq and Agda.
 
-\citet{DBLP:conf/types/BezemCDE22}
+\citet{DBLP:conf/types/BezemCDE22} present a proposal for universe
+polymorphism in type theory. In contrast to Agda's treatment they rely
+on universe level judgments, rather than a type like
+$\ASeti\ell$. They do not support universe level zero, thereby
+assuming that all base types are level-parametric.
 
 \citet{DBLP:journals/pacmpl/PoiretGMPSTT25} introduce sort
 polymorphism and study its metatheory. Sort polymorphism enables us to
@@ -1334,7 +1342,7 @@ checking \cite{Herbelin2005TypeIW}. Type checking fails, if the constraints have
 \label{sec:universes-lean}
 
 
-Lean handles universes in a way similar to Coq and Agda where
+Lean \cite{DBLP:conf/cade/MouraKADR15} handles universes in a way similar to Coq and Agda where
 universes are usually managed automatically, but explicit handling is possible when needed.
 As in Coq, there is a cumulative hierarchy of universes.
 Definitions can be parametric in universe levels.
