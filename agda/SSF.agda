@@ -9,11 +9,27 @@ open import Data.List using (List; []; _∷_)
 open import Data.List.Membership.Propositional using (_∈_) 
 open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.Product using (_,_; _×_; ∃-syntax)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst)
-open import Function using (_∘_; id; flip; _$_)
 
 --! SF >
+module _eq where
+  --! EQ
+  data _≡_ {ℓ} {A : Set ℓ} (x : A) : A → Set ℓ where
+      refl : x ≡ x
 
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong₂)
+open import Function using (_∘_; id; flip; _$_)
+
+--! subst
+subst : ∀ {ℓ ℓ′ : Level} {A : Set ℓ} {x y : A} 
+        (P : A → Set ℓ′) → x ≡ y → P x → P y
+subst P refl Px = Px  
+
+--! cong 
+cong : ∀ {ℓ ℓ′ : Level} {A : Set ℓ} {B : Set ℓ′} 
+       (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+--! coe
 coe : ∀ {ℓ}{A B : Set ℓ} → A ≡ B → A → B
 coe = subst id
 

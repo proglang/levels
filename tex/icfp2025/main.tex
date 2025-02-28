@@ -209,6 +209,7 @@ important results from the literature on which we base this
 work. Specifically,
 \begin{itemize}
 \item the treatment of universes in Agda;
+\item the notion of propositional equality in Agda;
 \item an Agda implementation of a useful fragment of ordinals (here we
   have to prove some extra results);
 \item an inductive-recursive construction of a universe hierarchy that
@@ -275,6 +276,63 @@ which means that anything inhabiting $\ASeti{ i}$ also inhabits any
 higher universe $\ASeti{ (i \ASetlub j)}$. 
 Agda has an option that enables cumulativity, but we are not using it
 in this work as it does not fit into the framework of \cref{sec:encoding-universes}.
+
+\subsection{Syntax and Equality in Agda}
+\label{sec:eqreason}
+\begin{figure}[tp]
+  \begin{minipage}[t]{0.45\linewidth}
+    \SFEQ
+    \SFcong
+  \end{minipage}
+  \begin{minipage}[t]{0.45\linewidth}
+    \SFsubst
+    \SFcoe
+  \end{minipage}
+  \caption{Equality in Agda}
+  \label{fig:eq-agda}
+\end{figure}
+Agda provides a set of operations to manipulate equality proofs.
+We will discuss only the pieces most relevant for this paper.
+
+In \Cref{fig:eq-agda} the equality datatype is defined in the usual
+way. 
+The definition uses Agda's mixfix syntax. 
+We write $a ~\AgdaDatatype{$\equiv$}~ b$ to describe the type 
+that proposes $a$ and $b$ are equal.
+In general, we can write underscores in function and datatype names, 
+where arguments should go in place of the underscores.
+Arguments in curly brackets are referred to as implicit arguments 
+(e.g. $\ell$ and $A$ in the equality datatype). 
+Agda attempts to infer them automatically. 
+If Agda fails to infer them,
+the programmer must specify them manually using the syntax $\{a = b\}$.
+The standard library includes operations to further use 
+and manipulate equality proof.
+
+A simple way to create an new equality using an existing one 
+is the \AgdaFunction{cong} function.
+It applies, given an equality proof  
+$a ~\AgdaDatatype{$\equiv$}~ b$, a function $f$ to both $a$ and $b$
+resulting in an new equality proof $f~a ~\AgdaDatatype{$\equiv$}~ f~b$.
+
+Occasionally we use {\AgdaFunction{sym}} to transform 
+an equality proof of the form $a ~\AgdaDatatype{$\equiv$}~ b$ into
+proof that $b ~\AgdaDatatype{$\equiv$}~ a$. Additionally, we 
+use {\AgdaFunction{trans}} to compose two proofs
+$a ~\AgdaDatatype{$\equiv$}~ b$ and $b ~\AgdaDatatype{$\equiv$}~ c$,
+obtaining proof that $a ~\AgdaDatatype{$\equiv$}~ c$.
+
+The {\AgdaFunction{subst}} operation allows us to use a value of 
+a type at a syntactically different, but propositionally equal, type.
+The relevance of {\AgdaFunction{subst}} arises where equality proofs cannot be matched
+on directly, because it witnesses the equality between two non-unifiable
+expressions (e.g. between function applications: $f~x~\AgdaDatatype{$\equiv$}~g~y$).
+We define $\AgdaFunction{coe}=\AgdaFunction{subst}~\AgdaFunction{id}$ 
+(where \AgdaFunction{id} is the identity function) 
+as a specialization for {\AgdaFunction{subst}}.
+It allows coercing between two entirely equal types 
+rather than substituting parts within one.
+
 
 \subsection{Ordinals}
 \label{sec:ordinals}
@@ -347,7 +405,7 @@ inflationary endomorphism.
   \caption{\AMutualOrd}
   \label{fig:def-mutualord}
 \end{figure}
-The \AMutualOrd~ representation defines ordinals in CNF by
+The \AMutualOrd~ representation defines ordinals in CNF by\Cref{fig:suc-max}
 induction-recursion as a binary tree structure 
 together with the order invariant (see \cref{fig:def-mutualord}).
 When constructing the ordinal $ω^\alpha + \beta$, 
