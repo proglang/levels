@@ -130,10 +130,26 @@ a              ⊔ₒ 𝟎              = a
 
 -- Interaction between the Level and MutualOrd Representation -----------------
 
-β-suc-⌊⌋ : ∀ {a} → suc ⌊ a ⌋ ≡ ⌊ sucₒ a ⌋
-β-suc-⌊⌋ {𝟎} = β-suc-zero
-β-suc-⌊⌋ {ω^ a + b [ r ]} =  subst (λ x → suc (ω^ ⌊ a ⌋ + ⌊ b ⌋) ≡ ω^ ⌊ a ⌋ + x)
-  (β-suc-⌊⌋ {b}) (β-suc-ω {⌊ a ⌋} {⌊ b ⌋}) 
+β-suc-⌊⌋ : ∀ a → suc ⌊ a ⌋ ≡ ⌊ sucₒ a ⌋
+β-suc-⌊⌋ 𝟎 = β-suc-zero
+β-suc-⌊⌋ (ω^ a + b [ r ]) =  subst (λ x → suc (ω^ ⌊ a ⌋ + ⌊ b ⌋) ≡ ω^ ⌊ a ⌋ + x)
+  (β-suc-⌊⌋ b) (β-suc-ω {⌊ a ⌋} {⌊ b ⌋}) 
+
+postulate
+   ⊔-^-a<c : {a c : MutualOrd} → a < c → ω^ ⌊ a ⌋ + ℓ₁ ⊔ ω^ ⌊ c ⌋ + ℓ₂ ≡ ω^ ⌊ c ⌋ + ℓ₂
+   ⊔-a<c : {a c : MutualOrd} → a < c → ⌊ a ⌋ ⊔ ⌊ c ⌋ ≡ ⌊ c ⌋
+
+β-⊔-⌊⌋ : ∀ a b → ⌊ a ⌋ ⊔ ⌊ b ⌋ ≡ ⌊ a ⊔ₒ b ⌋
+β-⊔-⌊⌋ 𝟎 b = refl
+β-⊔-⌊⌋ ω^ a + a₁ [ r ] 𝟎 = refl
+β-⊔-⌊⌋ ω^ a + b [ r ] ω^ c + d [ s ] with <-tri a c
+... | inj₁ a<c = ⊔-^-a<c {ℓ₁ = ⌊ b ⌋}{ℓ₂ = ⌊ d ⌋} a<c
+... | inj₂ (inj₁ a>c) = ⊔-^-a<c {ℓ₁ = ⌊ d ⌋}{ℓ₂ = ⌊ b ⌋} a>c
+... | inj₂ (inj₂ refl) with <-tri b d
+... | inj₁ b<d = trans (sym (distributivity {ℓ = ⌊ a ⌋} {ℓ₁ = ⌊ b ⌋} {ℓ₂ = ⌊ d ⌋})) (cong (ω^ ⌊ a ⌋ +_) (⊔-a<c b<d))
+... | inj₂ (inj₁ b>d) = trans (sym (distributivity {ℓ = ⌊ a ⌋} {ℓ₁ = ⌊ b ⌋} {ℓ₂ = ⌊ d ⌋}))
+                          ((cong (ω^ ⌊ a ⌋ +_) (⊔-a<c b>d)))
+... | inj₂ (inj₂ refl) = refl
 
 -- Translation between ℕ and MutualOrd Representations ------------------------
 

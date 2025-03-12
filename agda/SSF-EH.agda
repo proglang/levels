@@ -252,3 +252,7 @@ lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) =
 ⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ = 
   cast-elim _ (coe ⟦[]LT⟧T (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)))))
 
+---- Examples
+
+-- _ : Type {δ = []} [] ⟨ `suc `zero ⟩
+-- _ = subst (Type []) {!!}  (∀α{l = ⟨ `zero ⟩ } (` here))
