@@ -71,6 +71,9 @@ variable
 variable
   κ κ′ κ₁ κ₂ κ₃ : ⟦ δ ⟧δ
 
+∅κ : ⟦ [] ⟧δ
+∅κ = tt
+
 _∷κ_ : BoundedLevel ⌊ ω ⌋ → ⟦ δ ⟧δ → ⟦ tt ∷ δ ⟧δ
 _∷κ_ = _,_
 
@@ -127,13 +130,14 @@ data _∍_ : TEnv δ → Lvl δ any → Set where
   there : Δ ∍ l → (l′ ∷ Δ) ∍ l
   lskip : Δ ∍ l → (∷l Δ) ∍ Lwk l
 
-data Type (Δ : TEnv δ) : Lvl δ any → Set where
+data Type {δ} (Δ : TEnv δ) : Lvl δ any → Set where
   Nat   : Type Δ ⟨ `zero ⟩
   `_    : Δ ∍ l → Type Δ l
   _⇒_   : Type Δ l₁ → Type Δ l₂ → Type Δ (l₁ `⊔ l₂) 
   ∀α    : Type (l ∷ Δ) l′ → Type Δ (`suc l `⊔ l′) 
-  ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ l)
-      
+  ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ l) 
+  ↪     : Type Δ l → (∀ (κ : ⟦ δ ⟧δ) → ⟦ l ⟧L κ ≤ ⟦ l′ ⟧L κ) → Type Δ l′
+
 variable
   T T′ T₁ T₂ T₃ : Type Δ l
 
@@ -171,6 +175,8 @@ drop-η (_ , η) = η
 ⟦_⟧T {l = l} {Δ = Δ} (∀ℓ {l = l₁} T) κ η = ∀ (ℓ : BoundedLevel ⌊ ω ⌋) →
   cast (cong (⌊ ω ⌋ ⊔_) (⟦Lwk⟧L l₁ κ ℓ))
        (Lift ⌊ ω ⌋ (⟦ T ⟧T (ℓ ∷κ κ) η))
+⟦ ↪ T f ⟧T κ η = BoundedLift (f κ) (⟦ T ⟧T κ η)
+
 
 postulate
   ⟦TLwk⟧T : {Δ : TEnv δ} {T : Type Δ l} {κ : ⟦ δ ⟧δ} {η : ⟦ Δ ⟧Δ κ} →
@@ -204,16 +210,17 @@ data _∋_ : EEnv Δ → Type Δ l → Set where
 ⨆Γ (ℓ ∷l Γ)          κ = ⨆Γ Γ κ
 ⨆Γ (∷l Γ)            κ = ⨆Γ Γ (drop-κ κ)
 
-data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
+data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : {l : Lvl δ any} → Type Δ l → Set where
   `_    : Γ ∋ T → Expr Γ T
-  #    : ℕ → Expr Γ Nat
+  #     : ℕ → Expr Γ Nat
   ‵suc  : Expr Γ Nat → Expr Γ Nat
   λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
   Λℓ_   : {T : Type (∷l Δ) (Lwk l)} → Expr (∷l Γ) T → Expr Γ (∀ℓ T)
   _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
-  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL) 
+  _∙ℓ_  : {T : Type (∷l Δ) (Lwk l)} → Expr Γ (∀ℓ T) → (l′ : Lvl δ fin) → Expr Γ (T [ l′ ]TL)
+  ↪     : {T : Type Δ l} → Expr Γ T → (f : (∀ κ → ⟦ l ⟧L κ ≤ ⟦ l′ ⟧L κ)) → Expr Γ {l = l′} (↪ T f) 
 
 ⟦_⟧Γ   : {Δ : TEnv δ} → (Γ : EEnv Δ) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set (⨆Γ Γ κ)
 ⟦ []     ⟧Γ κ η = ⊤
@@ -252,8 +259,22 @@ lookup-γ {δ = tt ∷ δ} {Γ = ∷l Γ} {κ = A , κ} {η = η} γ (lskip x) =
   cast-intro _ (lift {ℓ = ⌊ ω ⌋} (⟦ e ⟧E (ℓ ∷κ κ) η γ))
 ⟦ _∙ℓ_ {l = l} e l′ ⟧E κ η γ = 
   cast-elim _ (coe ⟦[]LT⟧T (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ)))))
+⟦ ↪ e f ⟧E κ η γ = bounded-lift (f κ) (⟦ e ⟧E κ η γ)
 
 ---- Examples
 
--- _ : Type {δ = []} [] ⟨ `suc `zero ⟩
--- _ = subst (Type []) {!!}  (∀α{l = ⟨ `zero ⟩ } (` here))
+-- ∀(α : Set). α → α
+PolyId : Type {δ = []} [] ⟨ `suc `zero ⟩
+PolyId = ↪ (∀α {l = ⟨ `zero ⟩} ((` here) ⇒ (` here))) λ _ → ≤-id _
+
+-- Λ(α : Set). λ(x : α). x :: ∀ (α : Set) → α → α
+poly-id : Expr [] PolyId
+poly-id = ↪ (Λ ⟨ `zero ⟩ ⇒ (λx (` here))) λ _ → ≤-id _
+
+-- ∀(ℓ : Level). ∀(α : Set ℓ). α → α 
+UnivPolyId : Type {δ = []} [] `ω
+UnivPolyId = ↪ (∀ℓ {l = `ω} (↪ (∀α {l = ⟨ ` (here refl) ⟩} ((` here) ⇒ (` here))) λ { ((ℓ , #<Λ) , tt) → #<Λ })) λ _ → ≤-id _
+
+-- Λ(ℓ : Level). Λ(α : Set ℓ). λ(x : α). α → α :: ∀(ℓ : Level). ∀(α : Set ℓ). α → α 
+univ-poly-id : Expr [] UnivPolyId
+univ-poly-id = ↪ (Λℓ ↪ (Λ ⟨ ` (here refl) ⟩ ⇒ (λx (` here))) λ { ((ℓ , #<Λ) , tt) → #<Λ }) λ _ → ≤-id _

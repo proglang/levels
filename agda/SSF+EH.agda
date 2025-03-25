@@ -20,7 +20,7 @@ coe : ∀ {ℓ}{A B : Set ℓ} → A ≡ B → A → B
 coe = subst id
 
 variable
-  o : MutualOrd
+  o o′ o₁ o₂ o₃ : MutualOrd
 
 -- bounds of level variables
 LEnv = List MutualOrd
@@ -217,21 +217,21 @@ data _∋_ : EEnv Δ → Type Δ l → Set where
 ⨆Γ []                κ = zero 
 ⨆Γ (_∷_ {l = l} T Γ) κ = ⟦ l ⟧L κ  ⊔ ⨆Γ Γ κ 
 ⨆Γ (ℓ ∷l Γ)          κ = ⨆Γ Γ κ
-⨆Γ (∷ol {o = o} Γ)            κ = ⨆Γ Γ (drop-κ {o = o} κ)
+⨆Γ (∷ol {o = o} Γ)   κ = ⨆Γ Γ (drop-κ {o = o} κ)
 
 
 data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
-  `_    : Γ ∋ T → Expr Γ T
-  #    : ℕ → Expr Γ Nat
-  ‵suc  : Expr Γ Nat → Expr Γ Nat
-  λx_   : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
-  Λ_⇒_  : (l : Lvl δ) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
-  Λℓ<_⇒_ : {o : MutualOrd} (p : zero < ⌊ o ⌋) {T : Type (∷l Δ) (Lwk {o = o} l)}
-         → Expr (∷ol Γ) T → Expr Γ (∀ℓ o p T)
-  _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
-  _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
-  _∙ℓ_[_]  : {p : zero < ⌊ o ⌋} {T : Type (∷l Δ) (Lwk l)}
-           → Expr Γ (∀ℓ o p T) → (l′ : Lvl δ) → (∀ κ → ⟦ l′ ⟧L κ < ⌊ o ⌋) → Expr Γ (T [ l′ ]TL)
+  `_      : Γ ∋ T → Expr Γ T
+  #       : ℕ → Expr Γ Nat
+  ‵suc    : Expr Γ Nat → Expr Γ Nat
+  λx_     : Expr (T ∷ Γ) T′ → Expr Γ (T ⇒ T′)
+  Λ_⇒_    : (l : Lvl δ) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
+  Λℓ<_⇒_  : {o : MutualOrd} (p : zero < ⌊ o ⌋) {T : Type (∷l Δ) (Lwk {o = o} l)} → 
+              Expr (∷ol Γ) T → Expr Γ (∀ℓ o p T)
+  _·_     : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
+  _∙_     : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
+  _∙ℓ_[_] : {p : zero < ⌊ o ⌋} {T : Type (∷l Δ) (Lwk l)} → 
+              Expr Γ (∀ℓ o p T) → (l′ : Lvl δ) → (∀ κ → ⟦ l′ ⟧L κ < ⌊ o ⌋) → Expr Γ (T [ l′ ]TL)
   -- should we have a syntax for such proofs?
 
 ⟦_⟧Γ   : {Δ : TEnv δ} → (Γ : EEnv Δ) → (κ : ⟦ δ ⟧δ) → ⟦ Δ ⟧Δ κ → Set (⨆Γ Γ κ)
@@ -271,3 +271,4 @@ lookup-γ {δ = o ∷ δ} {Γ = ∷ol Γ} {κ = A , κ} {η = η} γ (lskip x) =
   cast-intro _ (lift {ℓ = ⌊ o ⌋} (⟦ e ⟧E (_∷κ_ {o = o} ℓ κ) η γ))
 ⟦ _∙ℓ_[_] {o = o}{l = l} e l′ p′ ⟧E κ η γ = 
   cast-elim _ (coe (⟦[]LT⟧T {o = o}{p = p′ κ}) (Lift.lower (cast-elim _ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L κ , p′ κ)))))
+ 
