@@ -357,6 +357,12 @@ module IRUniverse where
     ... | inj₂₁ _ = p
     ... | inj₂₂ _ = p
 
+    ⊔-least′ : ∀ {i j k} → i < k → j < k → i ⊔ j < k
+    ⊔-least′ {i}{j}{k} p q with cmp i j
+    ... | inj₁  _ = q
+    ... | inj₂₁ _ = p
+    ... | inj₂₂ _ = p
+
     ≤-prop : ∀ {i j}{p q : i ≤ j} → p ≡ q
     ≤-prop {p = inj₁ p}    {inj₁ q}    = inj₁ & <-prop
     ≤-prop {p = inj₁ p}    {inj₂ refl} = ⊥-elim (acyclic p)

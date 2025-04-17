@@ -63,8 +63,8 @@ BoundedLift  : ℓ ≤ Λ → Set ℓ → Set Λ
 BoundedLift (≤-id ℓ)                  A = Lift ℓ A
 BoundedLift (≤-suc {ℓ₂ = ℓ₂} ℓ≤Λ)     A = Lift (suc ℓ₂) (BoundedLift ℓ≤Λ A)
 BoundedLift (≤-lub ℓ₂ ℓ≤Λ)            A = Lift ℓ₂ (BoundedLift ℓ≤Λ A)
-BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ)  A = cast (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
-BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ)  A = cast (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ)  A = cast (subsumption {ℓ₁ = ℓ₂} (add ℓ₁ id)) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
+BoundedLift (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ)  A = cast (subsumption {ℓ₁ = ℓ₁} (exp ℓ₂ id)) (Lift (ω^ ℓ₁ + ℓ₂) (BoundedLift ℓ≤Λ A))
 
 bounded-lift : ∀ (ℓ≤Λ : ℓ ≤ Λ) → {A : Set ℓ} → A → BoundedLift ℓ≤Λ A
 bounded-lift (≤-id ℓ)      a = lift a
@@ -95,10 +95,10 @@ module Properties where
   unlift-lift-cancel (≤-suc ℓ≤Λ)   a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-lub _ ℓ≤Λ) a = unlift-lift-cancel ℓ≤Λ a
   unlift-lift-cancel (≤-add {ℓ₂ = ℓ₂} ℓ₁ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (sub-add₁₀ {ℓ = ℓ₂} {ℓ₁ = ℓ₁}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (subsumption {ℓ₁ = ℓ₂} (add ℓ₁ id)) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a 
   unlift-lift-cancel (≤-exp {ℓ₁ = ℓ₁} ℓ₂ ℓ≤Λ) a 
-    rewrite cast-elim-intro-cancel (sub-exp₁₀ {ℓ = ℓ₁} {ℓ₁ = ℓ₂}) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
+    rewrite cast-elim-intro-cancel (subsumption {ℓ₁ = ℓ₁} (exp ℓ₂ id)) (lift {ℓ = ω^ ℓ₁ + ℓ₂} (bounded-lift ℓ≤Λ a))
     = unlift-lift-cancel ℓ≤Λ a
 
 -- Proving the postulates on the MutualOrd Representation ---------------------
@@ -216,3 +216,4 @@ LimOrd[a]→fst[a]>𝟎 _ (add′ _ _ (inj₂ refl) lima) = LimOrd[a]→fst[a]>�
 ≤-lublub′ a b c (inj₁ x) (inj₂ refl) = inj₂ (sym (<-⊔ₒ-right _ _ x)) 
 ≤-lublub′ a b c (inj₂ refl) (inj₁ x) = inj₂ (sym (<-⊔ₒ-left _ _ x))       
 ≤-lublub′ a b c (inj₂ refl) (inj₂ refl) rewrite idem′ a = inj₂ refl 
+ 

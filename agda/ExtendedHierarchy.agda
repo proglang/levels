@@ -34,9 +34,14 @@ postulate
   β-suc-zero      : suc zero ≡ ω^ zero + zero         -- definitional
   β-suc-ω         : suc (ω^ ℓ₁ + ℓ₂) ≡ ω^ ℓ₁ + suc ℓ₂ -- definitional
   distributivity  : ω^ ℓ + (ℓ₁ ⊔ ℓ₂) ≡ ω^ ℓ + ℓ₁ ⊔ ω^ ℓ + ℓ₂
-  sub-add₁₀       : ℓ ⊔ ω^ ℓ₁ + ℓ ≡ ω^ ℓ₁ + ℓ
-  sub-exp₁₀       : ℓ ⊔ ω^ ℓ + ℓ₁ ≡ ω^ ℓ + ℓ₁
-  infl-add        : ω^ ℓ₁ + ω^ ℓ₂ + ℓ₃ ⊔ ℓ₃ ≡ ω^ ℓ₁ + (ω^ ℓ₂ + ℓ₃ ⊔ ℓ₃) 
+
+data _∊_ : Level → Level → Set where
+  id  : ∀ {ℓ : Level} → ℓ ∊ ℓ
+  add : ∀ {ℓ ℓ₂ : Level} (ℓ₁ : Level) → ℓ ∊ ℓ₂ → ℓ ∊ ω^ ℓ₁ + ℓ₂ 
+  exp : ∀ {ℓ ℓ₁ : Level} (ℓ₂ : Level) → ℓ ∊ ℓ₁ → ℓ ∊ ω^ ℓ₁ + ℓ₂
+
+postulate
+  subsumption : ℓ₁ ∊ ℓ₂ → ℓ₁ ⊔ ℓ₂ ≡ ℓ₂
 
   -- in reality Agda would apply an infinite set of equations:
   --   sub-addₙₘ for all n, m ∈ ℕ

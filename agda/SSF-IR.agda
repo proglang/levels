@@ -226,6 +226,7 @@ data Type (Δ : TEnv δ) : Lvl δ any → Set where
   _⇒_   : Type Δ l₁ → Type Δ l₂ → Type Δ (l₁ `⊔ l₂) 
   ∀α    : Type (l ∷ Δ) l′ → Type Δ (`suc l `⊔ l′) 
   ∀ℓ    : Type (∷l Δ) (Lwk l) → Type Δ (`ω `⊔ l)
+  ↪     : Type Δ l → (∀ (κ : ⟦ δ ⟧δ) → ⟦ l ⟧L κ ≤ ⟦ l′ ⟧L κ) → Type Δ l′
 
 variable
   T T′ T₁ T₂ T₃ : Type Δ l
@@ -257,7 +258,7 @@ drop-η (_ , η) = η
 encode : {Δ : TEnv δ} → (T : Type Δ l) → (κ : ⟦ δ ⟧δ) → (η : ⟦ Δ ⟧Δ κ) → U (⟦ l ⟧L κ)
 encode Nat       κ η  = ℕ'
 encode (` x)     κ η  = lookup-η η x
-encode (T₁ ⇒ T₂) κ η  =  Lift≤ (⊔₁ _ _) (encode T₁ κ η) ⇒' Lift≤ (⊔₂ _ _) (encode T₂ κ η)
+encode (T₁ ⇒ T₂) κ η  = Lift≤ (⊔₁ _ _) (encode T₁ κ η) ⇒' Lift≤ (⊔₂ _ _) (encode T₂ κ η)
 encode {Δ = Δ} (∀α {l = l} T) κ η =
     let pu = <≤-trans ℕ*ℕ.<suc (⊔₁ _ _) in
     Π' (U' pu) λ A → 
@@ -267,6 +268,7 @@ encode {Δ = Δ} (∀α {l = l} T) κ η =
 encode (∀ℓ {l = l} T) κ η = Π' ℕ' λ ℓ → 
     let S = coe (cong U (⟦Lwk⟧L l κ ℓ)) (encode T (ℓ ∷κ κ) η) in 
     Lift≤ (⊔₂ ω _) S
+encode (↪ T f)   κ η = Lift≤ (f κ) (encode T κ η)
 
 -- alternative
 -- encode (T₁ ⇒ T₂) κ η  =  Π'' (encode T₁ κ η) (λ _ → encode T₂ κ η)
@@ -318,6 +320,7 @@ data Expr {Δ : TEnv δ} (Γ : EEnv Δ) : Type Δ l → Set where
   Λ_⇒_  : (l : Lvl δ any) {T : Type (l ∷ Δ) l′} → Expr (l ∷l Γ) T → Expr Γ (∀α T)
   _·_   : Expr Γ (T₁ ⇒ T₂) → Expr Γ T₁ → Expr Γ T₂
   _∙_   : Expr Γ (∀α T) → (T′ : Type Δ l) → Expr Γ (T [ T′ ]TT) 
+  ↪     : {T : Type Δ l} → Expr Γ T → (f : (∀ κ → ⟦ l ⟧L κ ≤ ⟦ l′ ⟧L κ)) → Expr Γ {l = l′} (↪ T f) 
 
 module TEnvSemDisplay where
   postulate
@@ -394,3 +397,29 @@ crucial {κ = κ} l ℓ code = generalized _ _ code (⟦Lwk⟧L l κ ℓ)
   let eq₁ = ElLift≤ (⊔₂ ω (⟦ l ⟧L κ)) (coe (cong U (⟦Lwk⟧L l κ (⟦ l′ ⟧L′ κ))) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) in
   let eq₂ = trans eq₁ (trans (crucial l (⟦ l′ ⟧L′ κ) (encode T (⟦ l′ ⟧L′ κ ∷κ κ) η)) ⟦[]LT⟧T) in 
   coe eq₂ (⟦ e ⟧E κ η γ (⟦ l′ ⟧L′ κ))
+⟦ ↪ e f ⟧E κ η γ = coe (sym (ElLift≤ (f κ) _)) (⟦ e ⟧E κ η γ)
+
+---- Examples
+
+-- ∀(α : Set). α → α
+PolyId : Type {δ = []} [] ⟨ `suc `zero ⟩
+PolyId = ↪ (∀α {l = ⟨ `zero ⟩} ((` here) ⇒ (` here))) λ _ → inj₂ refl
+
+-- Λ(α : Set). λ(x : α). x :: ∀ (α : Set) → α → α
+poly-id : Expr [] PolyId
+poly-id = ↪ (Λ ⟨ `zero ⟩ ⇒ (λx (` here))) λ _ → inj₂ refl
+
+import Data.Nat as N
+open import Data.Nat.Properties
+open import Data.Nat.Induction
+open Lexicographic N._<_ (λ _ → N._<_)
+
+-- ∀(ℓ : Level). ∀(α : Set ℓ). α → α 
+UnivPolyId : Type {δ = []} [] `ω
+UnivPolyId = ↪ (∀ℓ {l = `ω} (↪ (∀α {l = ⟨ ` (here refl) ⟩} ((` here) ⇒ (` here))) 
+  λ { (n , tt) → inj₁ (⊔-least′ (left {y₁ = N.suc n} (s≤s z≤n)) (⊔-least′ (left  {y₁ = n} (s≤s z≤n)) (left {y₁ = n} (s≤s z≤n)))) } )) λ _ → inj₂ refl
+
+-- Λ(ℓ : Level). Λ(α : Set ℓ). λ(x : α). α → α :: ∀(ℓ : Level). ∀(α : Set ℓ). α → α 
+univ-poly-id : Expr [] UnivPolyId
+univ-poly-id = ↪ (Λℓ ↪ (Λ ⟨ ` (here refl) ⟩ ⇒ (λx (` here))) λ { (n , tt) → inj₁ (⊔-least′ (left {y₁ = N.suc n} (s≤s z≤n)) (⊔-least′ (left  {y₁ = n} (s≤s z≤n)) (left {y₁ = n} (s≤s z≤n)))) }) 
+  λ _ → inj₂ refl    

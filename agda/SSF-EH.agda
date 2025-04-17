@@ -277,4 +277,4 @@ UnivPolyId = ↪ (∀ℓ {l = `ω} (↪ (∀α {l = ⟨ ` (here refl) ⟩} ((` h
 
 -- Λ(ℓ : Level). Λ(α : Set ℓ). λ(x : α). α → α :: ∀(ℓ : Level). ∀(α : Set ℓ). α → α 
 univ-poly-id : Expr [] UnivPolyId
-univ-poly-id = ↪ (Λℓ ↪ (Λ ⟨ ` (here refl) ⟩ ⇒ (λx (` here))) λ { ((ℓ , #<Λ) , tt) → #<Λ }) λ _ → ≤-id _
+univ-poly-id = ↪ (Λℓ ↪ (Λ ⟨ ` (here refl) ⟩ ⇒ (λx (` here))) λ { ((ℓ , #<Λ) , tt) → #<Λ }) λ _ → ≤-id _ 
