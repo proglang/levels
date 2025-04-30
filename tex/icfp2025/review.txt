@@ -1,0 +1,216 @@
+ICFP 2025 Paper #115 Reviews and Comments
+===========================================================================
+Paper #115 There is Life in the Universes Beyond 𝜔
+
+
+Review #115A
+===========================================================================
+
+Overall merit
+-------------
+C. Weak paper, though I will not fight strongly against it
+
+Reviewer expertise
+------------------
+4. Expert
+
+Reviewer confidence
+-------------------
+3. High
+
+Paper summary
+-------------
+This paper makes the case for extending Agda with universe levels beyond ω, proposing to go as far as any level below ε₀. For this purpose, it exposes a case study of stratified system F, comparing three approaches, one of which involves an axiomatisation of a generalisation of Agda's `Level` type. The proposal does not extend Agda's implementation, but instead relies on assumed equalities between levels that need to be rewritten by hand. These equalities are proven ordinals separately.
+
+Comments for authors
+--------------------
+The paper raises an interesting question and gives a great deal of detail to motivate it. Unfortunately, I believe that this case study is not enough to warrant publication. More specifically, here is a list of points that I think should be improved.
+
+- The main problem is that the paper neither studies the meta-theory Agda with these high universes, nor does it provide an implementation. The proposed solution is an interesting experiment, but the fact that it could be implemented (as in being decidable efficiently) is only conjecture.
+
+- Related work is too superficial. As it stands, it looks more like an enumeration of related work, without actually taking the time to compare with the proposal. Also, note that "Type Theory with Explicit Universe Polymorphism" has a "revised and extended version". Other related work include "An Order-Theoretic Analysis of Universe Polymorphism" and "Bounded First-Class Universe Levels in Dependent Type Theory".
+
+- The case study of system F is not entirely convincing as it almost feels artificial. Currently, it feels like the only motivation for supporting universe levels this high is to be able to do just that. I would be interested in seeing more cases where it is really necessary. Furthermore, one pain point with system F is usually its impredicativity, which isn't at all discussed in the paper.
+
+#### Minor notes
+
+- There is something wrong with the format, it seems to use a book layout (with left and right pages).
+
+- l36 "concentrate on Agda and review Coq and Agda in Section 7", the second "Agda" should be "Lean".
+
+- l40 "Agda supports different sorts of universes, Set and Prop, containing predicative and impredicative types" I was under the impression that Agda's `Prop` was in fact predicative and the [documentation](https://agda.readthedocs.io/en/stable/language/prop.html#the-predicative-hierarchy-of-prop) agrees with me.
+
+- l62 "it boils down to copy" should be "to copying" and later "changing".
+
+- l87 "an important application of non-limit ordinals are bounds" maybe you mean "as" rather than "are".
+
+- l91 "we prove all properties", maybe clarify what you mean, I assume all the properties stated in the paper.
+
+- l92 "These proofs are standard and can be found elsewhere" Although you are correct, these are also where mistakes tend to find themselves, so assuming correctness of variable management and substitution is a risk.
+
+- l132 "types Set𝜔, Set𝜔1, Set𝜔2, and so on, for the levels 𝜔, 𝜔 + 1, 𝜔 + 2" Is the "and so on" needed here? It seems the list is exhaustive.
+
+- l144 "Subsumption: 𝑖 ⊔ suc 𝑖 is the same as suc 𝑗." Should be `i` instead of `j`.
+
+- l239 "in CNF byFigure 3 induction-recursion" Figure 3 should not be there.
+
+- l244 "Here we use a ≥ b = a > b ⊎ a ≡ b" Note that you use `_>_` when you define `_<_`, maybe use the latter instead.
+
+- l244 "This definition is correct by construction." Can you clarify what you mean by correct here?
+
+- l281 "a strict linear order" from what I can see, this is only intent, but the signature below doesn't actually enforce the `_<_` relation to be an order.
+
+- l281 "evidence that this order is propositional" maybe clarify that you mean mere propositions in the HoTT sense.
+
+- l359 "intrinsically-typed" there should be no hyphen. Also l1074.
+
+- l409 "simply-typed" no hyphen.
+
+- l409 "The first five cases are standard as for simply-typed lambda calculus." Is it really standard to inject all natural numbers *while* having a successor?
+
+- l545 "in the definition of lookup-𝛾", `lookup-𝛾` isn't properly coloured.
+
+- l712 "the other as ⟦[]LT⟧T. crucial" Placing Agda code right before *and* after a period is dangerous, I would rephrase to avoid this issue.
+
+- l843 "ist needed" typo.
+
+- Fig. 13. I'm a bit surprised at `infl-add`, it looks unnecessary or plain wrong. More importantly I couldn't find a justification for it in `ExtendedHierarchy.agda` unlike the other axioms.
+
+- l859 "This restriction also dictates the form of the axioms where the outcome always has the form ℓ ≤ …" I'm sorry but I don't understand which restriction you mean. If this is the restriction about pattern matching on `Level`, I don't see the connection.
+
+- l1017 "in Section Section 5"
+
+- Section 7.1 is repeating and contradicting itself, it should be rephrased. Also note that Coq (Rocq) supports arithmetic in the levels to some extent using what they call "algebraic universes" which do support maximum and successor levels.
+
+- l1086 "induction recursion" previously you used "induction-recursion" with hyphen, you should remain consistent.
+
+
+
+Review #115B
+===========================================================================
+
+Overall merit
+-------------
+C. Weak paper, though I will not fight strongly against it
+
+Reviewer expertise
+------------------
+4. Expert
+
+Reviewer confidence
+-------------------
+3. High
+
+Paper summary
+-------------
+This paper presents Agda formalizations for interpretations of a stratified System F, that supports
+ω+ω universe levels and finite level polymorphism. This is similar to the universe setup in Agda
+itself. One presented interpretation uses induction-recursion and another one uses a postulated
+extension of the Agda hierarchy up to ε₀.
+
+Overall, I don't quite see sufficient novelty in this paper. The main observation is that
+induction-recursion is less convenient than native universes, because fewer equations hold
+definitionally (for lifting type codes and for level operations and comparisons). This is not new,
+e.g. [10] spells out this point, and in Agda the support for ω+ω levels was similarly motivated.
+
+The stratified System F with level polymorphism is a modest extension of previous intrinsically
+typed System F or System Fω formalizations. The IR universe and the specification of ε₀-bounded
+levels are not new either.
+
+There isn't much exploration of the postulated ε₀-bounded extension of Agda levels, in terms of
+metatheory. Already for the existing Agda setup, much about the syntactic metatheory has not yet
+been developed formally (progress/preservation, canonicity, normalization, etc...).
+
+In particular, Π-types where the level of the codomain can depend on the value of the argument, are
+used frequently in the supplement of the paper, but technically there's no semantics for that in the
+literature. In [10], level polymorphism is only justified where the codomain is lifted to a concrete
+chosen level. In Agda, there's a related open issue about failure of type preservation:
+https://github.com/agda/agda/issues/5810. Hence, postulating levels in Agda is built on rather
+shaky metatheoretical foundations.
+
+I think that there should be also discussion about the choice of the hierarchy. ε₀ is a fairly large
+hierarchy that still makes sense in a native implementation, but I'm not convinced that it's
+practically the best. For the current formalization, ω*ω with bounded polymorphism would have been
+be fine, and generally speaking, smaller hierarchies are better for built-in definitional "solvers"
+and user ergonomics, so there's a trade-off going on.
+
+Comments for authors
+--------------------
+### General comments
+
+- The formatting of the paper is different than in the standard template, e.g. margins, line spacing
+  and font size. The amount of content on a page is *roughly* the same, but certainly the formatting
+  should be standardized.
+- 78: this paragraph is a bit confusing, because it suggests that three interpretations are
+  presented for stratified System F, but the paper only presents the native universes interpretation
+  in Section 3, and the other two interpretations are for stratified System F + finite level polymorphism.
+- 40: Agda's Prop is predicative
+- 127: the second bullet point looks redundant
+- Section 2.3: maybe give some general reference in this ordinal discussion
+- 281: the level structure in [10] doesn't require a strict linear order, and the Agda code here
+  also doesn't seem to. On the other hand, the Π on line 323 that returns in U(i ⊔ j) does require
+  the total ordering. This could be made clearer.
+- 293: the different code listings should be indented to the same level.
+- 319: it could be mentioned that ElLift≤ uses function extensionality, so meta-computation gets
+       blocked if we work with postulated funext.
+- 422: "standard" is a term that's often used for interpretations like this, you could use it
+  instead of "native"
+- 697: it would be fine to move Fig 12 to an appendix.
+- 873: why don't they fit into the schema? I don't see any problem with including ≤-lublub and
+  <-suc-lim into the definition of _≤_.
+- Fig 9: shouldn't the ⟦_⟧L function return in "ℕ + ℕ"? We don't need "ω*i + j", the "i" can only be
+  0 or 1.
+
+### Typos, grammar:
+
+- 36: "review Coq and Agda" -> "review Coq and Lean"
+- 53: "assigned a to" -> "assigned to a"
+- 81: "ordinal-extended" -> not sure, maybe "extended ordinal-indexed hierarchy"?
+- 87: "ordinals are bounds" -> "ordinals as bounds"
+- 131: "Rather there" -> "Rather, there"
+- 168: "obtaining proof" -> "obtaining a proof"
+- 169: "syntactically different, but propositionally equal, type"
+       -> "syntactically different but propositionally equal type"
+- 173: "entirely equal" -> "equal"
+- 239: "byFigure 3 induction-recursion": something's mixed up here
+- 242: "includes datatypes itself;" -> "includes the datatype itself,"
+- 242: "of an ordinal;" -> "of an ordinal,"
+- 250: "proof the laws" -> "prove the laws"
+- 255: "given two MutualOrd a and b" -> "given a and b as values of MutualOrd"
+- 317: "and proof" -> "and a proof"
+- 825: "help of the programmer" -> "help from the programmer"
+- 1017: "Section Section 5" -> "Section 5"
+- 1027: "paradoxa" -> "paradoxes"
+- 1038: "notion of a universe" -> "notion of universe"
+- 1060: "fails, if the" -> "fails if the"
+
+
+
+Review #115C
+===========================================================================
+
+Overall merit
+-------------
+B. OK paper, but I will not champion it
+
+Reviewer expertise
+------------------
+3. Knowledgeable
+
+Reviewer confidence
+-------------------
+3. High
+
+Paper summary
+-------------
+This paper proposes an extension to Agda's universe polymorphism feature to enable the Level type to include ordinals beyond omega up to epsilon_0.  Starting from a stratified version of system F modeled using a McBridesque inductive-recursive universe construction in the style of Kovacs, the paper then extends Agda's level datatype with bounded levels as a way to support universe quantification in a larger hierarchy than previously supported.
+
+Comments for authors
+--------------------
+This paper is fairly readable and quite interesting to me as an Agda user. The issue of level quantification not including Set-omega and beyond is explained well and motivates the problem somewhat, but this seems to be an issue very specific to Agda, and even then, very specific to only a certain subset of Agda users (for example, in my ±10 years of using Agda I have never encountered a situation where this feature would be useful, although I can imagine if I tried to make everything level polymorphic I might want it). My main concern for this paper is therefore its broader applicability, and the level of interest that the ICFP audience at large would have in this paper. Other type theories and proof assistants are briefly discussed, but do they suffer from any analogous issues for which ordinal level polymorphism would be a solution? 
+
+If this were to be implemented "natively" in Agda, what obstacles would be in the way? Would it make type checking harder? The manually-applied inequality and equality axioms in the library work of the paper would ideally be applied automatically when needed, but this may not be possible or easy, meaning that perhaps the programmer must supply something. I didn't really get a sense of the tradeoffs were this to be implemented in a type checker, and I was left with a few unanswered questions along these lines.
+
+Minor:
+Sec 6.5 "This section" is ambiguous as I first read it as introducing what the Discussion section would do not describing what all of Section 6 has done. 
+1017 - "Section Section 5"
